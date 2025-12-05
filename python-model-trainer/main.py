@@ -1,40 +1,40 @@
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import Ridge
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
 
-train_df = pd.read_csv('../data/train.csv')
-test_df = pd.read_csv('../data/test.csv')
+# cleanup
+data_df = pd.read_csv('../data/train.csv')
+data_df['Mileage'] = data_df['Mileage'].str.replace(' km', '').astype(int)
+columns = [col for col in data_df.columns if col not in ['ID', 'Levy']]
+data_encoded_df = pd.get_dummies(data_df[columns])
 
-train_df['Mileage'] = train_df['Mileage'].str.replace(' km', '').astype(int)
-test_df['Mileage'] = test_df['Mileage'].str.replace(' km', '').astype(int)
+# shuffle
+data_encoded_df = data_encoded_df.sample(frac=1).reset_index(drop=True)
 
+# split data
+feature_cols = [col for col in data_encoded_df.columns if col not in ['Price']]
+X = data_encoded_df[feature_cols].to_numpy()
+y = data_encoded_df['Price'].to_numpy()
 
-feature_cols = [col for col in train_df.columns if col not in ['ID', 'Price', 'Levy']]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=1) # 0.25 x 0.8 = 0.2
 
-# za provjeru kolona
-#train_df = pd.get_dummies(train_df[feature_cols])
-#print(train_df.columns.tolist())
-# y_train = train_df['Price']
-
-X_train_df = pd.get_dummies(train_df[feature_cols])
-
-X_train = X_train_df.to_numpy()
-y_train = train_df['Price'].to_numpy()
-
-print(f"Training set shape: {X_train.shape}")
-print(f"Features: {X_train.shape[1]} columns")
-print(f"Columns: {X_train.dtype.names}")
+scaler = preprocessing.StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+X_val_scaled = scaler.transform(X_val)
 
 clf = Ridge(alpha=1.0)
-clf.fit(X_train, y_train)
-
-clf.score(X_train,y_train)
-clf.coef_
-clf.intercept_
+clf.fit(X_train_scaled, y_train)
 
 
-X_test_df = pd.get_dummies(test_df[feature_cols])
-X_test_df = X_test_df.reindex(columns=X_train_df.columns, fill_value=0)
+train_score = clf.score(X_train_scaled, y_train)
+val_score = clf.score(X_val_scaled, y_val)
+test_score = clf.score(X_test_scaled, y_test)
 
-prediction = clf.predict(X_test_df.iloc[0:1])
-print(f"First test prediction: {prediction[0]}")
+print(f"Train R²: {train_score:.4f}")
+print(f"Val R²: {val_score:.4f}")
+print(f"Test R²: {test_score:.4f}")
+
