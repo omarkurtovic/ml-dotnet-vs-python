@@ -89,7 +89,46 @@ Compare ML.NET (C#) and scikit-learn (Python) across:
 
 ## 🚀 Quick Start
 
-*(Add setup instructions once project is built)*
+### Prerequisites
+- Python 3.8+
+- .NET 6.0+ (for C# projects)
+- Node.js (for Blazor, optional)
+
+
+
+
+
+### Python Model Training
+
+1. **Download Dataset**
+   - Go to [Kaggle](https://www.kaggle.com/datasets/sidharth178/car-prices-dataset) and search for "car price prediction"
+   - Download the CSV file
+   - Place it in `python-model-trainer/data/`
+
+2. **Setup Python Environment**
+   ```bash
+   cd python-model-trainer
+   python -m venv .venv
+   source .venv/Scripts/activate  # On Windows
+   # or: .venv\Scripts\activate.bat
+   ```
+
+3. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run EDA Notebook**
+   ```bash
+   jupyter notebook
+   # Open notebooks/01_eda.ipynb
+   ```
+
+5. **Train Model**
+   ```bash
+   python main.py
+   ```
+   - Outputs: `models/model.pkl` and `models/metrics.json`
 
 ## 📝 License
 
