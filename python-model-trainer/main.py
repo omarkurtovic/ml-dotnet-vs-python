@@ -54,14 +54,14 @@ print(f"Val R²: {val_score:.4f}")
 
 from skl2onnx import to_onnx
 onx = to_onnx(regr, X[:1])
-with open("rf_carprice.onnx", "wb") as f:
+with open("../models/python/python_rf_carprice.onnx", "wb") as f:
     f.write(onx.SerializeToString())
 
 
 
-import onnxruntime as rt
+# import onnxruntime as rt
 
-sess = rt.InferenceSession("rf_carprice.onnx", providers=["CPUExecutionProvider"])
-input_name = sess.get_inputs()[0].name
-label_name = sess.get_outputs()[0].name
-pred_onx = sess.run([label_name], {input_name: X_test.astype(np.float32)})[0]
+# sess = rt.InferenceSession("rf_carprice.onnx", providers=["CPUExecutionProvider"])
+# input_name = sess.get_inputs()[0].name
+# label_name = sess.get_outputs()[0].name
+# pred_onx = sess.run([label_name], {input_name: X_test.astype(np.float32)})[0]

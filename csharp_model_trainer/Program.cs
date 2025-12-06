@@ -177,6 +177,8 @@ class Program
 
             var model = fullPipeline.Fit(trainSetDV);
 
+            mlContext.Model.Save(model, trainSetDV.Schema, "../models/csharp/csharp_rf_carprice.zip");
+
             // === Model Evaluation ===
             var trainPredictions = model.Transform(trainSetDV);
             var testPredictions = model.Transform(testSetDV);

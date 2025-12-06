@@ -1,40 +1,14 @@
-# Python
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.egg-info/
-dist/
-build/
-.DS_Store
-*.log
-.pytest_cache/
-.coverage
-htmlcov/
 
-# Project specific
-data/
-models/
-*.pkl
-*.joblib
-*.zip
+/.vscode
+/models
+/data
 
-# IDE
-.vscode/
-.idea/
-*.swp
-
-# OS
-Thumbs.db
-.DS_Store
-
-
-rf_carprice.onnx
-
+# python
+/python-model-trainer/.venv
 
 # c#
 
 bin
 obj
+appsettings.json
+appsettings.Development.json
