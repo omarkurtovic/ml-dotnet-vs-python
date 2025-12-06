@@ -29,3 +29,12 @@ models/
 # OS
 Thumbs.db
 .DS_Store
+
+
+rf_carprice.onnx
+
+
+# c#
+
+bin
+obj
