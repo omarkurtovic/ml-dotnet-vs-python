@@ -1,8 +1,15 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.5.2.0
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "csharp_model_trainer", "csharp_model_trainer\csharp_model_trainer.csproj", "{D831B1EC-03B5-A4BB-1346-69D90497C5EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{518C65D9-FC27-4F92-B9D1-D2DD93CBFB57}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "python-model-trainer", "python-model-trainer\python-model-trainer.pyproj", "{EEF92787-B551-46D4-87B3-ACC5CAA0A20C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +21,8 @@ Global
 		{D831B1EC-03B5-A4BB-1346-69D90497C5EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D831B1EC-03B5-A4BB-1346-69D90497C5EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D831B1EC-03B5-A4BB-1346-69D90497C5EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEF92787-B551-46D4-87B3-ACC5CAA0A20C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEF92787-B551-46D4-87B3-ACC5CAA0A20C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

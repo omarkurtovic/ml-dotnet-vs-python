@@ -94,17 +94,16 @@ Compare ML.NET (C#) and scikit-learn (Python) across:
 - .NET 6.0+ (for C# projects)
 - Node.js (for Blazor, optional)
 
-
-
-
-
 ### Python Model Training
 
 1. **Download Dataset**
-   - Go to [Kaggle](https://www.kaggle.com/datasets/sidharth178/car-prices-dataset) and search for "car price prediction"
-   - Download the CSV file
-   - Place it in `python-model-trainer/data/`
+   - Go to [Kaggle](https://www.kaggle.com/datasets/sidharth178/car-prices-dataset) 
+   - Download the CSV files
+   - Place it in `ml-dotnet-vs-python/car-prediction/data`
 
+
+
+ 
 2. **Setup Python Environment**
    ```bash
    cd python-model-trainer
@@ -130,6 +129,47 @@ Compare ML.NET (C#) and scikit-learn (Python) across:
    ```
    - Outputs: `models/model.pkl` and `models/metrics.json`
 
+### C# Model Training
+
+1. **Setup Data Files**
+   - Place your CSV file in `csharp_model_trainer/data/`
+   - **Important:** Right-click the data file in Solution Explorer → Properties → Set "Copy to Output Directory" to "Copy always" or "Copy if newer"
+   - This ensures the data file is available when running the program
+
+2. **Build and Run**
+   ```bash
+   cd csharp_model_trainer
+   dotnet build
+   dotnet run
+   ```
+   - Outputs: Trained ML.NET model and metrics
+
 ## 📝 License
 
 MIT
+
+
+
+python enviroment setup for visual studio community
+
+Install Python directly from python.org (recommended) or Microsoft Store
+
+Go to python.org/downloads and grab the latest version (3.11 or 3.12)
+Important: Check "Add Python to PATH" during installation
+OR use Microsoft Store to search for "Python 3.12" (or latest version)
+
+
+Reboot system (good practice, especially if you added to PATH)
+Open your Python project in Visual Studio Community
+Create virtual environment:
+
+Right-click "Python Environments" in Solution Explorer
+Add Environment → Virtual Environment
+Choose your base Python interpreter
+
+
+Install dependencies:
+
+Right-click the new environment → "Manage Python Packages"
+Install required packages (numpy, scikit-learn, pandas, etc.)
+OR use a requirements.txt file

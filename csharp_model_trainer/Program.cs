@@ -100,16 +100,35 @@ class Program
 
     static void Main(string[] args)
     {
+        Console.WriteLine("=== Car Price Prediction Model Trainer === ");
+        Console.WriteLine("=== Language: C# ===");
+        Console.WriteLine();
+
         MLContext mlContext = new();
+        var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
 
         // load data
-        IDataView data = mlContext.Data.LoadFromTextFile<CarInfo>("../data/train.csv", hasHeader: true, separatorChar: ',');
+        Console.WriteLine("Loading data...");
+        var dataPath = Path.Combine(repoRoot, "data", "car-prediction", "train.csv"); 
+        IDataView data = mlContext.Data.LoadFromTextFile<CarInfo>(dataPath, hasHeader: true, separatorChar: ',');
+        var allRows = mlContext.Data.CreateEnumerable<CarInfo>(data, reuseRowObject: false).ToList();
+        Console.WriteLine("Sample data:");
+        foreach (var item in allRows.Take(5))
+        {
+            Console.WriteLine(item);
+        }
+        Console.WriteLine($"Number of rows: {allRows.Count}");
 
         // filter data
+        Console.WriteLine("Filtering data...");
+        Console.WriteLine($"Rows before filtering: {allRows.Count}");
         IDataView filteredData = mlContext.Data.FilterRowsByColumn(data, "Price", lowerBound: 100, upperBound: 200000);
+        var filteredCount = mlContext.Data.CreateEnumerable<CarInfo>(filteredData, reuseRowObject: false).Count();
+        Console.WriteLine($"Rows after filtering: {filteredCount}");
 
-        // split
-        var split = mlContext.Data.TrainTestSplit(filteredData, testFraction: 0.2);
+
+        // split data
+        var split = mlContext.Data.TrainTestSplit(filteredData, testFraction: 0.2, seed: 1);
         var trainSet = mlContext.Data
             .CreateEnumerable<CarInfo>(split.TrainSet, reuseRowObject: false);
 
@@ -151,33 +170,40 @@ class Program
                 .Append(multiColumnKeyPipeline)
                 .Append(mlContext.Transforms.Concatenate("Features", [
                     "Manufacturer",
-                "Model",
-                "ProdYear",
-                "Category",
-                "LeatherInterior",
-                "FuelType",
-                "EngineVolume",
-                "Mileage",
-                "Cylinders",
-                "GearBoxType",
-                "DriveWheels",
-                "Doors",
-                "Wheel",
-                "Color",
-                "Airbags"
+                    "Model",
+                    "ProdYear",
+                    "Category",
+                    "LeatherInterior",
+                    "FuelType",
+                    "EngineVolume",
+                    "Mileage",
+                    "Cylinders",
+                    "GearBoxType",
+                    "DriveWheels",
+                    "Doors",
+                    "Wheel",
+                    "Color",
+                    "Airbags"
                 ]))
-                .Append(mlContext.Regression.Trainers.FastTree(
+                .Append(mlContext.Regression.Trainers.FastForest(
                     labelColumnName: "Price",
                     featureColumnName: "Features",
                     numberOfTrees: 200,
-                    numberOfLeaves: 30,
-                    minimumExampleCountPerLeaf: 10,
-                    learningRate: 0.1
+                    numberOfLeaves: 4096,
+                    minimumExampleCountPerLeaf: 1
                 ));
 
+            Console.WriteLine("Training model...");
             var model = fullPipeline.Fit(trainSetDV);
 
-            mlContext.Model.Save(model, trainSetDV.Schema, "../models/csharp/csharp_rf_carprice.zip");
+            var modelDir = Path.Combine(repoRoot, "models", "car-prediction", "csharp");
+            if(!Directory.Exists(modelDir))
+            {
+                Directory.CreateDirectory(modelDir);
+            }
+
+            var modelPath = Path.Combine(modelDir, "csharp_rf_carprice.zip");
+            mlContext.Model.Save(model, trainSetDV.Schema, modelPath);
 
             // === Model Evaluation ===
             var trainPredictions = model.Transform(trainSetDV);
