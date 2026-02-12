@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "csharp_model_trainer": {
+    "CSharpModelTrainer": {
       "commandName": "Project"
     },
     "WSL": {
