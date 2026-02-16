@@ -3,19 +3,22 @@
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using System.Globalization
-@using SharedCL.CarValuePrediction.Models
+@using WebApp.CarValuePrediction.Models
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @rendermode InteractiveServer
 
+
 <PageTitle>Car Price Prediction</PageTitle>
 
-<MudText Typo="Typo.h1">Car Price Prediction</MudText>
 
 <MudContainer MaxWidth="MaxWidth.Medium">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
         <MudGrid>
             <MudItem xs="12">
-                <MudSelect @bind-Value="CarInfo.Manufacturer" Label="Manufacturer" Variant="Variant.Outlined">
+                <MudText Typo="Typo.h5">Car Price Prediction</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudSelect T="string" @bind-Value="CarInfo.Manufacturer" Label="Manufacturer" Variant="Variant.Outlined">
                     @foreach (string item in Manufactureres)
                     {
                         <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -39,7 +42,7 @@
         var dataPath = Path.Combine(repoRoot, "data", "car-prediction", "train.csv");
 
         var records = new List<CarInfo>();
-        using (var reader = new StreamReader(repoRoot))
+        using (var reader = new StreamReader(dataPath))
         using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         {
             records = csv.GetRecords<CarInfo>().ToList();

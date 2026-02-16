@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.ML" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="CarValuePrediction\" />
+  </ItemGroup>
+
 </Project>

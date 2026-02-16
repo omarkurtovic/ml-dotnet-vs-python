@@ -1,7 +1,6 @@
 ﻿using CSharpModelTrainer.CarValuePrediction.Models;
 using CSharpModelTrainer.SharedKernel;
 using Microsoft.ML;
-using SharedCL.CarValuePrediction.Models;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
