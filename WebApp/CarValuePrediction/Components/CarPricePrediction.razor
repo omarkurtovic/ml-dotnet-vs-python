@@ -7,37 +7,173 @@
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @rendermode InteractiveServer
 
-
 <PageTitle>Car Price Prediction</PageTitle>
-
 
 <MudContainer MaxWidth="MaxWidth.Medium">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
-        <MudGrid>
-            <MudItem xs="12">
-                <MudText Typo="Typo.h5">Car Price Prediction</MudText>
-            </MudItem>
-            <MudItem xs="12">
-                <MudSelect T="string" @bind-Value="CarInfo.Manufacturer" Label="Manufacturer" Variant="Variant.Outlined">
-                    @foreach (string item in Manufactureres)
-                    {
-                        <MudSelectItem Value="@item">@item</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-        </MudGrid>
+        <MudForm @ref="_form">
+            <MudText Typo="Typo.h5" Class="mb-4">Car Price Prediction</MudText>
+
+            <MudPaper Outlined="true" Class="pa-4 mb-4">
+                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Vehicle Identity</b></MudText>
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudSelect T="string" @bind-Value="CarInfo.Manufacturer" Label="Manufacturer" Required="true"
+                                   RequiredError="Manufacturer is required" Variant="Variant.Outlined">
+                            @foreach (string item in Manufactureres)
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudSelect T="string" @bind-Value="CarInfo.Model" Label="Model" Required="true"
+                                   RequiredError="Model is required" Variant="Variant.Outlined">
+                            @foreach (var item in Models.Where(m => m.Manufacturer == CarInfo.Manufacturer).ToList())
+                            {
+                                <MudSelectItem Value="@item.Model">@item.Model</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudNumericField T="int" @bind-Value="CarInfo.ProdYear" Label="Production Year" Required="true"
+                                         RequiredError="Production year is required" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudSelect T="string" @bind-Value="CarInfo.Category" Label="Category" Variant="Variant.Outlined">
+                            @foreach (var item in Categories)
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <MudPaper Outlined="true" Class="pa-4 mb-4">
+                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Fuel &amp; Engine</b></MudText>
+                <MudGrid>
+                    <MudItem xs="4">
+                        <MudSelect T="string" @bind-Value="CarInfo.FuelType" Label="Fuel Type" Variant="Variant.Outlined">
+                            @foreach (var item in FuelTypes)
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudSelect T="string" @bind-Value="CarInfo.EngineVolume" Label="Engine Volume" Variant="Variant.Outlined">
+                            @foreach (var item in EngineVolumes)
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudNumericField T="int" @bind-Value="CarInfo.Cylinders" Label="Cylinders" Min="0" Max="10"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <MudPaper Outlined="true" Class="pa-4 mb-4">
+                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Usage</b></MudText>
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudNumericField T="int" @bind-Value="CarInfo.Mileage" Label="Mileage" Required="true"
+                                         RequiredError="Mileage is required" Min="0" Max="1000000"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudSelect T="string" @bind-Value="CarInfo.Color" Label="Color" Variant="Variant.Outlined">
+                            @foreach (var item in Colors)
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <MudPaper Outlined="true" Class="pa-4 mb-4">
+                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Safety &amp; Extras</b></MudText>
+                <MudGrid>
+                    <MudItem xs="4">
+                        <MudNumericField T="int" @bind-Value="CarInfo.Airbags" Label="Airbags" Min="0" Max="10"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudCheckBox @bind-Value="CarInfo.LeatherInterior" Label="Leather Interior" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudCheckBox @bind-Value="CarInfo.RightWheel" Label="Right-Hand Drive" />
+                    </MudItem><MudItem xs="4">
+                        <MudSelect T="string" @bind-Value="CarInfo.GearBoxType" Label="Gear Box Type" Variant="Variant.Outlined">
+                            @foreach (var item in GearBoxes)
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudSelect T="string" @bind-Value="CarInfo.DriveWheels" Label="Drive Wheels" Variant="Variant.Outlined">
+                            @foreach (var item in DriveWheels)
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudNumericField T="int" @bind-Value="CarInfo.Doors" Label="Doors" Min="0" Max="10"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <MudPaper Outlined="true" Class="pa-4">
+                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Machine Learning Model</b></MudText>
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudSelect T="string" @bind-Value="MLModel" Label="Model" Variant="Variant.Outlined"
+                                   Required="true" RequiredError="Machine Learning Model is required!">
+                            @foreach (var item in MLModels)
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudForm>
+        <MudItem xs="12" Class="d-flex justify-center gap-2 mt-6">
+            <MudButton OnClick="Predict" Color="Color.Primary" Variant="Variant.Filled">Predict</MudButton>
+        </MudItem>
     </MudPaper>
 </MudContainer>
 
-
-
 @code {
 
+    private MudForm _form = null!;
+
     private List<string> Manufactureres { get; set; } = new();
-    private CarInfo CarInfo = new();
+    private List<(string Manufacturer, string Model)> Models { get; set; } = new();
+    private List<string> Categories { get; set; } = new();
+    private List<string> FuelTypes { get; set; } = new();
+    private List<string> EngineVolumes { get; set; } = new();
+    private List<string> GearBoxes { get; set; } = new();
+    private List<string> DriveWheels { get; set; } = new();
+    private List<string> Colors { get; set; } = new();
+
+    private CarInfoDto CarInfo = new();
+
+    private List<string> MLModels { get; set; } = new List<string>();
+    private string MLModel = "";
 
     protected override Task OnInitializedAsync()
     {
+        CarInfo = new();
+        CarInfo.ProdYear = DateTime.Now.Year;
+
         var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
         var dataPath = Path.Combine(repoRoot, "data", "car-prediction", "train.csv");
 
@@ -49,8 +185,31 @@
         }
 
         Manufactureres = records.Select(ci => ci.Manufacturer).Distinct().ToList();
+        Models = records.Select(ci => (ci.Manufacturer, ci.Model)).Distinct().ToList();
+        Categories = records.Select(ci => ci.Category).Distinct().ToList();
+        FuelTypes = records.Select(ci => ci.FuelType).Distinct().ToList();
+        EngineVolumes = records.Select(ci => ci.EngineVolume).Distinct().ToList();
+        GearBoxes = records.Select(ci => ci.GearBoxType).Distinct().ToList();
+        DriveWheels = records.Select(ci => ci.DriveWheels).Distinct().ToList();
+        Colors = records.Select(ci => ci.Color).Distinct().ToList();
 
-
+        MLModels = new List<string>()
+        {
+            "C# FastForest",
+            "Python RandomForestRegressor"
+        };
         return base.OnInitializedAsync();
+    }
+
+    private async Task Predict()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        return;
     }
 }
