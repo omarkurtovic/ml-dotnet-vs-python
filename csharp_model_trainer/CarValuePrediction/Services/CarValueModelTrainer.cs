@@ -1,6 +1,7 @@
-﻿using CSharpModelTrainer.CarValuePrediction.Models;
-using CSharpModelTrainer.SharedKernel;
+﻿using CSharpModelTrainer.SharedKernel;
 using Microsoft.ML;
+using SharedCL.CarValuePrediction.Mappings;
+using SharedCL.CarValuePrediction.Models;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -22,8 +23,8 @@ namespace CSharpModelTrainer.CarValuePrediction.Services
             // load data
             Console.WriteLine("Loading data...");
             var dataPath = Path.Combine(repoRoot, "data", "car-prediction", "train.csv");
-            IDataView data = mlContext.Data.LoadFromTextFile<CarInfo>(dataPath, hasHeader: true, separatorChar: ',');
-            var allRows = mlContext.Data.CreateEnumerable<CarInfo>(data, reuseRowObject: false).ToList();
+            IDataView data = mlContext.Data.LoadFromTextFile<CarInfoInput>(dataPath, hasHeader: true, separatorChar: ',');
+            var allRows = mlContext.Data.CreateEnumerable<CarInfoInput>(data, reuseRowObject: false).ToList();
             Console.WriteLine("Sample data:");
             foreach (var item in allRows.Take(5))
             {
@@ -35,29 +36,24 @@ namespace CSharpModelTrainer.CarValuePrediction.Services
             Console.WriteLine("Filtering data...");
             Console.WriteLine($"Rows before filtering: {allRows.Count}");
             IDataView filteredData = mlContext.Data.FilterRowsByColumn(data, "Price", lowerBound: 100, upperBound: 200000);
-            var filteredCount = mlContext.Data.CreateEnumerable<CarInfo>(filteredData, reuseRowObject: false).Count();
+            var filteredCount = mlContext.Data.CreateEnumerable<CarInfoInput>(filteredData, reuseRowObject: false).Count();
             Console.WriteLine($"Rows after filtering: {filteredCount}");
 
 
             // split data
             var split = mlContext.Data.TrainTestSplit(filteredData, testFraction: 0.2, seed: 1);
             var trainSet = mlContext.Data
-                .CreateEnumerable<CarInfo>(split.TrainSet, reuseRowObject: false);
+                .CreateEnumerable<CarInfoInput>(split.TrainSet, reuseRowObject: false);
 
             var testSet = mlContext.Data
-                .CreateEnumerable<CarInfo>(split.TestSet, reuseRowObject: false);
+                .CreateEnumerable<CarInfoInput>(split.TestSet, reuseRowObject: false);
 
-            var trainSetDV = mlContext.Data.LoadFromEnumerable<CarInfo>(trainSet);
-            var testSetDV = mlContext.Data.LoadFromEnumerable<CarInfo>(testSet);
+            var trainSetDV = mlContext.Data.LoadFromEnumerable<CarInfoInput>(trainSet);
+            var testSetDV = mlContext.Data.LoadFromEnumerable<CarInfoInput>(testSet);
 
             // data cleanup
-            static void milageCleanup(CarInfo input, MileageClean output)
-            {
-                var mileageStr = input.MileageKm?.Replace(" km", "").Trim();
-                output.Mileage = float.TryParse(mileageStr, out var mileage) ? mileage : 0f;
-            }
-
-            var pipeline = mlContext.Transforms.CustomMapping((Action<CarInfo, MileageClean>)milageCleanup, contractName: "MileageCleaner")
+            var mileageCleaner = new MileageCleanerMapping();
+            var pipeline = mlContext.Transforms.CustomMapping(mileageCleaner.GetMapping(), contractName: "MileageCleaner")
                 .Append(mlContext.Transforms.DropColumns("MileageKm"));
 
 

@@ -22,4 +22,8 @@
     <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="CarValuePrediction\Models\" />
+  </ItemGroup>
+
 </Project>

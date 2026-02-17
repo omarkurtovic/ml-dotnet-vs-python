@@ -3,7 +3,7 @@ using Microsoft.ML.Data;
 
 namespace WebApp.CarValuePrediction.Models
 {
-    public class CarInfo
+    public class CarInfoForCsv
     {
         public float Price { get; set; }
 

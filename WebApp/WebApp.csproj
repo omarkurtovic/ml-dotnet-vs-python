@@ -9,10 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="33.1.0" />
+    <PackageReference Include="Microsoft.ML.FastTree" Version="5.0.0" />
     <PackageReference Include="MudBlazor" Version="8.15.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\csharp_model_trainer\CSharpModelTrainer.csproj" />
     <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
   </ItemGroup>
 

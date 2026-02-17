@@ -1,8 +1,11 @@
 ﻿@page "/carPricePrediction"
 @using CsvHelper
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.ML
 @using MudBlazor
 @using System.Globalization
+@using SharedCL.CarValuePrediction.Mappings
+@using SharedCL.CarValuePrediction.Models
 @using WebApp.CarValuePrediction.Models
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @rendermode InteractiveServer
@@ -18,7 +21,7 @@
                 <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Vehicle Identity</b></MudText>
                 <MudGrid>
                     <MudItem xs="6">
-                        <MudSelect T="string" @bind-Value="CarInfo.Manufacturer" Label="Manufacturer" Required="true"
+                        <MudSelect T="string" @bind-Value="CarInfoDto.Manufacturer" Label="Manufacturer" Required="true"
                                    RequiredError="Manufacturer is required" Variant="Variant.Outlined">
                             @foreach (string item in Manufactureres)
                             {
@@ -27,20 +30,20 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="6">
-                        <MudSelect T="string" @bind-Value="CarInfo.Model" Label="Model" Required="true"
+                        <MudSelect T="string" @bind-Value="CarInfoDto.Model" Label="Model" Required="true"
                                    RequiredError="Model is required" Variant="Variant.Outlined">
-                            @foreach (var item in Models.Where(m => m.Manufacturer == CarInfo.Manufacturer).ToList())
+                            @foreach (var item in Models.Where(m => m.Manufacturer == CarInfoDto.Manufacturer).ToList())
                             {
                                 <MudSelectItem Value="@item.Model">@item.Model</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="6">
-                        <MudNumericField T="int" @bind-Value="CarInfo.ProdYear" Label="Production Year" Required="true"
+                        <MudNumericField T="int" @bind-Value="CarInfoDto.ProdYear" Label="Production Year" Required="true"
                                          RequiredError="Production year is required" Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="6">
-                        <MudSelect T="string" @bind-Value="CarInfo.Category" Label="Category" Variant="Variant.Outlined">
+                        <MudSelect T="string" @bind-Value="CarInfoDto.Category" Label="Category" Variant="Variant.Outlined">
                             @foreach (var item in Categories)
                             {
                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -54,7 +57,7 @@
                 <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Fuel &amp; Engine</b></MudText>
                 <MudGrid>
                     <MudItem xs="4">
-                        <MudSelect T="string" @bind-Value="CarInfo.FuelType" Label="Fuel Type" Variant="Variant.Outlined">
+                        <MudSelect T="string" @bind-Value="CarInfoDto.FuelType" Label="Fuel Type" Variant="Variant.Outlined">
                             @foreach (var item in FuelTypes)
                             {
                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -62,7 +65,7 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="4">
-                        <MudSelect T="string" @bind-Value="CarInfo.EngineVolume" Label="Engine Volume" Variant="Variant.Outlined">
+                        <MudSelect T="string" @bind-Value="CarInfoDto.EngineVolume" Label="Engine Volume" Variant="Variant.Outlined">
                             @foreach (var item in EngineVolumes)
                             {
                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -70,7 +73,7 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="4">
-                        <MudNumericField T="int" @bind-Value="CarInfo.Cylinders" Label="Cylinders" Min="0" Max="10"
+                        <MudNumericField T="int" @bind-Value="CarInfoDto.Cylinders" Label="Cylinders" Min="0" Max="10"
                                          Variant="Variant.Outlined" />
                     </MudItem>
                 </MudGrid>
@@ -80,12 +83,12 @@
                 <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Usage</b></MudText>
                 <MudGrid>
                     <MudItem xs="6">
-                        <MudNumericField T="int" @bind-Value="CarInfo.Mileage" Label="Mileage" Required="true"
+                        <MudNumericField T="int" @bind-Value="CarInfoDto.Mileage" Label="Mileage" Required="true"
                                          RequiredError="Mileage is required" Min="0" Max="1000000"
                                          Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="6">
-                        <MudSelect T="string" @bind-Value="CarInfo.Color" Label="Color" Variant="Variant.Outlined">
+                        <MudSelect T="string" @bind-Value="CarInfoDto.Color" Label="Color" Variant="Variant.Outlined">
                             @foreach (var item in Colors)
                             {
                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -99,16 +102,16 @@
                 <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Safety &amp; Extras</b></MudText>
                 <MudGrid>
                     <MudItem xs="4">
-                        <MudNumericField T="int" @bind-Value="CarInfo.Airbags" Label="Airbags" Min="0" Max="10"
+                        <MudNumericField T="int" @bind-Value="CarInfoDto.Airbags" Label="Airbags" Min="0" Max="10"
                                          Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="4">
-                        <MudCheckBox @bind-Value="CarInfo.LeatherInterior" Label="Leather Interior" />
+                        <MudCheckBox @bind-Value="CarInfoDto.LeatherInterior" Label="Leather Interior" />
                     </MudItem>
                     <MudItem xs="4">
-                        <MudCheckBox @bind-Value="CarInfo.RightWheel" Label="Right-Hand Drive" />
+                        <MudCheckBox @bind-Value="CarInfoDto.RightWheel" Label="Right-Hand Drive" />
                     </MudItem><MudItem xs="4">
-                        <MudSelect T="string" @bind-Value="CarInfo.GearBoxType" Label="Gear Box Type" Variant="Variant.Outlined">
+                        <MudSelect T="string" @bind-Value="CarInfoDto.GearBoxType" Label="Gear Box Type" Variant="Variant.Outlined">
                             @foreach (var item in GearBoxes)
                             {
                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -116,7 +119,7 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="4">
-                        <MudSelect T="string" @bind-Value="CarInfo.DriveWheels" Label="Drive Wheels" Variant="Variant.Outlined">
+                        <MudSelect T="string" @bind-Value="CarInfoDto.DriveWheels" Label="Drive Wheels" Variant="Variant.Outlined">
                             @foreach (var item in DriveWheels)
                             {
                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -124,7 +127,7 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="4">
-                        <MudNumericField T="int" @bind-Value="CarInfo.Doors" Label="Doors" Min="0" Max="10"
+                        <MudNumericField T="int" @bind-Value="CarInfoDto.Doors" Label="Doors" Min="0" Max="10"
                                          Variant="Variant.Outlined" />
                     </MudItem>
                 </MudGrid>
@@ -147,12 +150,15 @@
         </MudForm>
         <MudItem xs="12" Class="d-flex justify-center gap-2 mt-6">
             <MudButton OnClick="Predict" Color="Color.Primary" Variant="Variant.Filled">Predict</MudButton>
+            @if(!string.IsNullOrWhiteSpace(Prediction))
+            {
+                <MudText Typo="Typo.subtitle1" Class="mb-3">Price Prediction: <b>@Prediction</b></MudText>
+            }
         </MudItem>
     </MudPaper>
 </MudContainer>
 
 @code {
-
     private MudForm _form = null!;
 
     private List<string> Manufactureres { get; set; } = new();
@@ -164,24 +170,26 @@
     private List<string> DriveWheels { get; set; } = new();
     private List<string> Colors { get; set; } = new();
 
-    private CarInfoDto CarInfo = new();
+    private CarInfoDto CarInfoDto = new();
 
     private List<string> MLModels { get; set; } = new List<string>();
     private string MLModel = "";
 
+    private string Prediction = "";
+
     protected override Task OnInitializedAsync()
     {
-        CarInfo = new();
-        CarInfo.ProdYear = DateTime.Now.Year;
+        CarInfoDto = new();
+        CarInfoDto.ProdYear = DateTime.Now.Year;
 
         var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
         var dataPath = Path.Combine(repoRoot, "data", "car-prediction", "train.csv");
 
-        var records = new List<CarInfo>();
+        var records = new List<CarInfoForCsv>();
         using (var reader = new StreamReader(dataPath))
         using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         {
-            records = csv.GetRecords<CarInfo>().ToList();
+            records = csv.GetRecords<CarInfoForCsv>().ToList();
         }
 
         Manufactureres = records.Select(ci => ci.Manufacturer).Distinct().ToList();
@@ -210,6 +218,40 @@
             return;
         }
 
-        return;
+        var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
+
+        var modelPath = Path.Combine(repoRoot, "models", "car-prediction", "csharp", "csharp_rf_carprice.zip");
+
+        MLContext mlContext = new MLContext();
+        mlContext.ComponentCatalog.RegisterAssembly(typeof(MileageCleanerMapping).Assembly);
+        ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
+
+
+        var carInfo = new CarInfoInput
+        {
+            Manufacturer = CarInfoDto.Manufacturer,
+            Model = CarInfoDto.Model,
+            ProdYear = CarInfoDto.ProdYear,
+            Category = CarInfoDto.Category,
+            LeatherInterior = CarInfoDto.LeatherInterior ? "Yes" : "No",
+            FuelType = CarInfoDto.FuelType,
+            EngineVolume = CarInfoDto.EngineVolume,
+            MileageKm = CarInfoDto.Mileage.ToString(),
+            Cylinders = CarInfoDto.Cylinders,
+            GearBoxType = CarInfoDto.GearBoxType,
+            DriveWheels = CarInfoDto.DriveWheels,
+            Doors = CarInfoDto.Doors.ToString(),
+            Wheel = CarInfoDto.RightWheel ? "Right-hand drive" : "Left wheel",
+            Color = CarInfoDto.Color,
+            Airbags = CarInfoDto.Airbags
+        };
+        var predictionEngine = mlContext.Model.CreatePredictionEngine<CarInfoInput, PricePrediction>(trainedModel);
+
+        PricePrediction prediction = predictionEngine.Predict(carInfo);
+
+
+
+        Prediction = prediction.Price.ToString();
+
     }
 }

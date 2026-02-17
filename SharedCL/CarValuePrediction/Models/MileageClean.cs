@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CSharpModelTrainer.CarValuePrediction.Models
+namespace SharedCL.CarValuePrediction.Models
 {
     public class MileageClean
     {
