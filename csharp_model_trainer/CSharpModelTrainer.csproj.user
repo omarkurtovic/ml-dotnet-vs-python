@@ -4,6 +4,6 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>csharp_model_trainer</ActiveDebugProfile>
+    <ActiveDebugProfile>CSharpModelTrainer</ActiveDebugProfile>
   </PropertyGroup>
 </Project>

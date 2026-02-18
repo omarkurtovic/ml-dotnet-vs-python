@@ -2,17 +2,22 @@
 @using CsvHelper
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.ML
+@using Microsoft.ML.OnnxRuntime
+@using Microsoft.ML.OnnxRuntime.Tensors
 @using MudBlazor
 @using System.Globalization
 @using SharedCL.CarValuePrediction.Mappings
 @using SharedCL.CarValuePrediction.Models
 @using WebApp.CarValuePrediction.Models
+@using WebApp.CarValuePrediction.Services
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject CarPricePredictionService CarPricePredictionService
 @rendermode InteractiveServer
+
 
 <PageTitle>Car Price Prediction</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16" Style="position: relative;">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
         <MudForm @ref="_form">
             <MudText Typo="Typo.h5" Class="mb-4">Car Price Prediction</MudText>
@@ -43,122 +48,151 @@
                                          RequiredError="Production year is required" Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="6">
-                        <MudSelect T="string" @bind-Value="CarInfoDto.Category" Label="Category" Variant="Variant.Outlined">
-                            @foreach (var item in Categories)
-                            {
-                                <MudSelectItem Value="@item">@item</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-
-            <MudPaper Outlined="true" Class="pa-4 mb-4">
-                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Fuel &amp; Engine</b></MudText>
-                <MudGrid>
-                    <MudItem xs="4">
-                        <MudSelect T="string" @bind-Value="CarInfoDto.FuelType" Label="Fuel Type" Variant="Variant.Outlined">
-                            @foreach (var item in FuelTypes)
-                            {
-                                <MudSelectItem Value="@item">@item</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="4">
-                        <MudSelect T="string" @bind-Value="CarInfoDto.EngineVolume" Label="Engine Volume" Variant="Variant.Outlined">
-                            @foreach (var item in EngineVolumes)
-                            {
-                                <MudSelectItem Value="@item">@item</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="4">
-                        <MudNumericField T="int" @bind-Value="CarInfoDto.Cylinders" Label="Cylinders" Min="0" Max="10"
-                                         Variant="Variant.Outlined" />
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-
-            <MudPaper Outlined="true" Class="pa-4 mb-4">
-                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Usage</b></MudText>
-                <MudGrid>
-                    <MudItem xs="6">
                         <MudNumericField T="int" @bind-Value="CarInfoDto.Mileage" Label="Mileage" Required="true"
                                          RequiredError="Mileage is required" Min="0" Max="1000000"
                                          Variant="Variant.Outlined" />
                     </MudItem>
-                    <MudItem xs="6">
-                        <MudSelect T="string" @bind-Value="CarInfoDto.Color" Label="Color" Variant="Variant.Outlined">
-                            @foreach (var item in Colors)
-                            {
-                                <MudSelectItem Value="@item">@item</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
                 </MudGrid>
             </MudPaper>
 
             <MudPaper Outlined="true" Class="pa-4 mb-4">
-                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Safety &amp; Extras</b></MudText>
-                <MudGrid>
-                    <MudItem xs="4">
-                        <MudNumericField T="int" @bind-Value="CarInfoDto.Airbags" Label="Airbags" Min="0" Max="10"
-                                         Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="4">
-                        <MudCheckBox @bind-Value="CarInfoDto.LeatherInterior" Label="Leather Interior" />
-                    </MudItem>
-                    <MudItem xs="4">
-                        <MudCheckBox @bind-Value="CarInfoDto.RightWheel" Label="Right-Hand Drive" />
-                    </MudItem><MudItem xs="4">
-                        <MudSelect T="string" @bind-Value="CarInfoDto.GearBoxType" Label="Gear Box Type" Variant="Variant.Outlined">
-                            @foreach (var item in GearBoxes)
-                            {
-                                <MudSelectItem Value="@item">@item</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="4">
-                        <MudSelect T="string" @bind-Value="CarInfoDto.DriveWheels" Label="Drive Wheels" Variant="Variant.Outlined">
-                            @foreach (var item in DriveWheels)
-                            {
-                                <MudSelectItem Value="@item">@item</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="4">
-                        <MudNumericField T="int" @bind-Value="CarInfoDto.Doors" Label="Doors" Min="0" Max="10"
-                                         Variant="Variant.Outlined" />
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-
-            <MudPaper Outlined="true" Class="pa-4">
                 <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Machine Learning Model</b></MudText>
                 <MudGrid>
                     <MudItem xs="12">
-                        <MudSelect T="string" @bind-Value="MLModel" Label="Model" Variant="Variant.Outlined"
+                        <MudSelect T="CarPricePredictionModel" @bind-Value="MLModel" Label="Model" Variant="Variant.Outlined"
                                    Required="true" RequiredError="Machine Learning Model is required!">
                             @foreach (var item in MLModels)
                             {
-                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                                <MudSelectItem Value="@item">@item.Name</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
                 </MudGrid>
             </MudPaper>
+
+            <MudExpansionPanels Class="mb-4" Elevation="0">
+                <MudExpansionPanel Text="More Options">
+                    <MudPaper Outlined="true" Class="pa-4 mb-4">
+                        <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Fuel &amp; Engine</b></MudText>
+                        <MudGrid>
+                            <MudItem xs="4">
+                                <MudSelect T="string" @bind-Value="CarInfoDto.FuelType" Label="Fuel Type" Variant="Variant.Outlined">
+                                    @foreach (var item in FuelTypes)
+                                    {
+                                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudSelect T="string" @bind-Value="CarInfoDto.EngineVolume" Label="Engine Volume" Variant="Variant.Outlined">
+                                    @foreach (var item in EngineVolumes)
+                                    {
+                                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudNumericField T="int" @bind-Value="CarInfoDto.Cylinders" Label="Cylinders" Min="0" Max="10"
+                                                 Variant="Variant.Outlined" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+
+                    <MudPaper Outlined="true" Class="pa-4 mb-4">
+                        <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Usage &amp; Appearance</b></MudText>
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudSelect T="string" @bind-Value="CarInfoDto.Category" Label="Category" Variant="Variant.Outlined">
+                                    @foreach (var item in Categories)
+                                    {
+                                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudSelect T="string" @bind-Value="CarInfoDto.Color" Label="Color" Variant="Variant.Outlined">
+                                    @foreach (var item in Colors)
+                                    {
+                                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+
+                    <MudPaper Outlined="true" Class="pa-4 mb-4">
+                        <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Drivetrain</b></MudText>
+                        <MudGrid>
+                            <MudItem xs="4">
+                                <MudSelect T="string" @bind-Value="CarInfoDto.GearBoxType" Label="Gear Box Type" Variant="Variant.Outlined">
+                                    @foreach (var item in GearBoxes)
+                                    {
+                                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudSelect T="string" @bind-Value="CarInfoDto.DriveWheels" Label="Drive Wheels" Variant="Variant.Outlined">
+                                    @foreach (var item in DriveWheels)
+                                    {
+                                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudNumericField T="int" @bind-Value="CarInfoDto.Doors" Label="Doors" Min="0" Max="10"
+                                                 Variant="Variant.Outlined" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+
+                    <MudPaper Outlined="true" Class="pa-4">
+                        <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Safety &amp; Extras</b></MudText>
+                        <MudGrid>
+                            <MudItem xs="4">
+                                <MudNumericField T="int" @bind-Value="CarInfoDto.Airbags" Label="Airbags" Min="0" Max="20"
+                                                 Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudCheckBox @bind-Value="CarInfoDto.LeatherInterior" Label="Leather Interior" />
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudCheckBox @bind-Value="CarInfoDto.RightWheel" Label="Right-Hand Drive" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
         </MudForm>
-        <MudItem xs="12" Class="d-flex justify-center gap-2 mt-6">
-            <MudButton OnClick="Predict" Color="Color.Primary" Variant="Variant.Filled">Predict</MudButton>
-            @if(!string.IsNullOrWhiteSpace(Prediction))
-            {
-                <MudText Typo="Typo.subtitle1" Class="mb-3">Price Prediction: <b>@Prediction</b></MudText>
-            }
-        </MudItem>
     </MudPaper>
 </MudContainer>
 
+<MudPaper Class="d-flex justify-center align-center gap-4 pa-4"
+          Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;"
+          Elevation="10">
+    <MudButton OnClick="Predict" Color="Color.Primary" Variant="Variant.Filled"
+               Size="Size.Large" Disabled="_isLoading">
+        @if (_isLoading)
+        {
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            <span>Predicting...</span>
+        }
+        else
+        {
+            <span>Predict Price</span>
+        }
+    </MudButton>
+    @if (!string.IsNullOrWhiteSpace(Prediction))
+    {
+        <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Dense="true" NoIcon="false">
+            Predicted Price: <b>$@Prediction</b>
+        </MudAlert>
+    }
+</MudPaper>
+
+
 @code {
+
     private MudForm _form = null!;
 
     private List<string> Manufactureres { get; set; } = new();
@@ -172,17 +206,22 @@
 
     private CarInfoDto CarInfoDto = new();
 
-    private List<string> MLModels { get; set; } = new List<string>();
-    private string MLModel = "";
+    private List<CarPricePredictionModel> MLModels { get; set; } = new List<CarPricePredictionModel>();
+    private CarPricePredictionModel MLModel = null!;
+
+    private List<string> OnnxFeatureColumns { get; set; } = new();
 
     private string Prediction = "";
+    private bool _isLoading = false;
 
     protected override Task OnInitializedAsync()
     {
+
+        MLModels = CarPricePredictionService.GetModels();
         CarInfoDto = new();
         CarInfoDto.ProdYear = DateTime.Now.Year;
 
-        var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
+        var repoRoot = GetRepoPath();
         var dataPath = Path.Combine(repoRoot, "data", "car-prediction", "train.csv");
 
         var records = new List<CarInfoForCsv>();
@@ -192,20 +231,19 @@
             records = csv.GetRecords<CarInfoForCsv>().ToList();
         }
 
-        Manufactureres = records.Select(ci => ci.Manufacturer).Distinct().ToList();
-        Models = records.Select(ci => (ci.Manufacturer, ci.Model)).Distinct().ToList();
-        Categories = records.Select(ci => ci.Category).Distinct().ToList();
-        FuelTypes = records.Select(ci => ci.FuelType).Distinct().ToList();
-        EngineVolumes = records.Select(ci => ci.EngineVolume).Distinct().ToList();
-        GearBoxes = records.Select(ci => ci.GearBoxType).Distinct().ToList();
-        DriveWheels = records.Select(ci => ci.DriveWheels).Distinct().ToList();
-        Colors = records.Select(ci => ci.Color).Distinct().ToList();
+        var filtered = records.Where(r => r.Price >= 100 && r.Price <= 200000).ToList();
 
-        MLModels = new List<string>()
-        {
-            "C# FastForest",
-            "Python RandomForestRegressor"
-        };
+        OnnxFeatureColumns = BuildOnnxFeatureColumns(filtered);
+
+        Manufactureres = records.Select(ci => ci.Manufacturer).Distinct().Order().ToList();
+        Models = records.Select(ci => (ci.Manufacturer, ci.Model)).Distinct().Order().ToList();
+        Categories = records.Select(ci => ci.Category).Distinct().Order().ToList();
+        FuelTypes = records.Select(ci => ci.FuelType).Distinct().Order().ToList();
+        EngineVolumes = records.Select(ci => ci.EngineVolume).Distinct().ToList();
+        GearBoxes = records.Select(ci => ci.GearBoxType).Distinct().Order().ToList();
+        DriveWheels = records.Select(ci => ci.DriveWheels).Distinct().ToList();
+        Colors = records.Select(ci => ci.Color).Distinct().Order().ToList();
+
         return base.OnInitializedAsync();
     }
 
@@ -218,14 +256,33 @@
             return;
         }
 
-        var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
+        _isLoading = true;
+        Prediction = "";
+        StateHasChanged();
 
-        var modelPath = Path.Combine(repoRoot, "models", "car-prediction", "csharp", "csharp_rf_carprice.zip");
+        await Task.Run(() =>
+        {
+            var repoRoot = GetRepoPath();
 
+            if (MLModel.Model == CarPricePredictionModelType.CSharpFastForest)
+            {
+                Prediction = PredictWithMlNet(repoRoot);
+            }
+            else
+            {
+                Prediction = PredictWithOnnx(repoRoot);
+            }
+        });
+
+        _isLoading = false;
+    }
+
+    private string PredictWithMlNet(string repoRoot)
+    {
         MLContext mlContext = new MLContext();
+        var modelPath = Path.Combine(repoRoot, "models", "car-prediction", "csharp", "csharp_rf_carprice.zip");
         mlContext.ComponentCatalog.RegisterAssembly(typeof(MileageCleanerMapping).Assembly);
         ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
-
 
         var carInfo = new CarInfoInput
         {
@@ -245,13 +302,123 @@
             Color = CarInfoDto.Color,
             Airbags = CarInfoDto.Airbags
         };
+
         var predictionEngine = mlContext.Model.CreatePredictionEngine<CarInfoInput, PricePrediction>(trainedModel);
-
         PricePrediction prediction = predictionEngine.Predict(carInfo);
+        return prediction.Price.ToString("F2");
+    }
 
+    private string PredictWithOnnx(string repoRoot)
+    {
+        var modelPath = Path.Combine(repoRoot, "models", "car-prediction", "python", "python_rf_carprice.onnx");
 
+        var features = new float[OnnxFeatureColumns.Count];
 
-        Prediction = prediction.Price.ToString();
+        var numericValues = new Dictionary<string, float>
+        {
+            ["ProdYear"] = CarInfoDto.ProdYear,
+            ["Mileage"] = CarInfoDto.Mileage,
+            ["Cylinders"] = CarInfoDto.Cylinders,
+            ["Airbags"] = CarInfoDto.Airbags
+        };
 
+        var categoricalValues = new Dictionary<string, string>
+        {
+            ["Manufacturer"] = CarInfoDto.Manufacturer,
+            ["Model"] = CarInfoDto.Model,
+            ["Category"] = CarInfoDto.Category,
+            ["Leather interior"] = CarInfoDto.LeatherInterior ? "Yes" : "No",
+            ["Fuel type"] = CarInfoDto.FuelType,
+            ["Engine volume"] = CarInfoDto.EngineVolume,
+            ["Gear box type"] = CarInfoDto.GearBoxType,
+            ["Drive wheels"] = CarInfoDto.DriveWheels,
+            ["Doors"] = CarInfoDto.Doors.ToString(),
+            ["Wheel"] = CarInfoDto.RightWheel ? "Right-hand drive" : "Left wheel",
+            ["Color"] = CarInfoDto.Color
+        };
+
+        for (int i = 0; i < OnnxFeatureColumns.Count; i++)
+        {
+            var col = OnnxFeatureColumns[i];
+
+            if (numericValues.TryGetValue(col, out var numVal))
+            {
+                features[i] = numVal;
+            }
+            else
+            {
+                foreach (var kvp in categoricalValues)
+                {
+                    var prefix = kvp.Key + "_";
+                    if (col.StartsWith(prefix) && col[prefix.Length..] == kvp.Value)
+                    {
+                        features[i] = 1f;
+                        break;
+                    }
+                }
+            }
+        }
+
+        using var session = new InferenceSession(modelPath);
+        var inputName = session.InputMetadata.Keys.First();
+        var tensor = new DenseTensor<float>(features, [1, features.Length]);
+        var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, tensor) };
+
+        using var results = session.Run(inputs);
+        var output = results.First().AsEnumerable<float>().First();
+        return output.ToString("F2");
+    }
+
+    private List<string> BuildOnnxFeatureColumns(List<CarInfoForCsv> records)
+    {
+        var columns = new List<string>();
+
+        foreach (var v in records.Select(r => r.Manufacturer).Distinct())
+            columns.Add($"Manufacturer_{v}");
+
+        foreach (var v in records.Select(r => r.Model).Distinct())
+            columns.Add($"Model_{v}");
+
+        columns.Add("ProdYear");
+
+        foreach (var v in records.Select(r => r.Category).Distinct())
+            columns.Add($"Category_{v}");
+
+        foreach (var v in records.Select(r => r.LeatherInterior).Distinct())
+            columns.Add($"Leather interior_{v}");
+
+        foreach (var v in records.Select(r => r.FuelType).Distinct())
+            columns.Add($"Fuel type_{v}");
+
+        foreach (var v in records.Select(r => r.EngineVolume).Distinct())
+            columns.Add($"Engine volume_{v}");
+
+        columns.Add("Mileage");
+
+        columns.Add("Cylinders");
+
+        foreach (var v in records.Select(r => r.GearBoxType).Distinct())
+            columns.Add($"Gear box type_{v}");
+
+        foreach (var v in records.Select(r => r.DriveWheels).Distinct())
+            columns.Add($"Drive wheels_{v}");
+
+        foreach (var v in records.Select(r => r.Doors).Distinct())
+            columns.Add($"Doors_{v}");
+
+        foreach (var v in records.Select(r => r.Wheel).Distinct())
+            columns.Add($"Wheel_{v}");
+
+        foreach (var v in records.Select(r => r.Color).Distinct())
+            columns.Add($"Color_{v}");
+
+        columns.Add("Airbags");
+
+        return columns;
+    }
+
+    private string GetRepoPath()
+    {
+        return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
     }
 }
