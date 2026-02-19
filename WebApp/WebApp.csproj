@@ -19,8 +19,4 @@
     <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="CarValuePrediction\NewFolder\" />
-  </ItemGroup>
-
 </Project>

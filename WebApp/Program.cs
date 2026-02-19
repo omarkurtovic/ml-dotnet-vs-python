@@ -1,6 +1,7 @@
 using MudBlazor.Services;
 using WebApp.CarValuePrediction.Services;
 using WebApp.Components;
+using WebApp.SentimentAnalysis.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddMudServices();
 
 builder.Services.AddSingleton<CarPricePredictionService,  CarPricePredictionService>();
+builder.Services.AddSingleton<SentimentAnalysisPredictionService, SentimentAnalysisPredictionService>();
 
 var app = builder.Build();
 
