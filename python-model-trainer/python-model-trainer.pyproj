@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>eef92787-b551-46d4-87b3-acc5caa0a20c</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>python_model_trainer.py</StartupFile>
+    <StartupFile>SentimentAnalysis\sentiment_analysis_model_trainer.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,7 +22,8 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="python_model_trainer.py" />
+    <Compile Include="CarValuePrediction\python_model_trainer.py" />
+    <Compile Include="SentimentAnalysis\sentiment_analysis_model_trainer.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="requirements.txt" />
@@ -37,6 +38,10 @@
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
       <Architecture>X64</Architecture>
     </Interpreter>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CarValuePrediction\" />
+    <Folder Include="SentimentAnalysis\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

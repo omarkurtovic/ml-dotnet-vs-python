@@ -55,7 +55,20 @@ regr = RandomForestRegressor(
 
 regr.fit(X_train, y_train)
 
-# === Model Evaluation ===
+
+# Saving Model
+from skl2onnx import to_onnx
+
+model_dir = repo_root / "models" / "car-prediction" / "python"
+model_dir.mkdir(parents=True, exist_ok=True)
+
+onx = to_onnx(regr, X[:1])
+model_path = model_dir / "python_rf_carprice.onnx"
+with open(model_path, "wb") as f:
+    f.write(onx.SerializeToString())
+
+
+# Model Evaluation
 train_pred = regr.predict(X_train)
 test_pred = regr.predict(X_test)
 
@@ -71,13 +84,3 @@ print(f"  RMSE: {root_mean_squared_error(y_test, test_pred):.2f}")
 print(f"  MAE:  {mean_absolute_error(y_test, test_pred):.2f}")
 print("└─────────────────────────┘")
 
-
-from skl2onnx import to_onnx
-
-model_dir = repo_root / "models" / "car-prediction" / "python"
-model_dir.mkdir(parents=True, exist_ok=True)
-
-onx = to_onnx(regr, X[:1])
-model_path = model_dir / "python_rf_carprice.onnx"
-with open(model_path, "wb") as f:
-    f.write(onx.SerializeToString())
