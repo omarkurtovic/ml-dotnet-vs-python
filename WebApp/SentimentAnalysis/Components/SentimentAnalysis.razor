@@ -68,7 +68,7 @@
     }
 </MudPaper>
 
-@code {
+    @code {
 
     private MudForm _form = null!;
     private string Review = "";
@@ -107,7 +107,7 @@
             }
             else
             {
-                //Prediction = PredictWithOnnx(repoRoot);
+                Prediction = PredictWithOnnx(repoRoot);
             }
         });
 
@@ -131,65 +131,29 @@
         return prediction;
     }
 
-    private void PredictWithOnnx(string repoRoot)
+
+    private SentimentPrediction PredictWithOnnx(string repoRoot)
     {
-        var modelPath = Path.Combine(repoRoot, "models", "car-prediction", "python", "python_rf_carprice.onnx");
+        var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "python", "python_rf_sentiment_analysis.onnx");
 
-        // var features = new float[OnnxFeatureColumns.Count];
+        var features = new string[1];
+        features[0] = Review;
 
-        // var numericValues = new Dictionary<string, float>
-        // {
-        //     ["ProdYear"] = CarInfoDto.ProdYear,
-        //     ["Mileage"] = CarInfoDto.Mileage,
-        //     ["Cylinders"] = CarInfoDto.Cylinders,
-        //     ["Airbags"] = CarInfoDto.Airbags
-        // };
+        using var session = new InferenceSession(modelPath);
+        var inputName = session.InputMetadata.Keys.First();
+        var tensor = new DenseTensor<string>(features, [1, features.Length]);
+        var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, tensor) };
 
-        // var categoricalValues = new Dictionary<string, string>
-        // {
-        //     ["Manufacturer"] = CarInfoDto.Manufacturer,
-        //     ["Model"] = CarInfoDto.Model,
-        //     ["Category"] = CarInfoDto.Category,
-        //     ["Leather interior"] = CarInfoDto.LeatherInterior ? "Yes" : "No",
-        //     ["Fuel type"] = CarInfoDto.FuelType,
-        //     ["Engine volume"] = CarInfoDto.EngineVolume,
-        //     ["Gear box type"] = CarInfoDto.GearBoxType,
-        //     ["Drive wheels"] = CarInfoDto.DriveWheels,
-        //     ["Doors"] = CarInfoDto.Doors.ToString(),
-        //     ["Wheel"] = CarInfoDto.RightWheel ? "Right-hand drive" : "Left wheel",
-        //     ["Color"] = CarInfoDto.Color
-        // };
+        using var results = session.Run(inputs);
+        List<object> resultList = results as List<object>;
+        NamedOnnxValue label = results[0];
+        NamedOnnxValue prediction = results[1];
 
-        // for (int i = 0; i < OnnxFeatureColumns.Count; i++)
-        // {
-        //     var col = OnnxFeatureColumns[i];
+        Prediction = new SentimentPrediction();
+        Prediction.IsPositive = label.Value is IEnumerable<long> labelValues && labelValues.FirstOrDefault() == 1;
+        Prediction.Probability = ((prediction.Value as IEnumerable<DisposableNamedOnnxValue>).First().Value as Dictionary<long, float>)[1];
 
-        //     if (numericValues.TryGetValue(col, out var numVal))
-        //     {
-        //         features[i] = numVal;
-        //     }
-        //     else
-        //     {
-        //         foreach (var kvp in categoricalValues)
-        //         {
-        //             var prefix = kvp.Key + "_";
-        //             if (col.StartsWith(prefix) && col[prefix.Length..] == kvp.Value)
-        //             {
-        //                 features[i] = 1f;
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
-
-        // using var session = new InferenceSession(modelPath);
-        // var inputName = session.InputMetadata.Keys.First();
-        // var tensor = new DenseTensor<float>(features, [1, features.Length]);
-        // var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, tensor) };
-
-        // using var results = session.Run(inputs);
-        // var output = results.First().AsEnumerable<float>().First();
-        // return output.ToString("F2");
+        return Prediction;
     }
 
     private string GetRepoPath()

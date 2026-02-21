@@ -5,6 +5,7 @@ using SharedCL.SentimentAnalysis.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace CSharpModelTrainer.SentimentAnalysis.Services
 {
