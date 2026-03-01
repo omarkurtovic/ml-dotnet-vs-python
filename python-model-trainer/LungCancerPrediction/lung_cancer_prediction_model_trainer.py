@@ -2,39 +2,20 @@
 # https://www.kaggle.com/code/adityamahimkar/lung-cancer-prediction-on-image-data/notebook
 
 import numpy as np 
-import pandas as pd 
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-from PIL import Image
-import seaborn as sns
 import cv2
 import random
 import os
 import imageio
-import plotly.graph_objects as go
-import plotly.express as px
-import plotly.figure_factory as ff
-from plotly.subplots import make_subplots
 from collections import Counter
 
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.neighbors import LocalOutlierFactor
-from sklearn.metrics import accuracy_score, recall_score, precision_score, classification_report, confusion_matrix, plot_confusion_matrix
-from sklearn.model_selection import RandomizedSearchCV, cross_val_score, RepeatedStratifiedKFold
-from imblearn.over_sampling import SMOTE
+from sklearn.metrics import classification_report, confusion_matrix
 
-import tensorflow as tf
-import tensorflow_addons as tfa
-import keras
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Conv2D, MaxPooling2D, GlobalAveragePooling2D, BatchNormalization
-from keras.applications import resnet
-from tensorflow.keras.applications import EfficientNetB0, EfficientNetB1, EfficientNetB2, EfficientNetB3, EfficientNetB4, EfficientNetB5, EfficientNetB6, EfficientNetB7
-from keras.applications.resnet import ResNet50
-from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array, array_to_img
-
+from keras.layers import Dense, Activation, Flatten
+from keras.layers import Conv2D, MaxPooling2D
+from keras.src.legacy.preprocessing.image import ImageDataGenerator
 from pathlib import Path
 
 
@@ -59,7 +40,7 @@ for i in categories:
     
     size_data[i] = temp_dict
         
-size_data
+print(size_data)
 
 # showing a sample image from each category
 for i in categories:
@@ -138,139 +119,12 @@ print(len(X_train), X_train.shape)
 print(len(X_valid), X_valid.shape)
 
 
-print(Counter(y_train), Counter(y_valid))
-
-print(len(X_train), X_train.shape)
-
-X_train = X_train.reshape(X_train.shape[0], img_size*img_size*1)
-
-print(len(X_train), X_train.shape)
-
-
-
-print('Before SMOTE:', Counter(y_train))
-smote = SMOTE()
-X_train_sampled, y_train_sampled = smote.fit_resample(X_train, y_train)
-print('After SMOTE:', Counter(y_train_sampled))
-
-X_train = X_train.reshape(X_train.shape[0], img_size, img_size, 1)
-X_train_sampled = X_train_sampled.reshape(X_train_sampled.shape[0], img_size, img_size, 1)
-
-print(len(X_train), X_train.shape)
-print(len(X_train_sampled), X_train_sampled.shape)
-
-
-
-model1 = Sequential()
-
-model1.add(Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
-model1.add(Activation('relu'))
-model1.add(MaxPooling2D(pool_size=(2, 2)))
-
-model1.add(Conv2D(64, (3, 3), activation='relu'))
-model1.add(MaxPooling2D(pool_size=(2, 2)))
-
-model1.add(Flatten())
-model1.add(Dense(16))
-model1.add(Dense(3, activation='softmax'))
-
-model1.summary()
-
-
-
-model1.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-history = model1.fit(X_train_sampled, y_train_sampled, batch_size=8, epochs=10, validation_data=(X_valid, y_valid))
-
-
-
-
-y_pred = model1.predict(X_valid, verbose=1)
-y_pred_bool = np.argmax(y_pred, axis=1)
-
-print(classification_report(y_valid, y_pred_bool))
-
-print(confusion_matrix(y_true=y_valid, y_pred=y_pred_bool))
-
-
-
-plt.plot(history.history['accuracy'], label='Train')
-plt.plot(history.history['val_accuracy'], label='Validation')
-plt.title('Model Accuracy')
-plt.ylabel('Accuracy')
-plt.xlabel('Epoch')
-plt.legend()
-plt.show()
-
-plt.plot(history.history['loss'], label='Train')
-plt.plot(history.history['val_loss'], label='Validation')
-plt.title('Model Loss')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.legend()
-plt.show()
-
-model2 = Sequential()
-
-model2.add(Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
-model2.add(Activation('relu'))
-model2.add(MaxPooling2D(pool_size=(2, 2)))
-
-model2.add(Conv2D(64, (3, 3), activation='relu'))
-model2.add(MaxPooling2D(pool_size=(2, 2)))
-
-model2.add(Flatten())
-model2.add(Dense(16))
-model2.add(Dense(3, activation='softmax'))
-
-model2.summary()
-
-model2.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-
-
 
 new_weights = {
     0: X_train.shape[0]/(3*Counter(y_train)[0]),
     1: X_train.shape[0]/(3*Counter(y_train)[1]),
     2: X_train.shape[0]/(3*Counter(y_train)[2]),
 }
-
-# new_weights[0] = 0.5
-# new_weights[1] = 20
-
-new_weights
-
-
-history = model2.fit(X_train, y_train, batch_size=8, epochs=10, validation_data=(X_valid, y_valid), class_weight=new_weights)
-
-
-
-
-y_pred = model2.predict(X_valid, verbose=1)
-y_pred_bool = np.argmax(y_pred, axis=1)
-
-print(classification_report(y_valid, y_pred_bool))
-
-print(confusion_matrix(y_true=y_valid, y_pred=y_pred_bool))
-
-]:
-
-plt.plot(history.history['accuracy'], label='Train')
-plt.plot(history.history['val_accuracy'], label='Validation')
-plt.title('Model Accuracy')
-plt.ylabel('Accuracy')
-plt.xlabel('Epoch')
-plt.legend()
-plt.show()
-
-plt.plot(history.history['loss'], label='Train')
-plt.plot(history.history['val_loss'], label='Validation')
-plt.title('Model Loss')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.legend()
-plt.show()
 
 
 train_datagen = ImageDataGenerator(horizontal_flip=True, vertical_flip=True) 
@@ -280,31 +134,46 @@ train_generator = train_datagen.flow(X_train, y_train, batch_size=8)
 val_generator = val_datagen.flow(X_valid, y_valid, batch_size=8)
 
 
-model3 = Sequential()
+model = Sequential()
 
-model3.add(Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
-model3.add(Activation('relu'))
-model3.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model3.add(Conv2D(64, (3, 3), activation='relu'))
-model3.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model3.add(Flatten())
-model3.add(Dense(16))
-model3.add(Dense(3, activation='softmax'))
+model.add(Flatten())
+model.add(Dense(16))
+model.add(Dense(3, activation='softmax'))
 
-model3.summary()
-
-
-model3.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.summary()
 
 
-history = model3.fit_generator(train_generator, epochs=5, validation_data=val_generator, class_weight=new_weights)
+model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 
-y_pred = model3.predict(X_valid, verbose=1)
+history = model.fit(train_generator, epochs=5, validation_data=val_generator, class_weight=new_weights)
+
+
+y_pred = model.predict(X_valid, verbose=1)
 y_pred_bool = np.argmax(y_pred, axis=1)
 
 print(classification_report(y_valid, y_pred_bool))
 
 print(confusion_matrix(y_true=y_valid, y_pred=y_pred_bool))
+
+
+
+# Save Model
+import tensorflow as tf
+import tf2onnx
+import onnx
+
+model_dir = repo_root / "models" / "lung-cancer-prediction" / "python"
+model_dir.mkdir(parents=True, exist_ok=True)
+
+input_signature = [tf.TensorSpec([3, 3], tf.float32, name='x')]
+onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature, opset=13)
+onnx.save(onnx_model, model_dir)
+
