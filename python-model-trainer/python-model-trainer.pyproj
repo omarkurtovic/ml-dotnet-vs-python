@@ -23,6 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CarValuePrediction\python_model_trainer.py" />
+    <Compile Include="LungCancerPrediction\lung_cancer_prediction_model_trainer.py" />
     <Compile Include="SentimentAnalysis\sentiment_analysis_model_trainer.py" />
   </ItemGroup>
   <ItemGroup>
@@ -41,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CarValuePrediction\" />
+    <Folder Include="LungCancerPrediction\" />
     <Folder Include="SentimentAnalysis\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

@@ -62,16 +62,16 @@ namespace CSharpModelTrainer.CarValuePrediction.Services
                     mlContext.Transforms.Categorical.OneHotEncoding(
                         [
                             new InputOutputColumnPair("Manufacturer"),
-                        new InputOutputColumnPair("Model"),
-                        new InputOutputColumnPair("Category"),
-                        new InputOutputColumnPair("LeatherInterior"),
-                        new InputOutputColumnPair("FuelType"),
-                        new InputOutputColumnPair("EngineVolume"),
-                        new InputOutputColumnPair("GearBoxType"),
-                        new InputOutputColumnPair("DriveWheels"),
-                        new InputOutputColumnPair("Doors"),
-                        new InputOutputColumnPair("Wheel"),
-                        new InputOutputColumnPair("Color")
+                            new InputOutputColumnPair("Model"),
+                            new InputOutputColumnPair("Category"),
+                            new InputOutputColumnPair("LeatherInterior"),
+                            new InputOutputColumnPair("FuelType"),
+                            new InputOutputColumnPair("EngineVolume"),
+                            new InputOutputColumnPair("GearBoxType"),
+                            new InputOutputColumnPair("DriveWheels"),
+                            new InputOutputColumnPair("Doors"),
+                            new InputOutputColumnPair("Wheel"),
+                            new InputOutputColumnPair("Color")
                         ]);
 
             var fullPipeline = pipeline
