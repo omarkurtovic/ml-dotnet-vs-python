@@ -1,23 +1,23 @@
 ﻿using WebApp.CarValuePrediction.Models;
-using WebApp.SentimentAnalysis.Models;
+using WebApp.SharedKernel;
 
 namespace WebApp.SentimentAnalysis.Services
 {
     public class SentimentAnalysisPredictionService
     {
-        public List<SentimentAnalysisPredictionModel> GetModels()
+        public List<PredictionModel> GetModels()
         {
-            var result = new List<SentimentAnalysisPredictionModel>
+            var result = new List<PredictionModel>
             {
                 new()
                 {
                     Name = "C#",
-                    Model = SentimentAnalysisPredictionModelType.CSharp
+                    Model = PredictionModelType.CSharp
                 },
                 new()
                 {
                     Name = "Python",
-                    Model = SentimentAnalysisPredictionModelType.Python
+                    Model = PredictionModelType.Python
                 }
             };
 

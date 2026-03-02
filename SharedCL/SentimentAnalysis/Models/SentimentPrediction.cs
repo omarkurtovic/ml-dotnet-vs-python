@@ -1,4 +1,7 @@
 ﻿using Microsoft.ML.Data;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace SharedCL.SentimentAnalysis.Models
 {
@@ -14,4 +17,3 @@ namespace SharedCL.SentimentAnalysis.Models
         public float Score { get; set; }
     }
 }
-

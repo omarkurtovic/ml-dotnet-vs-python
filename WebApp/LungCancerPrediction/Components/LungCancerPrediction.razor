@@ -1,33 +1,34 @@
-﻿@page "/sentimentAnalysis"
+﻿@page "/lungCancerPrediction"
 @using CsvHelper
+@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.ML
 @using Microsoft.ML.OnnxRuntime
 @using Microsoft.ML.OnnxRuntime.Tensors
 @using MudBlazor
 @using System.Globalization
+@using SharedCL.LungCancerPrediction
 @using SharedCL.SentimentAnalysis.Mappings
 @using SharedCL.SentimentAnalysis.Models
+@using WebApp.LungCancerPrediction.Services
 @using WebApp.SentimentAnalysis.Services
 @using WebApp.SharedKernel
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
-@inject SentimentAnalysisPredictionService SentimentAnalysisPredictionService
 @rendermode InteractiveServer
+@inject LungCancerPredictionService LungCancerPredictionService
 
 
 
-<PageTitle>Sentiment Analysis</PageTitle>
+<PageTitle>Lung Cancer Prediction</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
         <MudForm @ref="_form">
-            <MudText Typo="Typo.h5" Class="mb-4">Sentiment Analysis</MudText>
+            <MudText Typo="Typo.h5" Class="mb-4">Lung Cancer Prediction</MudText>
 
             <MudPaper Outlined="true" Class="pa-4 mb-4">
-                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Review</b></MudText>
-                <MudTextField @bind-Value="Review" Required="true"
-                              RequiredError="Review is required!" Label="Write or paste a movie review..."
-                              Variant="Variant.Outlined" Lines="8" />
+                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Please upload an image</b></MudText>
+                <MudFileUpload T="IBrowserFile" @bind-Files="_file" Required="true" RequiredError="An image is required!" Accept=".png,.jpg,.jpeg" Hidden="false"/>
             </MudPaper>
 
             <MudPaper Outlined="true" Class="pa-4 mb-4">
@@ -56,14 +57,13 @@
         }
         else
         {
-            <span>Analyze Sentiment</span>
+            <span>Make Prediction</span>
         }
     </MudButton>
     @if (Prediction != null)
     {
-        <MudAlert Severity="@(Prediction.IsPositive ? Severity.Success : Severity.Error)"
-                  Variant="Variant.Filled" Dense="true" NoIcon="false">
-            <b>@(Prediction.IsPositive ? "Positive" : "Negative")</b> — @((Prediction.Probability * 100).ToString("F1"))% confidence
+        <MudAlert Variant="Variant.Filled" Dense="true" NoIcon="false">
+            <b>@Prediction.PredictedLabel</b>
         </MudAlert>
     }
 </MudPaper>
@@ -71,17 +71,19 @@
     @code {
 
     private MudForm _form = null!;
-    private string Review = "";
 
     private List<PredictionModel> MLModels { get; set; } = new List<PredictionModel>();
     private PredictionModel MLModel = null!;
 
-    private SentimentPrediction Prediction = null!;
+    private LungCancerPredictionModel Prediction = null!;
     private bool _isLoading = false;
+
+
+    private IBrowserFile? _file;
 
     protected override Task OnInitializedAsync()
     {
-        MLModels = SentimentAnalysisPredictionService.GetModels();
+        MLModels = LungCancerPredictionService.GetModels();
         return base.OnInitializedAsync();
     }
 
@@ -97,63 +99,73 @@
         _isLoading = true;
         StateHasChanged();
 
-        await Task.Run(() =>
+        await Task.Run(async () =>
         {
             var repoRoot = GetRepoPath();
 
             if (MLModel.Model == PredictionModelType.CSharp)
             {
-                Prediction = PredictWithMlNet(repoRoot);
+                // Prediction = PredictWithMlNet(repoRoot);
             }
             else
             {
-                Prediction = PredictWithOnnx(repoRoot);
+                Prediction = await PredictWithOnnx(repoRoot);
             }
         });
 
         _isLoading = false;
     }
 
-    private SentimentPrediction PredictWithMlNet(string repoRoot)
+    // private LungCancerPredictionModel PredictWithMlNet(string repoRoot)
+    // {
+    //     MLContext mlContext = new MLContext();
+    //     var modelPath = Path.Combine(repoRoot, "models", "lung-cancer", "csharp", "csharp_rf_lung_cancer.zip");
+    //     mlContext.ComponentCatalog.RegisterAssembly(typeof(LungCancerMapping).Assembly);
+    //     ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
+
+    //     var sentimentData = new SentimentData()
+    //     {
+    //         Review = Review
+    //     };
+
+    //     var predictionEngine = mlContext.Model.CreatePredictionEngine<SentimentData, SentimentPrediction>(trainedModel);
+    //     SentimentPrediction prediction = predictionEngine.Predict(sentimentData);
+    //     return prediction;
+    // }
+
+
+    private async Task<LungCancerPredictionModel> PredictWithOnnx(string repoRoot)
     {
-        MLContext mlContext = new MLContext();
-        var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", "csharp_rf_sentiment_analysis.zip");
-        mlContext.ComponentCatalog.RegisterAssembly(typeof(SentimentCleanerMapping).Assembly);
-        ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
+        if (_file == null)
+            return null!;
 
-        var sentimentData = new SentimentData()
-        {
-            Review = Review
-        };
+        var modelPath = Path.Combine(repoRoot, "models", "lung-cancer-prediction", "python", "lung_cancer_prediction.onnx");
 
-        var predictionEngine = mlContext.Model.CreatePredictionEngine<SentimentData, SentimentPrediction>(trainedModel);
-        SentimentPrediction prediction = predictionEngine.Predict(sentimentData);
-        return prediction;
-    }
+        const int imgSize = 256;
 
+        var resizedFile = await _file.RequestImageFileAsync("image/png", imgSize, imgSize);
+        using var stream = resizedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+        using var image = await SixLabors.ImageSharp.Image.LoadAsync<SixLabors.ImageSharp.PixelFormats.L8>(stream);
 
-    private SentimentPrediction PredictWithOnnx(string repoRoot)
-    {
-        var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "python", "python_rf_sentiment_analysis.onnx");
-
-        var features = new string[1];
-        features[0] = Review;
+        var floatData = new float[imgSize * imgSize];
+        for (int y = 0; y < imgSize; y++)
+            for (int x = 0; x < imgSize; x++)
+                floatData[y * imgSize + x] = image[x, y].PackedValue / 255.0f;
 
         using var session = new InferenceSession(modelPath);
         var inputName = session.InputMetadata.Keys.First();
-        var tensor = new DenseTensor<string>(features, [1, features.Length]);
+        var tensor = new DenseTensor<float>(floatData, [1, imgSize, imgSize, 1]);
         var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, tensor) };
 
         using var results = session.Run(inputs);
-        List<object> resultList = results as List<object>;
-        NamedOnnxValue label = results[0];
-        NamedOnnxValue prediction = results[1];
+        var scores = results[0].AsEnumerable<float>().ToArray();
 
-        Prediction = new SentimentPrediction();
-        Prediction.IsPositive = label.Value is IEnumerable<long> labelValues && labelValues.FirstOrDefault() == 1;
-        Prediction.Probability = ((prediction.Value as IEnumerable<DisposableNamedOnnxValue>).First().Value as Dictionary<long, float>)[1];
-
-        return Prediction;
+        return new LungCancerPredictionModel
+        {
+            BenignScore    = scores[0],
+            MalignantScore = scores[1],
+            NormalScore    = scores[2]
+        };
     }
 
     private string GetRepoPath()

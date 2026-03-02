@@ -1,22 +1,21 @@
-﻿using WebApp.CarValuePrediction.Models;
-using WebApp.SharedKernel;
+﻿using WebApp.SharedKernel;
 
-namespace WebApp.CarValuePrediction.Services
+namespace WebApp.LungCancerPrediction.Services
 {
-    public class CarPricePredictionService
+    public class LungCancerPredictionService
     {
-        public List<PredictionModel> GetModels()
+        public static List<PredictionModel> GetModels()
         {
             var result = new List<PredictionModel>
             {
                 new()
                 {
-                    Name = "C# FastForest",
+                    Name = "C#",
                     Model = PredictionModelType.CSharp
                 },
                 new()
                 {
-                    Name = "Python RandomForestRegressor",
+                    Name = "Python",
                     Model = PredictionModelType.Python
                 }
             };

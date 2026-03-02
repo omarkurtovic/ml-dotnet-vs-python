@@ -1,6 +1,7 @@
 using MudBlazor.Services;
 using WebApp.CarValuePrediction.Services;
 using WebApp.Components;
+using WebApp.LungCancerPrediction.Services;
 using WebApp.SentimentAnalysis.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.Services.AddMudServices();
 
 builder.Services.AddSingleton<CarPricePredictionService,  CarPricePredictionService>();
 builder.Services.AddSingleton<SentimentAnalysisPredictionService, SentimentAnalysisPredictionService>();
+builder.Services.AddSingleton<LungCancerPredictionService, LungCancerPredictionService>();
 
 var app = builder.Build();
 
