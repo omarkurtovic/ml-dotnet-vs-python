@@ -13,3 +13,4 @@ obj
 appsettings.json
 appsettings.Development.json
 /.vs
+/python-model-trainer/env1
