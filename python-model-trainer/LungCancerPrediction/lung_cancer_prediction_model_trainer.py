@@ -146,7 +146,7 @@ model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(16))
 model.add(Dense(3, activation='softmax'))
-
+model.output_names=['output']
 model.summary()
 
 
@@ -173,7 +173,7 @@ import onnx
 model_dir = repo_root / "models" / "lung-cancer-prediction" / "python"
 model_dir.mkdir(parents=True, exist_ok=True)
 
-input_signature = [tf.TensorSpec([3, 3], tf.float32, name='x')]
+input_signature = [tf.TensorSpec([None, img_size, img_size, 1], tf.float32, name='x')]
 onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature, opset=13)
-onnx.save(onnx_model, model_dir)
+onnx.save(onnx_model, model_dir / "lung_cancer_prediction.onnx")
 
