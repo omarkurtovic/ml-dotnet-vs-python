@@ -16,6 +16,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="5.0.0" />
     <PackageReference Include="Microsoft.ML.FastTree" Version="5.0.0" />
+    <PackageReference Include="TensorFlow.NET" Version="0.150.0" />
+    <PackageReference Include="TorchSharp" Version="0.106.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +26,7 @@
 
   <ItemGroup>
     <Folder Include="CarValuePrediction\Models\" />
+    <Folder Include="LungCancerPrediction\Models\" />
     <Folder Include="SentimentAnalysis\Models\" />
   </ItemGroup>
 
