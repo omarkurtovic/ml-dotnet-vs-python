@@ -1,14 +1,16 @@
 ﻿using CSharpModelTrainer.SharedKernel;
 using Microsoft.ML;
 using SharedCL.SentimentAnalysis.Models;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Text;
 using TorchSharp;
-
+using static TorchSharp.TensorExtensionMethods;
 using static TorchSharp.torch.nn;
 using static TorchSharp.torch.nn.functional;
-using static TorchSharp.TensorExtensionMethods;
 
 
 
@@ -19,20 +21,48 @@ namespace CSharpModelTrainer.LungCancerPrediction.Services
     {
         public void TrainModel()
         {
-            Console.WriteLine("=== Lung Cancer Prediction Model Trainer === ");
+            Console.WriteLine("=== Lung Cancer Prediction Model Trainer ===");
             Console.WriteLine("=== Language: C# ===");
             Console.WriteLine();
 
-            MLContext mlContext = new();
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-
-            List<string> categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases"};
-
-
+            var directory = Path.Join(repoRoot, "data", "lung-cancer-prediction");
+            var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
             int imageSize = 256;
 
+            Console.WriteLine("Loading data...");
+            var data = new List<(float[] pixels, int label)>();
+
+            foreach (var category in categories)
+            {
+                int classNum = categories.IndexOf(category);
+                var path = Path.Join(directory, category);
+
+                foreach (var filepath in Directory.GetFiles(path))
+                {
+                    using var original = SKBitmap.Decode(filepath);
+                    using var resized = original.Resize(new SKImageInfo(imageSize, imageSize, SKColorType.Gray8), SKFilterQuality.Medium);
+
+                    var pixelBytes = resized.Bytes;
+                    var pixels = new float[imageSize * imageSize];
+                    for (int i = 0; i < pixels.Length; i++)
+                        pixels[i] = pixelBytes[i] / 255.0f;
+
+                    data.Add((pixels, classNum));
+                }
+            }
+
+
+            data = [.. data.OrderBy(_ => new Random(10).Next())];
+
+            int trainSize = (int)(data.Count * 0.75);
+
+            var trainData = data.Take(trainSize).ToList();
+            var validData = data.Skip(trainSize).ToList();
+
+
             var model = Sequential();
-            model.add_module("conv2d", Conv2d(in_channels: 1, out_channels: 64, kernel_size: 3 ));
+            model.add_module("conv2d", Conv2d(in_channels: 1, out_channels: 64, kernel_size: 3));
             model.add_module("relu1", ReLU());
             model.add_module("maxpooling2d1", MaxPool2d((2, 2)));
 
@@ -41,32 +71,101 @@ namespace CSharpModelTrainer.LungCancerPrediction.Services
             model.add_module("maxpooling2d2", MaxPool2d((2, 2)));
 
             model.add_module("flatten", Flatten());
-            model.add_module("dense1", Linear(Parameter(16)));
-            model.add_module("dense2", Linear(Parameter(3)), Softmax());
+            model.add_module("dense1", Linear(inputSize: 246016, outputSize: 16));
+            model.add_module("dense2", Linear(inputSize: 16, outputSize: 3));
+            model.add_module("softmax", Softmax(dim: 1));
 
-            // load data
-            Console.WriteLine("Loading data...");
-            var dataPath = Path.Combine(repoRoot, "data", "sentiment-analysis", "IMDB Dataset.csv");
-            IDataView data = mlContext.Data.LoadFromTextFile<SentimentData>(dataPath, hasHeader: true, separatorChar: ',', allowQuoting: true);
-            var allRows = mlContext.Data.CreateEnumerable<SentimentData>(data, reuseRowObject: false).ToList();
-            Console.WriteLine("Sample data:");
-            foreach (var item in allRows.Take(5))
+            var optimizer = torch.optim.Adam(model.parameters());
+            int epochs = 5;
+            int batchSize = 8;
+
+            for (int epoch = 0; epoch < epochs; epoch++)
             {
-                Console.WriteLine(item);
+                model.train();
+                float trainLoss = 0; int correct = 0, total = 0;
+
+                foreach (var (X, y) in MakeBatches(trainData, batchSize, imageSize, augment: true))
+                {
+                    optimizer.zero_grad();                    
+                    var output = model.forward(X);            
+                    var loss = cross_entropy(output, y);      
+                    loss.backward();                          
+                    optimizer.step();                         
+
+                    trainLoss += loss.item<float>();
+                    correct += output.argmax(1).eq(y).sum().item<int>();
+                    total += (int)y.shape[0];
+                }
+
+                model.eval();
+                int valCorrect = 0, valTotal = 0;
+
+                using (torch.no_grad())
+                {
+                    foreach (var (X, y) in MakeBatches(validData, batchSize, imageSize, augment: false))
+                    {
+                        var output = model.forward(X);
+                        valCorrect += output.argmax(1).eq(y).sum().item<int>();
+                        valTotal += (int)y.shape[0];
+                    }
+                }
+
+                Console.WriteLine($"Epoch {epoch + 1}/{epochs} " +
+                                  $"- loss: {trainLoss / total:F4} " +
+                                  $"- accuracy: {(float)correct / total:F4} " +
+                                  $"- val_accuracy: {(float)valCorrect / valTotal:F4}");
             }
-            Console.WriteLine($"Number of rows: {allRows.Count}");
 
 
-            //Append ImageClassification trainer to the pipeline containing any preprocessing transforms.
-            pipeline
-                .Append(mlContext.MulticlassClassification.Trainers.ImageClassification(featureColumnName: "Image")
-                .Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel");
+            
+        }
 
-            // Train the model.
-            var model = pipeline.Fit(trainingData);
+        private static IEnumerable<(torch.Tensor X, torch.Tensor y)> MakeBatches(
+            List<(float[] pixels, int label)> data, int batchSize, int imageSize, bool augment)
+        {
+            var rng = new Random();
 
-            // Use the model for inferencing.
-            var predictedData = model.Transform(newData).GetColumn<string>("PredictedLabel");
+            for (int i = 0; i < data.Count; i += batchSize)
+            {
+                var batch = data.Skip(i).Take(batchSize).ToList();
+
+                var allPixels = new float[batch.Count * imageSize * imageSize];
+                var allLabels = new long[batch.Count];
+
+                for (int j = 0; j < batch.Count; j++)
+                {
+                    float[] pixels = augment ? RandomFlip(batch[j].pixels, imageSize, rng) : batch[j].pixels;
+
+                    Array.Copy(pixels, 0, allPixels, j * imageSize * imageSize, pixels.Length);
+
+                    allLabels[j] = batch[j].label;
+                }
+
+                var X = torch.tensor(allPixels).reshape(batch.Count, 1, imageSize, imageSize);
+                var y = torch.tensor(allLabels);
+
+                yield return (X, y);
+            }
+        }
+
+        private static float[] RandomFlip(float[] pixels, int imageSize, Random rng)
+        {
+            var result = (float[])pixels.Clone();
+
+            if (rng.NextDouble() > 0.5)
+                for (int y = 0; y < imageSize; y++)
+                    for (int x = 0; x < imageSize / 2; x++)
+                        (result[y * imageSize + x], result[y * imageSize + (imageSize - 1 - x)]) =
+                        (result[y * imageSize + (imageSize - 1 - x)], result[y * imageSize + x]);
+
+            if (rng.NextDouble() > 0.5)
+                for (int y = 0; y < imageSize / 2; y++)
+                    for (int x = 0; x < imageSize; x++)
+                        (result[y * imageSize + x], result[(imageSize - 1 - y) * imageSize + x]) =
+                        (result[(imageSize - 1 - y) * imageSize + x], result[y * imageSize + x]);
+
+            return result;
         }
     }
+}
 }
