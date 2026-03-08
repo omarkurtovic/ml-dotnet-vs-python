@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using SharedCL.SentimentAnalysis.Dtos
+@using SharedCL.SentimentAnalysis.Enums
 @using SharedCL.Shared.Enums
 @using WebApp.SentimentAnalysis.ApiClients
 @using WebApp.SharedKernel
@@ -22,16 +23,25 @@
                               RequiredError="Naziv modela je obavezan!" Variant="Variant.Outlined" Label="Naziv modela" Class="mb-4" />
 
                 <MudSelect T="ModelLanguage" @bind-Value="sentimentAnalysisTrainDto.ModelLanguage" Label="Jezik modela"
-                           Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!">
+                           Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Class="mb-4">
                     @foreach (var item in Enum.GetValues<ModelLanguage>())
                     {
                         <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudSelect T="TrainerAlgorithm" @bind-Value="sentimentAnalysisTrainDto.Algorithm" Label="Algoritam"
+                           Variant="Variant.Outlined" HelperText="@AlgorithmDescription">
+                    @foreach (var algo in Enum.GetValues<TrainerAlgorithm>())
+                    {
+                        <MudSelectItem Value="@algo">@algo.ToString()</MudSelectItem>
                     }
                 </MudSelect>
             </MudPaper>
         </MudForm>
     </MudPaper>
 </MudContainer>
+
 
 <MudDialog @bind-Visible="_showResults">
     <TitleContent>
@@ -104,6 +114,18 @@
     private ModelPerformance? modelPerformance;
     private bool _isLoading = false;
     private bool _showResults = false;
+
+    private string AlgorithmDescription => sentimentAnalysisTrainDto.Algorithm switch
+    {
+        TrainerAlgorithm.SdcaLogisticRegression  => "Brz i stabilan. Dobar za velike skupove podataka.",
+        TrainerAlgorithm.LbfgsLogisticRegression => "Visoka preciznost, sporije treniranje.",
+        TrainerAlgorithm.AveragedPerceptron      => "Najbrži algoritam. Osnovan, ali efektivan za tekst.",
+        TrainerAlgorithm.LinearSvm               => "SVM klasifikator. Dobar za binarne probleme.",
+        TrainerAlgorithm.FastTree                => "Gradijentno pojačana stabla. Visoka preciznost, sporo treniranje.",
+        TrainerAlgorithm.FastForest              => "Nasumična šuma. Otporan na pretreniranje.",
+        _ => ""
+    };
+
 
     private async Task TrainModel()
     {

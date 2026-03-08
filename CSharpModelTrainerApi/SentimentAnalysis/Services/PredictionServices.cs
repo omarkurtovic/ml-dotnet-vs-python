@@ -4,15 +4,16 @@ using SharedCL.SentimentAnalysis.Mappings;
 using SharedCL.SentimentAnalysis.Models;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
+using SharedCL.Shared.Models;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
     public class PredictionServices
     {
-        public SentimentPrediction PredictWithMlNet(string repoRoot, string review)
+        public SentimentPrediction PredictWithMlNet(string repoRoot, string review, MLModel model)
         {
             MLContext mlContext = new MLContext();
-            var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", "csharp_rf_sentiment_analysis.zip");
+            var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", $"{model.Name}.zip");
             mlContext.ComponentCatalog.RegisterAssembly(typeof(SentimentCleanerMapping).Assembly);
             ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
 

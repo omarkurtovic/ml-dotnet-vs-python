@@ -53,7 +53,8 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
             {
                 var predictionService = new PredictionServices();
                 var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-                var prediction = predictionService.PredictWithMlNet(repoRoot, review);
+                var model = new MLModel { Name = modelName, Language = ModelLanguage.CSharp };
+                var prediction = predictionService.PredictWithMlNet(repoRoot, review, model);
                 return Ok(prediction);
             }
             else if(language == "Python")

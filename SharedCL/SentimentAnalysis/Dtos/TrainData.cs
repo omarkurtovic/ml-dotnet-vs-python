@@ -1,4 +1,5 @@
-﻿using SharedCL.Shared.Enums;
+﻿using SharedCL.SentimentAnalysis.Enums;
+using SharedCL.Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,9 @@ namespace SharedCL.SentimentAnalysis.Dtos
 {
     public class TrainData
     {
-        public string ModelName { get; set; }
+        public string ModelName { get; set; } = null!;
         public ModelLanguage ModelLanguage { get; set; }
+        public TrainerAlgorithm Algorithm { get; set; } = TrainerAlgorithm.SdcaLogisticRegression;
     }
 }
+
