@@ -6,6 +6,8 @@ using WebApp.SentimentAnalysis.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -16,6 +18,8 @@ builder.Services.AddSingleton<SentimentAnalysisPredictionService, SentimentAnaly
 builder.Services.AddSingleton<LungCancerPredictionService, LungCancerPredictionService>();
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

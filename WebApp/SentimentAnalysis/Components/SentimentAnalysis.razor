@@ -1,163 +1,44 @@
-﻿@page "/sentimentAnalysis"
-@using CsvHelper
-@using Microsoft.AspNetCore.Components.Web
-@using Microsoft.ML
-@using Microsoft.ML.OnnxRuntime
-@using Microsoft.ML.OnnxRuntime.Tensors
-@using MudBlazor
-@using System.Globalization
-@using SharedCL.SentimentAnalysis.Mappings
-@using SharedCL.SentimentAnalysis.Models
-@using WebApp.SentimentAnalysis.Services
-@using WebApp.SharedKernel
-@using static Microsoft.AspNetCore.Components.Web.RenderMode
-@inject SentimentAnalysisPredictionService SentimentAnalysisPredictionService
-@rendermode InteractiveServer
+﻿@using MudBlazor
 
 
-
-<PageTitle>Sentiment Analysis</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
-        <MudForm @ref="_form">
-            <MudText Typo="Typo.h5" Class="mb-4">Sentiment Analysis</MudText>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudText Typo="Typo.h3">Analiza Sentimenta</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentiment-analysis/inference">
+                    Pokreni Analizu Sentimenta
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12">
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Href="/sentiment-analysis/trainer">
+                    Pogledaj Trening Modela
+                </MudButton>
+            </MudItem>
 
-            <MudPaper Outlined="true" Class="pa-4 mb-4">
-                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Review</b></MudText>
-                <MudTextField @bind-Value="Review" Required="true"
-                              RequiredError="Review is required!" Label="Write or paste a movie review..."
-                              Variant="Variant.Outlined" Lines="8" />
-            </MudPaper>
+            <MudExpansionPanel Text="Opis">
+                <MudText>
+                    Ova komponenta omogućava korisnicima da unesu tekstualnu recenziju filma i odaberu strojno učenje model za analizu sentimenta. Nakon klika na gumb "Analyze Sentiment", komponenta će koristiti odabrani model za predviđanje sentimenta recenzije i prikazati rezultat korisniku.
+                </MudText>
+            </MudExpansionPanel>
 
-            <MudPaper Outlined="true" Class="pa-4 mb-4">
-                <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Machine Learning Model</b></MudText>
-                <MudSelect T="PredictionModel" @bind-Value="MLModel" Label="Model" Variant="Variant.Outlined"
-                           Required="true" RequiredError="Machine Learning Model is required!">
-                    @foreach (var item in MLModels)
-                    {
-                        <MudSelectItem Value="@item">@item.Name</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudPaper>
-        </MudForm>
+        <MudExpansionPanel Text="Podaci">
+            <MudText>
+                Za treniranje modela koristi se skup podataka IMDB Movie Reviews, koji sadrži 50.000 recenzija filmova, od kojih je 25.000 pozitivno i 25.000 negativno ocijenjeno. Ovaj skup podataka je široko korišten u istraživanjima analize sentimenta i omogućava modelima da nauče prepoznavati različite obrasce u tekstu koji su povezani s pozitivnim ili negativnim sentimentom.
+                <MudLink Href="https://www.kaggle.com/code/lakshmi25npathi/sentiment-analysis-of-imdb-movie-reviews">Link</MudLink>
+            </MudText>
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Python Model">
+            <MudText>
+                Za treniranje python modela korišten je bag of words pristup uz tfidf tehniku za pretvaranje tekstualnih podataka u numerički format. Za treniranje je korišten SGDClassifier iz biblioteke scikit-learn, koji je efikasan algoritam za klasifikaciju velikih skupova podataka. Model je treniran na 80% skupa podataka, dok je preostalih 20% korišteno za testiranje i evaluaciju performansi modela.
+                Nakon treniranja model je evaluiran na testnom skupu podataka, gdje je postigao točnost od 85%, što ukazuje na dobru sposobnost modela da prepozna sentiment recenzija. Ovaj model je zatim spremljen u ONNX formatu, što omogućava njegovu integraciju u .NET aplikaciju i korištenje za predviđanje sentimenta novih recenzija unesenih od strane korisnika.
+            </MudText>
+            </MudExpansionPanel>
+        </MudGrid>
     </MudPaper>
 </MudContainer>
 
-<MudPaper Class="d-flex justify-center align-center gap-4 pa-4"
-          Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;"
-          Elevation="10">
-    <MudButton OnClick="Predict" Color="Color.Primary" Variant="Variant.Filled"
-               Size="Size.Large" Disabled="_isLoading">
-        @if (_isLoading)
-        {
-            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-            <span>Analyzing...</span>
-        }
-        else
-        {
-            <span>Analyze Sentiment</span>
-        }
-    </MudButton>
-    @if (Prediction != null)
-    {
-        <MudAlert Severity="@(Prediction.IsPositive ? Severity.Success : Severity.Error)"
-                  Variant="Variant.Filled" Dense="true" NoIcon="false">
-            <b>@(Prediction.IsPositive ? "Positive" : "Negative")</b> — @((Prediction.Probability * 100).ToString("F1"))% confidence
-        </MudAlert>
-    }
-</MudPaper>
-
-    @code {
-
-    private MudForm _form = null!;
-    private string Review = "";
-
-    private List<PredictionModel> MLModels { get; set; } = new List<PredictionModel>();
-    private PredictionModel MLModel = null!;
-
-    private SentimentPrediction Prediction = null!;
-    private bool _isLoading = false;
-
-    protected override Task OnInitializedAsync()
-    {
-        MLModels = SentimentAnalysisPredictionService.GetModels();
-        return base.OnInitializedAsync();
-    }
-
-    private async Task Predict()
-    {
-        await _form.Validate();
-        if (!_form.IsValid)
-        {
-            StateHasChanged();
-            return;
-        }
-
-        _isLoading = true;
-        StateHasChanged();
-
-        await Task.Run(() =>
-        {
-            var repoRoot = GetRepoPath();
-
-            if (MLModel.Model == PredictionModelType.CSharp)
-            {
-                Prediction = PredictWithMlNet(repoRoot);
-            }
-            else
-            {
-                Prediction = PredictWithOnnx(repoRoot);
-            }
-        });
-
-        _isLoading = false;
-    }
-
-    private SentimentPrediction PredictWithMlNet(string repoRoot)
-    {
-        MLContext mlContext = new MLContext();
-        var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", "csharp_rf_sentiment_analysis.zip");
-        mlContext.ComponentCatalog.RegisterAssembly(typeof(SentimentCleanerMapping).Assembly);
-        ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
-
-        var sentimentData = new SentimentData()
-        {
-            Review = Review
-        };
-
-        var predictionEngine = mlContext.Model.CreatePredictionEngine<SentimentData, SentimentPrediction>(trainedModel);
-        SentimentPrediction prediction = predictionEngine.Predict(sentimentData);
-        return prediction;
-    }
-
-
-    private SentimentPrediction PredictWithOnnx(string repoRoot)
-    {
-        var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "python", "python_rf_sentiment_analysis.onnx");
-
-        var features = new string[1];
-        features[0] = Review;
-
-        using var session = new InferenceSession(modelPath);
-        var inputName = session.InputMetadata.Keys.First();
-        var tensor = new DenseTensor<string>(features, [1, features.Length]);
-        var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, tensor) };
-
-        using var results = session.Run(inputs);
-        List<object> resultList = results as List<object>;
-        NamedOnnxValue label = results[0];
-        NamedOnnxValue prediction = results[1];
-
-        Prediction = new SentimentPrediction();
-        Prediction.IsPositive = label.Value is IEnumerable<long> labelValues && labelValues.FirstOrDefault() == 1;
-        Prediction.Probability = ((prediction.Value as IEnumerable<DisposableNamedOnnxValue>).First().Value as Dictionary<long, float>)[1];
-
-        return Prediction;
-    }
-
-    private string GetRepoPath()
-    {
-        return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-    }
-}

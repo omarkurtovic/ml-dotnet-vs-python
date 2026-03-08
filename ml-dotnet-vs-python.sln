@@ -16,6 +16,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp", "WebApp\WebApp.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedCL", "SharedCL\SharedCL.csproj", "{23EE64C1-7ECF-4523-BC4C-6B3B547D2A1D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ml-dotnet-vs-python.AppHost", "ml-dotnet-vs-python.AppHost\ml-dotnet-vs-python.AppHost.csproj", "{F3FA3126-5B7E-4A13-B9DA-BAA5B9E8598A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ml-dotnet-vs-python.ServiceDefaults", "ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj", "{2BDBD618-E27D-B88C-B65B-269C340668BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +40,14 @@ Global
 		{23EE64C1-7ECF-4523-BC4C-6B3B547D2A1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23EE64C1-7ECF-4523-BC4C-6B3B547D2A1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23EE64C1-7ECF-4523-BC4C-6B3B547D2A1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3FA3126-5B7E-4A13-B9DA-BAA5B9E8598A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3FA3126-5B7E-4A13-B9DA-BAA5B9E8598A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3FA3126-5B7E-4A13-B9DA-BAA5B9E8598A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3FA3126-5B7E-4A13-B9DA-BAA5B9E8598A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BDBD618-E27D-B88C-B65B-269C340668BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BDBD618-E27D-B88C-B65B-269C340668BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BDBD618-E27D-B88C-B65B-269C340668BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BDBD618-E27D-B88C-B65B-269C340668BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
