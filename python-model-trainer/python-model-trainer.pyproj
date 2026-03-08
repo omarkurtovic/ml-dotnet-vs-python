@@ -12,6 +12,7 @@
     <Name>python-model-trainer</Name>
     <RootNamespace>python-model-trainer</RootNamespace>
     <InterpreterId>MSBuild|env1|$(MSBuildProjectFullPath)</InterpreterId>
+    <SuppressPackageInstallationPrompt>True</SuppressPackageInstallationPrompt>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,6 +24,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CarValuePrediction\car_value_model_trainer.py" />
+    <Compile Include="LungCancerPrediction\convert_to_onnx.py" />
     <Compile Include="LungCancerPrediction\lung_cancer_prediction_model_trainer.py" />
     <Compile Include="SentimentAnalysis\sentiment_analysis_model_trainer.py" />
   </ItemGroup>

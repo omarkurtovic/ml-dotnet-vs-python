@@ -53,7 +53,8 @@ namespace CSharpModelTrainer.LungCancerPrediction.Services
             }
 
 
-            data = [.. data.OrderBy(_ => new Random(10).Next())];
+            var rng = new Random(10);
+            data = [.. data.OrderBy(_ => rng.Next())];
 
             int trainSize = (int)(data.Count * 0.75);
 
@@ -61,19 +62,17 @@ namespace CSharpModelTrainer.LungCancerPrediction.Services
             var validData = data.Skip(trainSize).ToList();
 
 
-            var model = Sequential();
-            model.add_module("conv2d", Conv2d(in_channels: 1, out_channels: 64, kernel_size: 3));
-            model.add_module("relu1", ReLU());
-            model.add_module("maxpooling2d1", MaxPool2d((2, 2)));
-
-            model.add_module("conv2d2", Conv2d(in_channels: 64, out_channels: 64, kernel_size: 3));
-            model.add_module("relu2", ReLU());
-            model.add_module("maxpooling2d2", MaxPool2d((2, 2)));
-
-            model.add_module("flatten", Flatten());
-            model.add_module("dense1", Linear(inputSize: 246016, outputSize: 16));
-            model.add_module("dense2", Linear(inputSize: 16, outputSize: 3));
-            model.add_module("softmax", Softmax(dim: 1));
+            var model = Sequential(
+                ("conv2d", Conv2d(in_channels: 1, out_channels: 64, kernel_size: 3)),
+                ("relu1", ReLU()),
+                ("maxpooling2d1", MaxPool2d((2, 2))),
+                ("conv2d2", Conv2d(in_channels: 64, out_channels: 64, kernel_size: 3)),
+                ("relu2", ReLU()),
+                ("maxpooling2d2", MaxPool2d((2, 2))),
+                ("flatten", Flatten()),
+                ("dense1", Linear(inputSize: 246016, outputSize: 16)),
+                ("dense2", Linear(inputSize: 16, outputSize: 3))
+            );
 
             var optimizer = torch.optim.Adam(model.parameters());
             int epochs = 5;
@@ -82,30 +81,32 @@ namespace CSharpModelTrainer.LungCancerPrediction.Services
             for (int epoch = 0; epoch < epochs; epoch++)
             {
                 model.train();
-                float trainLoss = 0; int correct = 0, total = 0;
-
+                float trainLoss = 0;
+                int total = 0;
+                long correct = 0;
                 foreach (var (X, y) in MakeBatches(trainData, batchSize, imageSize, augment: true))
                 {
-                    optimizer.zero_grad();                    
-                    var output = model.forward(X);            
-                    var loss = cross_entropy(output, y);      
-                    loss.backward();                          
-                    optimizer.step();                         
+                    optimizer.zero_grad();
+                    var output = model.forward(X);
+
+                    var loss = cross_entropy(output, y);
+                    loss.backward();
+                    optimizer.step();
 
                     trainLoss += loss.item<float>();
-                    correct += output.argmax(1).eq(y).sum().item<int>();
+                    correct += output.argmax(1).eq(y).sum().item<long>();
                     total += (int)y.shape[0];
                 }
 
                 model.eval();
-                int valCorrect = 0, valTotal = 0;
+                long valCorrect = 0, valTotal = 0;
 
                 using (torch.no_grad())
                 {
                     foreach (var (X, y) in MakeBatches(validData, batchSize, imageSize, augment: false))
                     {
                         var output = model.forward(X);
-                        valCorrect += output.argmax(1).eq(y).sum().item<int>();
+                        valCorrect += output.argmax(1).eq(y).sum().item<long>();
                         valTotal += (int)y.shape[0];
                     }
                 }
@@ -116,8 +117,16 @@ namespace CSharpModelTrainer.LungCancerPrediction.Services
                                   $"- val_accuracy: {(float)valCorrect / valTotal:F4}");
             }
 
+            model.eval();
 
-            
+            var modelDir = Path.Join(repoRoot, "models", "lung-cancer-prediction", "csharp");
+            Directory.CreateDirectory(modelDir);
+            var modelPath = Path.Join(modelDir, "lung-cancer-model.weights");
+
+            model.save(modelPath);
+
+            Console.WriteLine($"Model weights saved → {modelPath}");
+
         }
 
         private static IEnumerable<(torch.Tensor X, torch.Tensor y)> MakeBatches(
@@ -167,5 +176,4 @@ namespace CSharpModelTrainer.LungCancerPrediction.Services
             return result;
         }
     }
-}
 }
