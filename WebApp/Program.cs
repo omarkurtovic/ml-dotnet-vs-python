@@ -2,7 +2,7 @@ using MudBlazor.Services;
 using WebApp.CarValuePrediction.Services;
 using WebApp.Components;
 using WebApp.LungCancerPrediction.Services;
-using WebApp.SentimentAnalysis.Services;
+using WebApp.SentimentAnalysis.ApiClients;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +14,17 @@ builder.Services.AddRazorComponents()
 builder.Services.AddMudServices();
 
 builder.Services.AddSingleton<CarPricePredictionService,  CarPricePredictionService>();
-builder.Services.AddSingleton<SentimentAnalysisPredictionService, SentimentAnalysisPredictionService>();
 builder.Services.AddSingleton<LungCancerPredictionService, LungCancerPredictionService>();
+
+#pragma warning disable EXTEXP0001
+builder.Services.AddHttpClient<SentimentAnalysisApiClient>(client =>
+{
+    // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
+    // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
+    client.BaseAddress = new("https+http://apiservice");
+    client.Timeout = TimeSpan.FromMinutes(30);
+}).RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
 
 var app = builder.Build();
 

@@ -29,7 +29,6 @@
   <ItemGroup>
     <Folder Include="CarValuePrediction\Models\" />
     <Folder Include="LungCancerPrediction\Models\" />
-    <Folder Include="SentimentAnalysis\Models\" />
   </ItemGroup>
 
 </Project>

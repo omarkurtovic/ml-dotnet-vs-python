@@ -1,5 +1,132 @@
-﻿@page "/sentimentAnalysis/inference"
+﻿@page "/sentimentAnalysis/trainer"
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using SharedCL.SentimentAnalysis.Dtos
+@using SharedCL.Shared.Enums
+@using WebApp.SentimentAnalysis.ApiClients
+@using WebApp.SharedKernel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject SentimentAnalysisApiClient SentimentAnalysisApi
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@rendermode InteractiveServer
+
+<PageTitle>Treniranje Analize Sentimenta</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
+    <MudPaper Class="pa-6 mt-6" Elevation="15">
+        <MudText Typo="Typo.h5" Class="mb-4">Treniranje Modela</MudText>
+        <MudForm @ref="_form">
+            <MudPaper Outlined="true" Class="pa-4 mb-4">
+                <MudTextField @bind-Value="sentimentAnalysisTrainDto.ModelName" Required="true"
+                              RequiredError="Naziv modela je obavezan!" Variant="Variant.Outlined" Label="Naziv modela" Class="mb-4" />
+
+                <MudSelect T="ModelLanguage" @bind-Value="sentimentAnalysisTrainDto.ModelLanguage" Label="Jezik modela"
+                           Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!">
+                    @foreach (var item in Enum.GetValues<ModelLanguage>())
+                    {
+                        <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudPaper>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
+<MudDialog @bind-Visible="_showResults">
+    <TitleContent>
+        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />Performanse Modela</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (modelPerformance != null)
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Trening</b></MudText>
+                    <MudSimpleTable Hover="true" Dense="true">
+                        <tbody>
+                            <tr><td>Preciznost</td><td>@modelPerformance.TrainingAccuracy.ToString("P2")</td></tr>
+                            <tr><td>F1 Score</td><td>@modelPerformance.TrainingF1Score.ToString("P2")</td></tr>
+                            <tr><td>AUC-ROC</td><td>@modelPerformance.TrainingAreaUnderRocCurve.ToString("P2")</td></tr>
+                            <tr><td>Positive Precision</td><td>@modelPerformance.TrainingPositivePrecision.ToString("P2")</td></tr>
+                            <tr><td>Positive Recall</td><td>@modelPerformance.TrainingPositiveRecall.ToString("P2")</td></tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Testiranje</b></MudText>
+                    <MudSimpleTable Hover="true" Dense="true">
+                        <tbody>
+                            <tr><td>Preciznost</td><td>@modelPerformance.TestingAccuracy.ToString("P2")</td></tr>
+                            <tr><td>F1 Score</td><td>@modelPerformance.TestingF1Score.ToString("P2")</td></tr>
+                            <tr><td>AUC-ROC</td><td>@modelPerformance.TestingAreaUnderRocCurve.ToString("P2")</td></tr>
+                            <tr><td>Positive Precision</td><td>@modelPerformance.TestingPositivePrecision.ToString("P2")</td></tr>
+                            <tr><td>Positive Recall</td><td>@modelPerformance.TestingPositiveRecall.ToString("P2")</td></tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _showResults = false)" Color="Color.Primary" Variant="Variant.Filled">Zatvori</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudPaper Class="d-flex justify-center align-center gap-4 pa-4"
+          Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;"
+          Elevation="10">
+    <MudButton OnClick="TrainModel" Color="Color.Primary" Variant="Variant.Filled"
+               Size="Size.Large" Disabled="_isLoading">
+        @if (_isLoading)
+        {
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            <span>Treniranje...</span>
+        }
+        else
+        {
+            <span>Treniraj</span>
+        }
+    </MudButton>
+    @if (modelPerformance != null)
+    {
+        <MudButton OnClick="@(() => _showResults = true)" Color="Color.Secondary" Variant="Variant.Outlined" Size="Size.Large">
+            Prikaži Rezultate
+        </MudButton>
+    }
+</MudPaper>
 
 @code {
 
+    private MudForm _form = null!;
+    private TrainData sentimentAnalysisTrainDto = new TrainData();
+
+    private ModelPerformance? modelPerformance;
+    private bool _isLoading = false;
+    private bool _showResults = false;
+
+    private async Task TrainModel()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+            return;
+
+        _isLoading = true;
+        StateHasChanged();
+
+        var result = await SentimentAnalysisApi.TrainModelAsync(sentimentAnalysisTrainDto);
+
+        _isLoading = false;
+
+        if (result.IsSuccess)
+        {
+            modelPerformance = result.Data;
+            _showResults = true;
+            Snackbar.Add("Treniranje modela je uspješno!", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Greška prilikom treniranja modela!", Severity.Error);
+        }
+    }
 }

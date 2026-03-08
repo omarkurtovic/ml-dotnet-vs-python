@@ -1,6 +1,5 @@
 ﻿using CSharpModelTrainer.CarValuePrediction.Services;
 using CSharpModelTrainer.LungCancerPrediction.Services;
-using CSharpModelTrainer.SentimentAnalysis.Services;
 using SharedCL.LungCancerPrediction;
 
 class Program
@@ -27,8 +26,8 @@ class Program
                     break;
 
                 case "2":
-                    var sentimentAnalysisTrainer = new SentimentAnalysisModelTrainer();
-                    sentimentAnalysisTrainer.TrainModel();
+                    //var sentimentAnalysisTrainer = new SentimentAnalysisModelTrainer();
+                    //sentimentAnalysisTrainer.TrainModel();
                     break;
 
                 case "3":

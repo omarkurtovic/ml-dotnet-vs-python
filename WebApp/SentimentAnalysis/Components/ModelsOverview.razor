@@ -1,0 +1,104 @@
+﻿@page "/sentimentAnalysis/models"
+@using MudBlazor
+@using SharedCL.Shared.Enums
+@using SharedCL.Shared.Models
+@using WebApp.SentimentAnalysis.ApiClients
+@using WebApp.Shared.Components
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject SentimentAnalysisApiClient SentimentAnalysisApi
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@rendermode InteractiveServer
+
+<PageTitle>Pregled Modela</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16">
+    <MudPaper Class="pa-6 mt-6" Elevation="15">
+        <MudText Typo="Typo.h5" Class="mb-4">Pregled Modela</MudText>
+
+        @if (_isLoading)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+        }
+        else if (_models.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info">Nema dostupnih modela.</MudAlert>
+        }
+        else
+        {
+            <MudTable Items="_models" Hover="true" Striped="true" Elevation="0">
+                <HeaderContent>
+                    <MudTh>Naziv</MudTh>
+                    <MudTh>Jezik</MudTh>
+                    <MudTh>Opis</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Naziv">@context.Name</MudTd>
+                    <MudTd DataLabel="Jezik">
+                        <MudChip T="string" Color="@(context.Language == ModelLanguage.CSharp ? Color.Primary : Color.Secondary)" Size="Size.Small">
+                            @context.Language.ToString()
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Opis">
+                        <MudText Typo="Typo.body2">@context.Description</MudText>
+                    </MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                       OnClick="@(() => ConfirmDelete(context))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+
+    private List<MLModel> _models = [];
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadModels();
+    }
+
+    private async Task LoadModels()
+    {
+        _isLoading = true;
+        var result = await SentimentAnalysisApi.GetModelsAsync();
+        _models = result.IsSuccess ? result.Data! : [];
+        _isLoading = false;
+    }
+
+    private async Task ConfirmDelete(MLModel model)
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.ContentText, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"? Ova akcija se ne može poništiti." },
+            { x => x.ConfirmText, "Da, obriši" },
+            { x => x.CancelText, "Odustani" }
+        };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Brisanje Modela", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+            await DeleteModel(model);
+    }
+
+    private async Task DeleteModel(MLModel model)
+    {
+        var result = await SentimentAnalysisApi.DeleteModelAsync(model.Name, model.Language);
+        if (result.IsSuccess)
+        {
+            Snackbar.Add($"Model \"{model.Name}\" je uspješno obrisan.", Severity.Success);
+            await LoadModels();
+        }
+        else
+        {
+            Snackbar.Add($"Greška pri brisanju modela \"{model.Name}\".", Severity.Error);
+        }
+    }
+}
