@@ -23,7 +23,10 @@ from pathlib import Path
 repo_root = Path(__file__).resolve().parents[2]
 
 model = LungCancerCNN()
-model.load_state_dict(torch.load(repo_root / "models" / "lung-cancer-prediction" / "csharp" / "lung-cancer-model.weights"))
+model.load_state_dict(torch.load(
+    repo_root / "models" / "lung-cancer-prediction" / "csharp" / "lung-cancer-model.weights",
+    weights_only=False
+))
 model.eval()
 
 dummy = torch.zeros(1, 1, 256, 256)

@@ -16,7 +16,9 @@
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @rendermode InteractiveServer
 @inject LungCancerPredictionService LungCancerPredictionService
-
+@using TorchSharp
+@using static TorchSharp.torch.nn
+@using static TorchSharp.torch.nn.functional
 
 
 <PageTitle>Lung Cancer Prediction</PageTitle>
@@ -105,7 +107,7 @@
 
             if (MLModel.Model == PredictionModelType.CSharp)
             {
-                // Prediction = PredictWithMlNet(repoRoot);
+                Prediction = await PredictWithTorchSharp(repoRoot);
             }
             else
             {
@@ -116,22 +118,49 @@
         _isLoading = false;
     }
 
-    // private LungCancerPredictionModel PredictWithMlNet(string repoRoot)
-    // {
-    //     MLContext mlContext = new MLContext();
-    //     var modelPath = Path.Combine(repoRoot, "models", "lung-cancer", "csharp", "csharp_rf_lung_cancer.zip");
-    //     mlContext.ComponentCatalog.RegisterAssembly(typeof(LungCancerMapping).Assembly);
-    //     ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
+    private async Task<LungCancerPredictionModel> PredictWithTorchSharp(string repoRoot)
+    {
+        if (_file == null) return null!;
 
-    //     var sentimentData = new SentimentData()
-    //     {
-    //         Review = Review
-    //     };
+        const int imgSize = 256;
+        var modelPath = Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", "lung-cancer-model.weights");
 
-    //     var predictionEngine = mlContext.Model.CreatePredictionEngine<SentimentData, SentimentPrediction>(trainedModel);
-    //     SentimentPrediction prediction = predictionEngine.Predict(sentimentData);
-    //     return prediction;
-    // }
+        var resizedFile = await _file.RequestImageFileAsync("image/png", imgSize, imgSize);
+        using var stream = resizedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+        using var image = await SixLabors.ImageSharp.Image.LoadAsync<SixLabors.ImageSharp.PixelFormats.L8>(stream);
+
+        var floatData = new float[imgSize * imgSize];
+        for (int y = 0; y < imgSize; y++)
+            for (int x = 0; x < imgSize; x++)
+                floatData[y * imgSize + x] = image[x, y].PackedValue / 255.0f;
+
+        var model = Sequential(
+            ("conv2d", Conv2d(in_channels: 1, out_channels: 64, kernel_size: 3)),
+            ("relu1", ReLU()),
+            ("maxpooling2d1", MaxPool2d((2, 2))),
+            ("conv2d2", Conv2d(in_channels: 64, out_channels: 64, kernel_size: 3)),
+            ("relu2", ReLU()),
+            ("maxpooling2d2", MaxPool2d((2, 2))),
+            ("flatten", Flatten()),
+            ("dense1", Linear(inputSize: 246016, outputSize: 16)),
+            ("dense2", Linear(inputSize: 16, outputSize: 3))
+        );
+
+        model.load(modelPath);
+        model.eval();
+
+        using var input = torch.tensor(floatData).reshape(1, 1, imgSize, imgSize);
+        using var output = model.forward(input);
+        using var probs = softmax(output, dim: 1);
+        var scores = probs.data<float>().ToArray();
+
+        return new LungCancerPredictionModel
+        {
+            BenignScore = scores[0],
+            MalignantScore = scores[1],
+            NormalScore = scores[2]
+        };
+    }
 
 
     private async Task<LungCancerPredictionModel> PredictWithOnnx(string repoRoot)
