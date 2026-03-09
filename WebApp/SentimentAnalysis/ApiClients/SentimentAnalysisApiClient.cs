@@ -1,5 +1,4 @@
-﻿using SharedCL.SentimentAnalysis.Dtos;
-using SharedCL.SentimentAnalysis.Models;
+﻿using SharedCL.SentimentAnalysis.Models;
 using SharedCL.Shared.Enums;
 using SharedCL.Shared.Models;
 using System.Net.Http.Headers;
@@ -10,7 +9,7 @@ namespace WebApp.SentimentAnalysis.ApiClients
     {
         private readonly HttpClient _httpClient = httpClient;
 
-        public async Task<Result<List<MLModel>>> GetModelsAsync()
+        public async Task<Result<List<SentimentAnalysisModel>>> GetModelsAsync()
         {
             try
             {
@@ -19,19 +18,17 @@ namespace WebApp.SentimentAnalysis.ApiClients
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    var models = await response.Content.ReadFromJsonAsync<List<MLModel>>();
-                    return Result<List<MLModel>>.Success(models!);
+                    var models = await response.Content.ReadFromJsonAsync<List<SentimentAnalysisModel>>();
+                    return Result<List<SentimentAnalysisModel>>.Success(models!);
                 }
                 else
                 {
-                    Console.WriteLine("Failed to fetch models. Status code: " + response.StatusCode);
-                    return Result<List<MLModel>>.Failure("");
+                    return Result<List<SentimentAnalysisModel>>.Failure("");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while fetching models: " + ex.Message);
-                return Result<List<MLModel>>.Failure("");
+                return Result<List<SentimentAnalysisModel>>.Failure("");
             }
         }
 
@@ -60,7 +57,7 @@ namespace WebApp.SentimentAnalysis.ApiClients
             }
         }
 
-        public async Task<Result<ModelPerformance>> TrainModelAsync(TrainData trainDto)
+        public async Task<Result<SentimentAnalysisModelDto>> TrainModelAsync(TrainData trainDto)
         {
             try
             {
@@ -71,19 +68,19 @@ namespace WebApp.SentimentAnalysis.ApiClients
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    var performance = await response.Content.ReadFromJsonAsync<ModelPerformance>();
-                    return Result<ModelPerformance>.Success(performance!);
+                    var performance = await response.Content.ReadFromJsonAsync<Result<SentimentAnalysisModelDto>>();
+                    return performance!;
                 }
                 else
                 {
                     Console.WriteLine("Failed to train model. Status code: " + response.StatusCode);
-                    return Result<ModelPerformance>.Failure("");
+                    return Result<SentimentAnalysisModelDto>.Failure("Greška prilikom treniranja modela.");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("An error occurred while training the model: " + ex.Message);
-                return Result<ModelPerformance>.Failure("");
+                return Result<SentimentAnalysisModelDto>.Failure("Greška prilikom treniranja modela.");
             }
         }
 

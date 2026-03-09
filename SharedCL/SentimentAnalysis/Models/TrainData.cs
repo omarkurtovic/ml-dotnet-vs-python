@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SharedCL.SentimentAnalysis.Dtos
+namespace SharedCL.SentimentAnalysis.Models
 {
     public class TrainData
     {

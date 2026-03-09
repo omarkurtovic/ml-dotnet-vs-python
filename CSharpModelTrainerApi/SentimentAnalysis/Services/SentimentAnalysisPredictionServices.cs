@@ -8,11 +8,13 @@ using SharedCL.Shared.Models;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
-    public class PredictionServices
+    public class SentimentAnalysisPredictionServices
     {
-        public SentimentPrediction PredictWithMlNet(string repoRoot, string review, MLModel model)
+        public SentimentPrediction PredictWithMlNet(SentimentAnalysisModel model, string review)
         {
-            MLContext mlContext = new MLContext();
+            MLContext mlContext = new MLContext(); 
+
+            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
             var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", $"{model.Name}.zip");
             mlContext.ComponentCatalog.RegisterAssembly(typeof(SentimentCleanerMapping).Assembly);
             ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);

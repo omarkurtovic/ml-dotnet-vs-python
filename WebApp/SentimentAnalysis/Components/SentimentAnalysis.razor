@@ -1,28 +1,34 @@
 ﻿@page "/sentimentAnalysis"
 @using MudBlazor
 
-
-
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
         <MudGrid>
             <MudItem xs="12">
                 <MudText Typo="Typo.h3">Analiza Sentimenta</MudText>
             </MudItem>
-            <MudItem xs="12">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/inference">
-                    Pokreni Analizu Sentimenta
+            <MudItem xs="4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/inference" FullWidth
+                    StartIcon="@Icons.Material.Filled.PlayArrow">
+                    Pokreni analizu
                 </MudButton>
             </MudItem>
-            <MudItem xs="12">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/trainer">
-                    Treniraj Model
+            <MudItem xs="4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/trainer" FullWidth
+                    StartIcon="@Icons.Material.Filled.ModelTraining">
+                    Traniraj Model
+                </MudButton>
+            </MudItem>
+            <MudItem xs="4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/models" FullWidth
+                    StartIcon="@Icons.Material.Filled.List">
+                    Pregled Modela
                 </MudButton>
             </MudItem>
 
             <MudExpansionPanel Text="Opis">
                 <MudText>
-                    Ova komponenta omogućava korisnicima da unesu tekstualnu recenziju filma i odaberu strojno učenje model za analizu sentimenta. Nakon klika na gumb "Analyze Sentiment", komponenta će koristiti odabrani model za predviđanje sentimenta recenzije i prikazati rezultat korisniku.
+                    Ova komponenta omogućava korisnicima da unesu tekstualnu recenziju filma i odaberu model mašinskog učenja za analizu sentimenta. Nakon klika na gumb "Analiziraj Sentiment", komponenta će koristiti odabrani model za predviđanje sentimenta recenzije i prikazati rezultat korisniku.
                 </MudText>
             </MudExpansionPanel>
 
@@ -33,12 +39,12 @@
             </MudText>
         </MudExpansionPanel>
 
-        <MudExpansionPanel Text="Python Model">
+        <MudExpansionPanel Text="Treniranje">
             <MudText>
-                Za treniranje python modela korišten je bag of words pristup uz tfidf tehniku za pretvaranje tekstualnih podataka u numerički format. Za treniranje je korišten SGDClassifier iz biblioteke scikit-learn, koji je efikasan algoritam za klasifikaciju velikih skupova podataka. Model je treniran na 80% skupa podataka, dok je preostalih 20% korišteno za testiranje i evaluaciju performansi modela.
-                Nakon treniranja model je evaluiran na testnom skupu podataka, gdje je postigao točnost od 85%, što ukazuje na dobru sposobnost modela da prepozna sentiment recenzija. Ovaj model je zatim spremljen u ONNX formatu, što omogućava njegovu integraciju u .NET aplikaciju i korištenje za predviđanje sentimenta novih recenzija unesenih od strane korisnika.
+                Korisnik ima par opcija prilikom treniranja modela. Prva opcija je sam naziv model koji korisnik proizvoljno unosi.
+                Druga opcija je izbor algoritma koji se koristi za treniranje modela. Korisnik može birati između različitih algoritama zavisno od svojih preferencija i potreba, a svaki algoritam ima svoje prednosti i nedostatke u kontekstu analize sentimenta.
             </MudText>
-            </MudExpansionPanel>
+        </MudExpansionPanel>
         </MudGrid>
     </MudPaper>
 </MudContainer>

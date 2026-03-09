@@ -56,7 +56,7 @@
 
 @code {
 
-    private List<MLModel> _models = [];
+    private List<SentimentAnalysisModel> _models = [];
     private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
@@ -76,7 +76,7 @@
     {
         var parameters = new DialogParameters<ConfirmDialog>
         {
-            { x => x.ContentText, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"? Ova akcija se ne može poništiti." },
+            { x => x.ContentText, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"?" },
             { x => x.ConfirmText, "Da, obriši" },
             { x => x.CancelText, "Odustani" }
         };

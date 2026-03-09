@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="SentimentAnalysis\Models\**" />
+    <Content Remove="SentimentAnalysis\Models\**" />
+    <EmbeddedResource Remove="SentimentAnalysis\Models\**" />
+    <None Remove="SentimentAnalysis\Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Microsoft.ML.FastTree" Version="5.0.0" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.0" />
@@ -23,7 +30,6 @@
 
   <ItemGroup>
     <Folder Include="LungCancerPrediction\Models\" />
-    <Folder Include="SentimentAnalysis\Models\" />
   </ItemGroup>
 
 </Project>

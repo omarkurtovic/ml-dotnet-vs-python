@@ -1,6 +1,5 @@
 ﻿using CSharpModelTrainerApi.SentimentAnalysis.Services;
 using Microsoft.AspNetCore.Mvc;
-using SharedCL.SentimentAnalysis.Dtos;
 using SharedCL.SentimentAnalysis.Models;
 using SharedCL.Shared.Enums;
 using SharedCL.Shared.Models;
@@ -11,63 +10,57 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
     [Route("[controller]")]
     public class SentimentAnalysisController : ControllerBase
     {
+        private SentimentAnalysisModelTrainer ModelTrainer { get; set; }
+        private SentimentAnalysisPredictionServices SentimentAnalysisPredictionServices { get; set; }
+        private SentimentAnalysisRepository SentimentAnalysisRepository { get; set; }
+
+        public SentimentAnalysisController(SentimentAnalysisModelTrainer modelTrainer, 
+            SentimentAnalysisRepository sentimentAnalysisRepository,
+            SentimentAnalysisPredictionServices sentimentAnalysisPredictionServices)
+        {
+            ModelTrainer = modelTrainer;
+            SentimentAnalysisRepository = sentimentAnalysisRepository;
+            SentimentAnalysisPredictionServices = sentimentAnalysisPredictionServices;
+        }
 
         [HttpGet]
         [Route("GetModels")]
-        public IActionResult GetModels()
+        public async Task<IActionResult> GetModels()
         {
-            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-            var csharpModelsPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp");
-            var pythonModelsPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "python");
-
-            var result = new List<MLModel>();
-            foreach(var file in Directory.GetFiles(csharpModelsPath, "*.zip"))
+            var result = await SentimentAnalysisRepository.GetAll();
+            if (!result.IsSuccess)
             {
-                var modelName = Path.GetFileNameWithoutExtension(file);
-                result.Add(new MLModel
-                {
-                    Name = modelName,
-                    Description = $"A sentiment analysis model trained using C# and ML.NET. File: {file}",
-                    Language = ModelLanguage.CSharp
-                });
+                return BadRequest(result);
             }
-            foreach(var file in Directory.GetFiles(pythonModelsPath, "*.onnx"))
+            else
             {
-                var modelName = Path.GetFileNameWithoutExtension(file);
-                result.Add(new MLModel
-                {
-                    Name = modelName,
-                    Description = $"A sentiment analysis model trained using Python and scikit-learn. File: {file}",
-                    Language = ModelLanguage.Python
-                });
+                return Ok(result);
             }
-
-            return Ok(result);
         }
 
         [HttpGet]
         [Route("Predict")]
-        public IActionResult Predict([FromQuery]string modelName, [FromQuery]string language, [FromQuery] string review)
+        public async Task<IActionResult> Predict([FromQuery]int id, [FromQuery] string review)
         {
-            if(language == "CSharp")
-            {
-                var predictionService = new PredictionServices();
-                var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-                var model = new MLModel { Name = modelName, Language = ModelLanguage.CSharp };
-                var prediction = predictionService.PredictWithMlNet(repoRoot, review, model);
-                return Ok(prediction);
-            }
-            else if(language == "Python")
-            {
-                var predictionService = new PredictionServices();
-                var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-                var prediction = predictionService.PredictWithOnnx(repoRoot, review);
-                return Ok(prediction);
-            }
-            else
+            var modelResult = await SentimentAnalysisRepository.GetById(id);
+            if(!modelResult.IsSuccess)
             {
                 return BadRequest();
             }
+
+            var model = modelResult.Data;
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            if(model.Language != ModelLanguage.CSharp)
+            {
+                return BadRequest();
+            }
+
+            var prediction = SentimentAnalysisPredictionServices.PredictWithMlNet(model, review);
+            return Ok(prediction);
         }
 
 
@@ -77,12 +70,14 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
         {
             if (trainData.ModelLanguage == ModelLanguage.CSharp)
             {
-                var result = new ModelTrainer().TrainModel(trainData);
-                return Ok(result);
-            }
-            else if (trainData.ModelLanguage == ModelLanguage.Python)
-            {
-                return Ok();
+                var modelRes = ModelTrainer.TrainModel(trainData);
+                if (!modelRes.IsSuccess)
+                {
+                    return BadRequest(modelRes);
+                }
+                var model = modelRes.Data;
+                var saveResult = await SentimentAnalysisRepository.Save(model!);
+                return Ok(model);
             }
             else
             {
@@ -92,16 +87,37 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
 
         [HttpDelete]
         [Route("Delete")]
-        public IActionResult Delete([FromQuery] string modelName, [FromQuery] string language)
+        public async Task<IActionResult> Delete([FromQuery] int id)
         {
+            var modelResult = await SentimentAnalysisRepository.GetById(id);
+            if(!modelResult.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            var model = modelResult.Data;
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            if (model.Language != ModelLanguage.CSharp)
+            {
+                return BadRequest();
+            }
+
+            var deleteResult = await SentimentAnalysisRepository.Delete(model.Id);
+            if(!deleteResult.IsSuccess)
+            {
+                return BadRequest();
+            }
+
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
 
-            string filePath = language == "CSharp"
-                ? Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", $"{modelName}.zip")
-                : Path.Combine(repoRoot, "models", "sentiment-analysis", "python", $"{modelName}.onnx");
+            string filePath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", $"{model.Name}.zip");
 
             if (!System.IO.File.Exists(filePath))
-                return NotFound($"Model '{modelName}' nije pronađen.");
+                return Ok();
 
             System.IO.File.Delete(filePath);
             return Ok();
