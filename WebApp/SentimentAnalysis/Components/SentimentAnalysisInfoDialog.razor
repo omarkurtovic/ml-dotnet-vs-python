@@ -1,0 +1,72 @@
+﻿@using MudBlazor
+@using SharedCL.SentimentAnalysis.Models
+@using WebApp.SentimentAnalysis.ApiClients
+@inject ISnackbar Snackbar
+@inject SentimentAnalysisApiClient SentimentAnalysisApi
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />Performanse Modela</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (Model != null)
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Trening</b></MudText>
+                    <MudSimpleTable Hover="true" Dense="true">
+                        <tbody>
+                            <tr><td>Preciznost</td><td>@(Model.TrainingAccuracy == null ? "" : Math.Round(Model.TrainingAccuracy.Value * 100, 2))%</td></tr>
+                            <tr><td>F1 Score</td><td>@(Model.TrainingF1Score == null ? "" : Math.Round(Model.TrainingF1Score.Value * 100, 2))%</td></tr>
+                            <tr><td>AUC-ROC</td><td>@(Model.TrainingAreaUnderRocCurve == null ? "" : Math.Round(Model.TrainingAreaUnderRocCurve.Value * 100, 2))%</td></tr>
+                            <tr><td>Positive Precision</td><td>@(Model.TrainingPositivePrecision == null ? "" : Math.Round(Model.TrainingPositivePrecision.Value * 100, 2))%</td></tr>
+                            <tr><td>Positive Recall</td><td>@(Model.TrainingPositiveRecall == null ? "" : Math.Round(Model.TrainingPositiveRecall.Value * 100, 2))%</td></tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Testiranje</b></MudText>
+                    <MudSimpleTable Hover="true" Dense="true">
+                        <tbody>
+                            <tr><td>Preciznost</td><td>@(Model.TestingAccuracy == null ? "" : Math.Round(Model.TestingAccuracy.Value * 100, 2))%</td></tr>
+                            <tr><td>F1 Score</td><td>@(Model.TestingF1Score == null ? "" : Math.Round(Model.TestingF1Score.Value * 100, 2))%</td></tr>
+                            <tr><td>AUC-ROC</td><td>@(Model.TestingAreaUnderRocCurve == null ? "" : Math.Round(Model.TestingAreaUnderRocCurve.Value * 100, 2))%</td></tr>
+                            <tr><td>Positive Precision</td><td>@(Model.TestingPositivePrecision == null ? "" : Math.Round(Model.TestingPositivePrecision.Value * 100, 2))%</td></tr>
+                            <tr><td>Positive Recall</td><td>@(Model.TestingPositiveRecall == null ? "" : Math.Round(Model.TestingPositiveRecall.Value * 100, 2))%</td></tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+    <DialogActions>
+        @if (ShowSaveOption)
+        {
+            <MudButton OnClick="@Save" Color="Color.Primary" Variant="Variant.Filled">Sačuvaj</MudButton>
+        }
+        <MudButton OnClick="@(() => MudDialog.Close())" Color="Color.Primary" Variant="Variant.Filled">Zatvori</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public SentimentAnalysisModel Model { get; set; } = null!;
+    [Parameter] public bool ShowSaveOption { get; set; } = false;
+
+
+    private async Task Save()
+    {
+        var result = await SentimentAnalysisApi.SaveModelAsync(Model);
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Model sačuvan!", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Greška prilikom sačuvanja modela!", Severity.Error);
+        }
+    }
+}

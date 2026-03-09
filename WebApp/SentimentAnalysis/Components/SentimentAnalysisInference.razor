@@ -31,7 +31,7 @@
 
             <MudPaper Outlined="true" Class="pa-4 mb-4">
                 <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Model Mašinskog Učenja</b></MudText>
-                <MudSelect T="MLModel" @bind-Value="MLModel" Label="Model" Variant="Variant.Outlined"
+                <MudSelect T="SentimentAnalysisModel" @bind-Value="SentimentAnalysisModel" Label="Model" Variant="Variant.Outlined"
                            Required="true" RequiredError="Model Mašinskog Učenja je obavezan!">
                     @foreach (var item in MLModels)
                     {
@@ -72,8 +72,8 @@
     private MudForm _form = null!;
     private string Review = "";
 
-    private List<MLModel> MLModels { get; set; } = new List<MLModel>();
-    private MLModel MLModel = null!;
+    private List<SentimentAnalysisModel> MLModels { get; set; } = new List<SentimentAnalysisModel>();
+    private SentimentAnalysisModel SentimentAnalysisModel = null!;
 
     private SentimentPrediction Prediction = null!;
     private bool _isLoading = false;
@@ -104,7 +104,7 @@
         _isLoading = true;
         StateHasChanged();
 
-        Prediction = await SentimentAnalysisApi.Predict(MLModel, Review);
+        Prediction = await SentimentAnalysisApi.Predict(SentimentAnalysisModel.Id, Review);
 
         _isLoading = false;
     }

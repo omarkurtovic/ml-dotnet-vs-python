@@ -32,11 +32,11 @@ namespace WebApp.SentimentAnalysis.ApiClients
             }
         }
 
-        public async Task<SentimentPrediction> Predict(MLModel model, string review)
+        public async Task<SentimentPrediction> Predict(int id, string review)
         {
             try
             {
-                string url = $"SentimentAnalysis/Predict?modelName={Uri.EscapeDataString(model.Name)}&language={Uri.EscapeDataString(model.Language.ToString())}&review={Uri.EscapeDataString(review)}";
+                string url = $"SentimentAnalysis/Predict?id={id}&review={Uri.EscapeDataString(review)}";
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
@@ -57,7 +57,7 @@ namespace WebApp.SentimentAnalysis.ApiClients
             }
         }
 
-        public async Task<Result<SentimentAnalysisModelDto>> TrainModelAsync(TrainData trainDto)
+        public async Task<Result<SentimentAnalysisModel>> TrainModelAsync(TrainData trainDto)
         {
             try
             {
@@ -68,27 +68,48 @@ namespace WebApp.SentimentAnalysis.ApiClients
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    var performance = await response.Content.ReadFromJsonAsync<Result<SentimentAnalysisModelDto>>();
+                    var performance = await response.Content.ReadFromJsonAsync<Result<SentimentAnalysisModel>>();
                     return performance!;
                 }
                 else
                 {
-                    Console.WriteLine("Failed to train model. Status code: " + response.StatusCode);
-                    return Result<SentimentAnalysisModelDto>.Failure("Greška prilikom treniranja modela.");
+                    return Result<SentimentAnalysisModel>.Failure("");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while training the model: " + ex.Message);
-                return Result<SentimentAnalysisModelDto>.Failure("Greška prilikom treniranja modela.");
+                return Result<SentimentAnalysisModel>.Failure("");
             }
         }
-
-        public async Task<Result<bool>> DeleteModelAsync(string modelName, ModelLanguage language)
+        public async Task<Result> SaveModelAsync(SentimentAnalysisModel model)
         {
             try
             {
-                var url = $"SentimentAnalysis/Delete?modelName={Uri.EscapeDataString(modelName)}&language={Uri.EscapeDataString(language.ToString())}";
+                string url = $"SentimentAnalysis/Save";
+                var request = new HttpRequestMessage(HttpMethod.Post, url);
+                request.Content = JsonContent.Create(model);
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    return Result.Success();
+                }
+                else
+                {
+                    return Result.Failure("");
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure("");
+            }
+        }
+
+        public async Task<Result<bool>> DeleteModelAsync(int id)
+        {
+            try
+            {
+                var url = $"SentimentAnalysis/Delete?id={id}";
                 var response = await _httpClient.DeleteAsync(url);
                 return response.IsSuccessStatusCode
                     ? Result<bool>.Success(true)
@@ -96,7 +117,6 @@ namespace WebApp.SentimentAnalysis.ApiClients
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while deleting the model: " + ex.Message);
                 return Result<bool>.Failure("");
             }
         }

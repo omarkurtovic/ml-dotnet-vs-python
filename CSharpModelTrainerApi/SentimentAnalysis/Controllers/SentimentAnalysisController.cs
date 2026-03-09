@@ -66,7 +66,7 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
 
         [HttpPost]
         [Route("Train")]
-        public async Task<IActionResult> Train([FromBody] TrainData trainData)
+        public IActionResult Train([FromBody] TrainData trainData)
         {
             if (trainData.ModelLanguage == ModelLanguage.CSharp)
             {
@@ -75,14 +75,23 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
                 {
                     return BadRequest(modelRes);
                 }
-                var model = modelRes.Data;
-                var saveResult = await SentimentAnalysisRepository.Save(model!);
-                return Ok(model);
+                return Ok(modelRes.Data);
             }
             else
             {
                 return BadRequest();
             }
+        }
+
+        [HttpPost]
+        [Route("SaveModel")]
+        public async Task<IActionResult> SaveModel([FromBody] SentimentAnalysisModel model)
+        {
+            var saveResult = await SentimentAnalysisRepository.Save(model);
+            if (!saveResult.IsSuccess)
+                return BadRequest(saveResult);
+
+            return Ok();
         }
 
         [HttpDelete]

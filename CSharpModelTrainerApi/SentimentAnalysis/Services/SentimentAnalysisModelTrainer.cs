@@ -17,7 +17,7 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
             MLContext mlContext = new();
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
 
-            var directoryPath = Path.Combine(repoRoot, "data", "sentiment-analysis", "IMDB Dataset.csv");
+            var directoryPath = Path.Combine(repoRoot, "data", "sentiment-analysis");
             if (!Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);

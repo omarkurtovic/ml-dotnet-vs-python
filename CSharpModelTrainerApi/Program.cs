@@ -15,11 +15,12 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+ConfigureDatabase(builder.Services, builder.Environment);
+
 builder.Services.AddSingleton<SentimentAnalysisModelTrainer>();
-builder.Services.AddSingleton<SentimentAnalysisRepository>();
+builder.Services.AddScoped<SentimentAnalysisRepository>();
 builder.Services.AddSingleton<SentimentAnalysisPredictionServices>();
 
-ConfigureDatabase(builder.Services, builder.Environment);
 
 var app = builder.Build();
 
