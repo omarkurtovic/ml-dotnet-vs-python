@@ -30,11 +30,11 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
             var result = await SentimentAnalysisRepository.GetAll();
             if (!result.IsSuccess)
             {
-                return BadRequest(result);
+                return BadRequest();
             }
             else
             {
-                return Ok(result);
+                return Ok(result.Data);
             }
         }
 
@@ -73,7 +73,7 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
                 var modelRes = ModelTrainer.TrainModel(trainData);
                 if (!modelRes.IsSuccess)
                 {
-                    return BadRequest(modelRes);
+                    return BadRequest();
                 }
                 return Ok(modelRes.Data);
             }
@@ -84,8 +84,8 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
         }
 
         [HttpPost]
-        [Route("SaveModel")]
-        public async Task<IActionResult> SaveModel([FromBody] SentimentAnalysisModel model)
+        [Route("Save")]
+        public async Task<IActionResult> Save([FromBody] SentimentAnalysisModel model)
         {
             var saveResult = await SentimentAnalysisRepository.Save(model);
             if (!saveResult.IsSuccess)

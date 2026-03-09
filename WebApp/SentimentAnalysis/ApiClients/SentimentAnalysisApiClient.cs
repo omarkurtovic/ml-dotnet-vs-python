@@ -68,8 +68,8 @@ namespace WebApp.SentimentAnalysis.ApiClients
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    var performance = await response.Content.ReadFromJsonAsync<Result<SentimentAnalysisModel>>();
-                    return performance!;
+                    var performance = await response.Content.ReadFromJsonAsync<SentimentAnalysisModel>();
+                    return Result<SentimentAnalysisModel>.Success(performance!);
                 }
                 else
                 {
