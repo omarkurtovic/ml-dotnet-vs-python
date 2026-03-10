@@ -1,33 +1,35 @@
-﻿using CSharpModelTrainerApi.SentimentAnalysis.Services;
+﻿using CSharpModelTrainerApi.LungCancerPrediction.Models;
+using CSharpModelTrainerApi.LungCancerPrediction.Services;
+using CSharpModelTrainerApi.SentimentAnalysis.Services;
 using Microsoft.AspNetCore.Mvc;
+using SharedCL.LungCancerPrediction.Models;
 using SharedCL.SentimentAnalysis.Models;
 using SharedCL.Shared.Enums;
-using SharedCL.Shared.Models;
 
-namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
+namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 {
+
     [ApiController]
     [Route("[controller]")]
-    public class SentimentAnalysisController : ControllerBase
+    public class LungCancerController : ControllerBase
     {
-        private SentimentAnalysisModelTrainer ModelTrainer { get; set; }
-        private SentimentAnalysisPredictionServices SentimentAnalysisPredictionServices { get; set; }
-        private SentimentAnalysisRepository SentimentAnalysisRepository { get; set; }
-
-        public SentimentAnalysisController(SentimentAnalysisModelTrainer modelTrainer, 
-            SentimentAnalysisRepository sentimentAnalysisRepository,
-            SentimentAnalysisPredictionServices sentimentAnalysisPredictionServices)
+        private LungCancerModelTrainer ModelTrainer { get; set; }
+        private LungCancerPredictionServices LungCancerPredictionServices { get; set; }
+        private LungCancerModelRepository LungCancerModelRepository { get; set; }
+        public LungCancerController(LungCancerModelTrainer modelTrainer,
+            LungCancerModelRepository lungCancerModelRepository,
+            LungCancerPredictionServices lungCancerPredictionServices)
         {
             ModelTrainer = modelTrainer;
-            SentimentAnalysisRepository = sentimentAnalysisRepository;
-            SentimentAnalysisPredictionServices = sentimentAnalysisPredictionServices;
+            LungCancerModelRepository = lungCancerModelRepository;
+            LungCancerPredictionServices = lungCancerPredictionServices ;
         }
 
         [HttpGet]
         [Route("GetModels")]
         public async Task<IActionResult> GetModels()
         {
-            var result = await SentimentAnalysisRepository.GetAll();
+            var result = await LungCancerModelRepository.GetAll();
             if (!result.IsSuccess)
             {
                 return BadRequest();
@@ -40,10 +42,10 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
 
         [HttpGet]
         [Route("Predict")]
-        public async Task<IActionResult> Predict([FromQuery]int id, [FromQuery] string review)
+        public async Task<IActionResult> Predict([FromQuery] int id, [FromQuery] string review)
         {
-            var modelResult = await SentimentAnalysisRepository.GetById(id);
-            if(!modelResult.IsSuccess)
+            var modelResult = await LungCancerModelRepository.GetById(id);
+            if (!modelResult.IsSuccess)
             {
                 return BadRequest();
             }
@@ -55,18 +57,18 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
             }
 
 
-            var prediction = SentimentAnalysisPredictionServices.Predict(model, review);
+            var prediction = LungCancerPredictionServices.Predict(model, review);
             return Ok(prediction);
         }
 
 
         [HttpPost]
         [Route("Train")]
-        public IActionResult Train([FromBody] SentimentAnalysisTrainingParams trainData)
+        public IActionResult Train([FromBody] LungCancerTrainingParams trainParams)
         {
-            if (trainData.ModelLanguage == ModelLanguage.CSharp)
+            if (trainParams.ModelLanguage == ModelLanguage.CSharp)
             {
-                var modelRes = ModelTrainer.TrainModel(trainData);
+                var modelRes = ModelTrainer.TrainModel(trainParams);
                 if (!modelRes.IsSuccess)
                 {
                     return BadRequest();
@@ -81,9 +83,9 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
 
         [HttpPost]
         [Route("Save")]
-        public async Task<IActionResult> Save([FromBody] SentimentAnalysisModel model)
+        public async Task<IActionResult> Save([FromBody] LungCancerModel model)
         {
-            var saveResult = await SentimentAnalysisRepository.Save(model);
+            var saveResult = await LungCancerModelRepository.Save(model);
             if (!saveResult.IsSuccess)
                 return BadRequest(saveResult);
 
@@ -94,8 +96,8 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
         [Route("Delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
         {
-            var modelResult = await SentimentAnalysisRepository.GetById(id);
-            if(!modelResult.IsSuccess)
+            var modelResult = await LungCancerModelRepository.GetById(id);
+            if (!modelResult.IsSuccess)
             {
                 return BadRequest();
             }
@@ -111,15 +113,15 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
                 return BadRequest();
             }
 
-            var deleteResult = await SentimentAnalysisRepository.Delete(model.Id);
-            if(!deleteResult.IsSuccess)
+            var deleteResult = await LungCancerModelRepository.Delete(model.Id);
+            if (!deleteResult.IsSuccess)
             {
                 return BadRequest();
             }
 
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
 
-            string filePath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", $"{model.Name}.zip");
+            string filePath = Path.Combine(repoRoot, "models", "lung-cancer", "csharp", $"{model.Name}.weights");
 
             if (!System.IO.File.Exists(filePath))
                 return Ok();
@@ -129,4 +131,3 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
         }
     }
 }
-

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SharedCL.SentimentAnalysis.Models
 {
-    public class TrainData
+    public class SentimentAnalysisTrainingParams
     {
         public string ModelName { get; set; } = null!;
         public ModelLanguage ModelLanguage { get; set; }

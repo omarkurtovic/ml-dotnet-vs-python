@@ -14,7 +14,7 @@ namespace WebApp.SentimentAnalysis.ApiClients
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        public async Task<Result<SentimentAnalysisModel>> TrainModelAsync(TrainData trainDto)
+        public async Task<Result<SentimentAnalysisModel>> TrainModelAsync(SentimentAnalysisTrainingParams trainDto)
         {
             try
             {

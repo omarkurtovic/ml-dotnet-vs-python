@@ -12,7 +12,7 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
     public class SentimentAnalysisModelTrainer
     {
-        public Result<SentimentAnalysisModel> TrainModel(TrainData trainData)
+        public Result<SentimentAnalysisModel> TrainModel(SentimentAnalysisTrainingParams trainData)
         {
             MLContext mlContext = new();
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));

@@ -57,7 +57,7 @@ namespace WebApp.SentimentAnalysis.ApiClients
             }
         }
 
-        public async Task<Result<SentimentAnalysisModel>> TrainModelAsync(TrainData trainDto)
+        public async Task<Result<SentimentAnalysisModel>> TrainModelAsync(SentimentAnalysisTrainingParams trainDto)
         {
             try
             {

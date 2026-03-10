@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CSharpModelTrainerApi.LungCancerPrediction.Models;
+using Microsoft.EntityFrameworkCore;
 using SharedCL.SentimentAnalysis.Models;
 
 namespace CSharpModelTrainerApi.Database
@@ -9,5 +10,6 @@ namespace CSharpModelTrainerApi.Database
         {
         }
         public virtual DbSet<SentimentAnalysisModel> SentimentAnalysisModels { get; set; }
+        public virtual DbSet<LungCancerModel> LungCancerModels { get; set; }
     }
 }

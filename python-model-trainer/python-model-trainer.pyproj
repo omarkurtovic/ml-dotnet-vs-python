@@ -23,7 +23,6 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CarValuePrediction\car_value_model_trainer.py" />
     <Compile Include="LungCancerPrediction\convert_to_onnx.py" />
     <Compile Include="LungCancerPrediction\lung_cancer_prediction_model_trainer.py" />
     <Compile Include="SentimentAnalysis\sentiment_analysis_model_trainer.py" />
@@ -34,7 +33,6 @@
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="CarValuePrediction\" />
     <Folder Include="LungCancerPrediction\" />
     <Folder Include="SentimentAnalysis\" />
   </ItemGroup>

@@ -27,7 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="CarValuePrediction\Models\" />
     <Folder Include="LungCancerPrediction\Models\" />
   </ItemGroup>
 

@@ -8,9 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="LungCancerPrediction\Models\**" />
     <Compile Remove="SentimentAnalysis\Models\**" />
+    <Content Remove="LungCancerPrediction\Models\**" />
     <Content Remove="SentimentAnalysis\Models\**" />
+    <EmbeddedResource Remove="LungCancerPrediction\Models\**" />
     <EmbeddedResource Remove="SentimentAnalysis\Models\**" />
+    <None Remove="LungCancerPrediction\Models\**" />
     <None Remove="SentimentAnalysis\Models\**" />
   </ItemGroup>
 
@@ -26,10 +30,6 @@
     <ProjectReference Include="..\csharp_model_trainer\CSharpModelTrainer.csproj" />
     <ProjectReference Include="..\ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj" />
     <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="LungCancerPrediction\Models\" />
   </ItemGroup>
 
 </Project>

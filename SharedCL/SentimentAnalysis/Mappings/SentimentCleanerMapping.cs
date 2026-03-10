@@ -1,5 +1,4 @@
 ﻿using Microsoft.ML.Transforms;
-using SharedCL.CarValuePrediction.Models;
 using SharedCL.SentimentAnalysis.Models;
 using System;
 using System.Collections.Generic;
