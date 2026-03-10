@@ -16,3 +16,4 @@ appsettings.Development.json
 /python-model-trainer/env1
 /CSharpModelTrainerApi/app.db-shm
 /CSharpModelTrainerApi/app.db-wal
+/CSharpModelTrainerApi/app.db
