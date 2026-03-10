@@ -1,14 +1,22 @@
 ﻿using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
-using SharedCL.LungCancerPrediction;
 using TorchSharp;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class LungCancerPredictionService
     {
-        public
-        private async Task<LungCancerPredictionModel> PredictWithTorchSharp(string repoRoot)
+        public async Task<SharedCL.LungCancerPrediction.Models.LungCancerPredictionModel> Predict(SharedCL.LungCancerPrediction.Models.LungCancerPredictionModel model, IFile file)
+        {
+            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
+            return modelType switch
+            {
+                LungCancerPredictionModelType.Onnx => await PredictWithOnnx(repoRoot),
+                LungCancerPredictionModelType.TorchSharp => await PredictWithTorchSharp(repoRoot),
+                _ => throw new ArgumentException("Invalid model type")
+            };
+        }
+        private async Task<SharedCL.LungCancerPrediction.Models.LungCancerPredictionModel> PredictWithTorchSharp(string repoRoot)
         {
             if (_file == null) return null!;
 
@@ -44,7 +52,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             using var probs = softmax(output, dim: 1);
             var scores = probs.data<float>().ToArray();
 
-            return new LungCancerPredictionModel
+            return new SharedCL.LungCancerPrediction.LungCancerPrediction
             {
                 BenignScore = scores[0],
                 MalignantScore = scores[1],
@@ -53,7 +61,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         }
 
 
-        private async Task<LungCancerPredictionModel> PredictWithOnnx(string repoRoot)
+        private async Task<SharedCL.LungCancerPrediction.Models.LungCancerPredictionModel> PredictWithOnnx(string repoRoot)
         {
             if (_file == null)
                 return null!;
@@ -79,7 +87,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             using var results = session.Run(inputs);
             var scores = results[0].AsEnumerable<float>().ToArray();
 
-            return new LungCancerPredictionModel
+            return new SharedCL.LungCancerPrediction.LungCancerPrediction
             {
                 BenignScore = scores[0],
                 MalignantScore = scores[1],

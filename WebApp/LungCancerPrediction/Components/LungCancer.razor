@@ -1,0 +1,46 @@
+﻿@page "/lungCancer"
+@using MudBlazor
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
+    <MudPaper Class="pa-6 mt-6" Elevation="15">
+        <MudGrid>
+            <MudItem xs="12" Style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <MudText Typo="Typo.h3">Rak pluća</MudText>
+            </MudItem>
+            <MudItem xs="4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/inference" FullWidth
+                           StartIcon="@Icons.Material.Filled.PlayArrow">
+                    Pokreni analizu
+                </MudButton>
+            </MudItem>
+            <MudItem xs="4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/trainer" FullWidth
+                           StartIcon="@Icons.Material.Filled.ModelTraining">
+                    Traniraj Model
+                </MudButton>
+            </MudItem>
+            <MudItem xs="4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/models" FullWidth
+                           StartIcon="@Icons.Material.Filled.List">
+                    Pregled Modela
+                </MudButton>
+            </MudItem>
+
+            <MudExpansionPanel Text="Opis">
+                <MudText>
+                </MudText>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Podaci">
+                <MudText>
+                </MudText>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Treniranje">
+                <MudText>
+                </MudText>
+            </MudExpansionPanel>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+

@@ -25,4 +25,8 @@
     <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="LungCancerPrediction\Models\" />
+  </ItemGroup>
+
 </Project>

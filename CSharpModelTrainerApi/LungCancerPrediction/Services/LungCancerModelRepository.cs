@@ -1,6 +1,6 @@
 ﻿using CSharpModelTrainerApi.Database;
-using CSharpModelTrainerApi.LungCancerPrediction.Models;
 using Microsoft.EntityFrameworkCore;
+using SharedCL.LungCancerPrediction.Models;
 using SharedCL.Shared.Models;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services

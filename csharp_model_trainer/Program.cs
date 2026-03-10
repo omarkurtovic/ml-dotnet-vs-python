@@ -1,5 +1,4 @@
-﻿using CSharpModelTrainer.CarValuePrediction.Services;
-using CSharpModelTrainer.LungCancerPrediction.Services;
+﻿using CSharpModelTrainer.LungCancerPrediction.Services;
 using SharedCL.LungCancerPrediction;
 
 class Program

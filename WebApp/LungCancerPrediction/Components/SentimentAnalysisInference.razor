@@ -1,0 +1,144 @@
+﻿@page "/sentimentAnalysis/inference"
+@using CsvHelper
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.ML
+@using Microsoft.ML.OnnxRuntime
+@using Microsoft.ML.OnnxRuntime.Tensors
+@using MudBlazor
+@using System.Globalization
+@using SharedCL.SentimentAnalysis.Mappings
+@using SharedCL.SentimentAnalysis.Models
+@using SharedCL.Shared.Models
+@using WebApp.SentimentAnalysis.ApiClients
+@using WebApp.SharedKernel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject CSharpSentimentAnalysisApiClient SentimentAnalysisApi
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@rendermode InteractiveServer
+
+<PageTitle>Sentiment Analysis</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
+    <MudPaper Class="pa-6 mt-6" Elevation="15">
+        <MudGrid>
+            <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
+                <MudIconButton Style="margin-left: 24px; position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
+                               Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis" />
+                <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Analiza Sentimenta</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudForm @ref="_form">
+
+                    <MudPaper Class="pa-4 mb-4">
+                        <MudTextField @bind-Value="Review" Required="true"
+                                      RequiredError="Recenzija je obavezna!" Label="Napišite ili nalijepite recenziju filma..."
+                                      Variant="Variant.Outlined" Lines="8" />
+
+                        <MudSelect T="SentimentAnalysisModel" @bind-Value="SentimentAnalysisModel" Label="Model" Variant="Variant.Outlined"
+                                   Required="true" RequiredError="Model Mašinskog Učenja je obavezan!">
+                            @foreach (var item in MLModels)
+                            {
+                                <MudSelectItem Value="@item">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        @item.Name
+                                        <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Primary"
+                                                OnClick="@(() => ShowModelDetails(item))" />
+                                    </div>
+                                    </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudPaper>
+
+                </MudForm>
+            </MudItem>
+            <MudItem xs="12" Style="display: flex; justify-content: center; gap:1rem;">
+                <MudButton OnClick="Predict" Color="Color.Primary" Variant="Variant.Filled"
+                           Size="Size.Large" Disabled="_isLoading">
+                    @if (_isLoading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Analiziranje...</span>
+                    }
+                    else
+                    {
+                        <span>Analiziraj Sentiment</span>
+                    }
+                </MudButton>
+                @if (Prediction != null)
+                {
+                    <MudAlert Severity="@(Prediction.IsPositive? Severity.Success: Severity.Error)"
+                              Variant="Variant.Filled" Dense="true" NoIcon="false">
+                        <b>@(Prediction.IsPositive ? "Positivno" : "Negativno")</b> — @((Prediction.Probability * 100).ToString("F1"))% confidence
+                    </MudAlert>
+                }
+            </MudItem>
+        </MudGrid>
+        
+    </MudPaper>
+</MudContainer>
+
+<MudPaper Class="d-flex justify-center align-center gap-4 pa-4"
+          Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;"
+          Elevation="10">
+    
+</MudPaper>
+
+    @code {
+
+    private MudForm _form = null!;
+    private string Review = "";
+
+    private List<SentimentAnalysisModel> MLModels { get; set; } = new List<SentimentAnalysisModel>();
+    private SentimentAnalysisModel SentimentAnalysisModel = null!;
+
+    private SentimentPrediction Prediction = null!;
+    private bool _isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await SentimentAnalysisApi.GetModelsAsync();
+        if (result.IsSuccess)
+        {
+            MLModels = result.Data!;
+        }
+        else
+        {
+            Snackbar.Add("Greška prilikom učitavanja modela!", Severity.Error);
+        }
+        await base.OnInitializedAsync();
+    }
+
+    private async Task Predict()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        _isLoading = true;
+        StateHasChanged();
+
+        Prediction = await SentimentAnalysisApi.Predict(SentimentAnalysisModel.Id, Review);
+
+        _isLoading = false;
+    }
+
+    private async Task ShowModelDetails(SentimentAnalysisModel model)
+    {
+        var parameters = new DialogParameters<SentimentAnalysisInfoDialog>
+        {
+            { x => x.Model, model }
+        };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
+        await DialogService.ShowAsync<SentimentAnalysisInfoDialog>("Detalji Modela", parameters, options);
+    }
+
+    private string GetRepoPath()
+    {
+        return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
+    }
+}

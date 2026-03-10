@@ -1,5 +1,5 @@
-﻿using CSharpModelTrainerApi.LungCancerPrediction.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using SharedCL.LungCancerPrediction.Models;
 using SharedCL.SentimentAnalysis.Models;
 
 namespace CSharpModelTrainerApi.Database

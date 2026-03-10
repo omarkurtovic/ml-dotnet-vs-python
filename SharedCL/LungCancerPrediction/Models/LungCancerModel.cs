@@ -1,6 +1,6 @@
 ﻿using SharedCL.Shared.Enums;
 
-namespace CSharpModelTrainerApi.LungCancerPrediction.Models
+namespace SharedCL.LungCancerPrediction.Models
 {
     public class LungCancerModel
     {

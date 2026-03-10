@@ -1,5 +1,4 @@
-﻿using CSharpModelTrainerApi.LungCancerPrediction.Models;
-using CSharpModelTrainerApi.LungCancerPrediction.Services;
+﻿using CSharpModelTrainerApi.LungCancerPrediction.Services;
 using CSharpModelTrainerApi.SentimentAnalysis.Services;
 using Microsoft.AspNetCore.Mvc;
 using SharedCL.LungCancerPrediction.Models;
@@ -14,15 +13,15 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
     public class LungCancerController : ControllerBase
     {
         private LungCancerModelTrainer ModelTrainer { get; set; }
-        private LungCancerPredictionServices LungCancerPredictionServices { get; set; }
+        private LungCancerPredictionService LungCancerPredictionService { get; set; }
         private LungCancerModelRepository LungCancerModelRepository { get; set; }
         public LungCancerController(LungCancerModelTrainer modelTrainer,
             LungCancerModelRepository lungCancerModelRepository,
-            LungCancerPredictionServices lungCancerPredictionServices)
+            LungCancerPredictionService lungCancerPredictionService)
         {
             ModelTrainer = modelTrainer;
             LungCancerModelRepository = lungCancerModelRepository;
-            LungCancerPredictionServices = lungCancerPredictionServices ;
+            LungCancerPredictionService = lungCancerPredictionService;
         }
 
         [HttpGet]
@@ -57,7 +56,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             }
 
 
-            var prediction = LungCancerPredictionServices.Predict(model, review);
+            var prediction = LungCancerPredictionService.Predict(model, review);
             return Ok(prediction);
         }
 

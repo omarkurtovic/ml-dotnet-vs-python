@@ -1,0 +1,103 @@
+﻿@using MudBlazor
+@using SharedCL.LungCancerPrediction.Models
+@using WebApp.LungCancerPrediction.ApiClients
+@inject ISnackbar Snackbar
+@inject CSharpLungCancerApiClient LungCancerApi
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />Performanse Model: @Model.Name</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Class="mb-3">Jezik: @Model.Language</MudText>
+        @if (Model != null)
+        {
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Trening / Validacija</b></MudText>
+                    <MudSimpleTable Hover="true" Dense="true">
+                        <tbody>
+                            <tr><td>Preciznost (Trening)</td><td>@(Model.TrainingAccuracy == null ? "" : Math.Round(Model.TrainingAccuracy.Value * 100, 2))%</td></tr>
+                            <tr><td>Preciznost (Validacija)</td><td>@(Model.ValidationAccuracy == null ? "" : Math.Round(Model.ValidationAccuracy.Value * 100, 2))%</td></tr>
+                            <tr><td>Gubitak (Validacija)</td><td>@(Model.ValidationLoss == null ? "" : Math.Round(Model.ValidationLoss.Value, 4).ToString())</td></tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Benigno</b></MudText>
+                    <MudSimpleTable Hover="true" Dense="true">
+                        <tbody>
+                            <tr><td>Preciznost</td><td>@(Model.BenignPrecision == null ? "" : Math.Round(Model.BenignPrecision.Value * 100, 2))%</td></tr>
+                            <tr><td>Recall</td><td>@(Model.BenignRecall == null ? "" : Math.Round(Model.BenignRecall.Value * 100, 2))%</td></tr>
+                            <tr><td>F1 Score</td><td>@(Model.BenignF1Score == null ? "" : Math.Round(Model.BenignF1Score.Value * 100, 2))%</td></tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Maligno</b></MudText>
+                    <MudSimpleTable Hover="true" Dense="true">
+                        <tbody>
+                            <tr><td>Preciznost</td><td>@(Model.MalignantPrecision == null ? "" : Math.Round(Model.MalignantPrecision.Value * 100, 2))%</td></tr>
+                            <tr><td>Recall</td><td>@(Model.MalignantRecall == null ? "" : Math.Round(Model.MalignantRecall.Value * 100, 2))%</td></tr>
+                            <tr><td>F1 Score</td><td>@(Model.MalignantF1Score == null ? "" : Math.Round(Model.MalignantF1Score.Value * 100, 2))%</td></tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Normalno</b></MudText>
+                    <MudSimpleTable Hover="true" Dense="true">
+                        <tbody>
+                            <tr><td>Preciznost</td><td>@(Model.NormalPrecision == null ? "" : Math.Round(Model.NormalPrecision.Value * 100, 2))%</td></tr>
+                            <tr><td>Recall</td><td>@(Model.NormalRecall == null ? "" : Math.Round(Model.NormalRecall.Value * 100, 2))%</td></tr>
+                            <tr><td>F1 Score</td><td>@(Model.NormalF1Score == null ? "" : Math.Round(Model.NormalF1Score.Value * 100, 2))%</td></tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Makro Prosjek</b></MudText>
+                    <MudSimpleTable Hover="true" Dense="true">
+                        <tbody>
+                            <tr><td>Preciznost</td><td>@(Model.MacroPrecision == null ? "" : Math.Round(Model.MacroPrecision.Value * 100, 2))%</td></tr>
+                            <tr><td>Recall</td><td>@(Model.MacroRecall == null ? "" : Math.Round(Model.MacroRecall.Value * 100, 2))%</td></tr>
+                            <tr><td>F1 Score</td><td>@(Model.MacroF1Score == null ? "" : Math.Round(Model.MacroF1Score.Value * 100, 2))%</td></tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+    <DialogActions>
+        @if (ShowSaveOption)
+        {
+            <MudButton OnClick="@Save" Color="Color.Primary" Variant="Variant.Filled">Sačuvaj</MudButton>
+        }
+        <MudButton OnClick="@(() => MudDialog.Close())" Color="Color.Primary" Variant="Variant.Outlined">Zatvori</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public LungCancerModel Model { get; set; } = null!;
+    [Parameter] public bool ShowSaveOption { get; set; } = false;
+
+
+    private async Task Save()
+    {
+        var result = await LungCancerApi.SaveModelAsync(Model);
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Model sačuvan!", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Greška prilikom sačuvanja modela!", Severity.Error);
+        }
+    }
+}

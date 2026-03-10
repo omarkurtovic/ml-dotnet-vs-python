@@ -1,5 +1,4 @@
-﻿using CSharpModelTrainerApi.LungCancerPrediction.Models;
-using Microsoft.ML;
+﻿using Microsoft.ML;
 using SharedCL.LungCancerPrediction.Models;
 using SharedCL.SentimentAnalysis.Enums;
 using SharedCL.SentimentAnalysis.Mappings;

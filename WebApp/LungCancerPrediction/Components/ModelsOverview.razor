@@ -1,0 +1,130 @@
+﻿@page "/lungCancer/models"
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using SharedCL.LungCancerPrediction.Models
+@using SharedCL.Shared.Enums
+@using WebApp.LungCancerPrediction.ApiClients
+@using WebApp.Shared.Components
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject CSharpLungCancerApiClient LungCancerApi
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@rendermode InteractiveServer
+
+<PageTitle>Pregled Modela</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16">
+    <MudPaper Class="pa-6 mt-6" Elevation="15">
+
+        <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
+            <MudIconButton Style="position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
+                           Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer" />
+            <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Pregled Modela</MudText>
+        </MudItem>
+        <MudItem xs="12">
+
+            @if (_isLoading)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+            }
+            else if (_models.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info">Nema dostupnih modela.</MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="LungCancerModel" Items="_models"
+                             SortMode="SortMode.Multiple" Filterable="true"
+                             Hover="true" Striped="true" Elevation="0">
+                    <Columns>
+                        <PropertyColumn Property="x => x.Name" Title="Naziv" Sortable="true" />
+                        <PropertyColumn Property="x => x.Language" Title="Jezik" Sortable="true">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small"
+                                         Color="@(context.Item.Language == ModelLanguage.CSharp ? Color.Primary : Color.Secondary)">
+                                    @context.Item.Language.ToString()
+                                </MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.ValidationAccuracy" Title="Preciznost" Sortable="true" />
+                        <TemplateColumn Title="" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Primary"
+                                               OnClick="@(() => ShowModelDetails(context.Item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                               OnClick="@(() => ConfirmDelete(context.Item))" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="LungCancerModel" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+
+
+        </MudItem>
+    </MudPaper>
+</MudContainer>
+
+@code {
+
+    private List<LungCancerModel> _models = [];
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadModels();
+    }
+
+    private async Task LoadModels()
+    {
+        _isLoading = true;
+        var result = await LungCancerApi.GetModelsAsync();
+        _models = result.IsSuccess ? result.Data! : [];
+        _isLoading = false;
+    }
+
+    private async Task ShowModelDetails(LungCancerModel model)
+    {
+        var parameters = new DialogParameters<LungCancerInfoDialog>
+        {
+            { x => x.Model, model }
+        };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
+        await DialogService.ShowAsync<LungCancerInfoDialog>("Detalji Modela", parameters, options);
+    }
+
+    private async Task ConfirmDelete(LungCancerModel model)
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.ContentText, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"?" },
+            { x => x.ConfirmText, "Da, obriši" },
+            { x => x.CancelText, "Odustani" }
+        };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Brisanje Modela", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+            await DeleteModel(model);
+    }
+
+    private async Task DeleteModel(LungCancerModel model)
+    {
+        var result = await LungCancerApi.DeleteModelAsync(model.Id);
+        if (result.IsSuccess)
+        {
+            Snackbar.Add($"Model \"{model.Name}\" je uspješno obrisan.", Severity.Success);
+            await LoadModels();
+        }
+        else
+        {
+            Snackbar.Add($"Greška pri brisanju modela \"{model.Name}\".", Severity.Error);
+        }
+    }
+}
+

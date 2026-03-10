@@ -1,4 +1,4 @@
-﻿namespace SharedCL.LungCancerPrediction
+﻿namespace SharedCL.LungCancerPrediction.Models
 {
     public class LungCancerPredictionModel
     {
