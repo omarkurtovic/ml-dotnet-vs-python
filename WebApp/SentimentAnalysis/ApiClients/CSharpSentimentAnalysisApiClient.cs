@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 
 namespace WebApp.SentimentAnalysis.ApiClients
 {
-    public class SentimentAnalysisApiClient(HttpClient httpClient)
+    public class CSharpSentimentAnalysisApiClient(HttpClient httpClient)
     {
         private readonly HttpClient _httpClient = httpClient;
 

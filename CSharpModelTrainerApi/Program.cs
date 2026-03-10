@@ -32,8 +32,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapDefaultEndpoints();
-
 app.MapControllers();
 
 InitializeDatabase(app);

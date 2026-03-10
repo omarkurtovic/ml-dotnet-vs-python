@@ -54,12 +54,8 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
                 return NotFound();
             }
 
-            if(model.Language != ModelLanguage.CSharp)
-            {
-                return BadRequest();
-            }
 
-            var prediction = SentimentAnalysisPredictionServices.PredictWithMlNet(model, review);
+            var prediction = SentimentAnalysisPredictionServices.Predict(model, review);
             return Ok(prediction);
         }
 

@@ -4,10 +4,12 @@
 @using SharedCL.SentimentAnalysis.Enums
 @using SharedCL.SentimentAnalysis.Models
 @using SharedCL.Shared.Enums
+@using SharedCL.Shared.Models
 @using WebApp.SentimentAnalysis.ApiClients
 @using WebApp.SharedKernel
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
-@inject SentimentAnalysisApiClient SentimentAnalysisApi
+@inject CSharpSentimentAnalysisApiClient CSharpSentimentAnalysisApi
+@inject PythonSentimentAnalysisApiClient PythonSentimentAnalysisApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer
@@ -103,7 +105,15 @@
         _isLoading = true;
         StateHasChanged();
 
-        var result = await SentimentAnalysisApi.TrainModelAsync(sentimentAnalysisTrainDto);
+        Result<SentimentAnalysisModel> result;
+        if(sentimentAnalysisTrainDto.ModelLanguage == ModelLanguage.CSharp)
+        {
+            result = await CSharpSentimentAnalysisApi.TrainModelAsync(sentimentAnalysisTrainDto);
+        }
+        else
+        {
+            result = await PythonSentimentAnalysisApi.TrainModelAsync(sentimentAnalysisTrainDto);
+        }
 
         _isLoading = false;
 

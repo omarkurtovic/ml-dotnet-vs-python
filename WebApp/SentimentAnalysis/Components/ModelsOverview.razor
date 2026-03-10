@@ -7,7 +7,7 @@
 @using WebApp.SentimentAnalysis.ApiClients
 @using WebApp.Shared.Components
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
-@inject SentimentAnalysisApiClient SentimentAnalysisApi
+@inject CSharpSentimentAnalysisApiClient SentimentAnalysisApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer
@@ -17,66 +17,70 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mb-16">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
 
-        <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px;" Class="mb-4">
+        <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
             <MudIconButton Style="position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
                            Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis" />
             <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Pregled Modela</MudText>
         </MudItem>
+        <MudItem xs="12">
 
-        @if (_isLoading)
-        {
-            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
-        }
-        else if (_models.Count == 0)
-        {
-            <MudAlert Severity="Severity.Info">Nema dostupnih modela.</MudAlert>
-        }
-        else
-        {
-            <MudDataGrid T="SentimentAnalysisModel" Items="_models"
-                         SortMode="SortMode.Multiple" Filterable="true"
-                         Hover="true" Striped="true" Elevation="0">
-                <Columns>
-                    <PropertyColumn Property="x => x.Name" Title="Naziv" Sortable="true" />
-                    <PropertyColumn Property="x => x.Language" Title="Jezik" Sortable="true">
-                        <CellTemplate>
-                            <MudChip T="string" Size="Size.Small"
-                                     Color="@(context.Item.Language == ModelLanguage.CSharp ? Color.Primary : Color.Secondary)">
-                                @context.Item.Language.ToString()
-                            </MudChip>
-                        </CellTemplate>
-                    </PropertyColumn>
-                    <PropertyColumn Property="x => x.TrainerAlgorithm"  Title="Algoritam"  Sortable="true" />
-                    <PropertyColumn Property="x => x.TestingAccuracy"   Title="Test Acc."  Sortable="true">
-                        <CellTemplate>
-                            @if (context.Item.TestingAccuracy.HasValue)
-                            {
-                                <MudText>@($"{context.Item.TestingAccuracy.Value * 100:F1}%")</MudText>
-                            }
-                        </CellTemplate>
-                    </PropertyColumn>
-                    <PropertyColumn Property="x => x.TestingF1Score"    Title="Test F1"    Sortable="true">
-                        <CellTemplate>
-                            @if (context.Item.TestingF1Score.HasValue)
-                            {
-                                <MudText>@($"{context.Item.TestingF1Score.Value * 100:F1}%")</MudText>
-                            }
-                        </CellTemplate>
-                    </PropertyColumn>
-                    <TemplateColumn Title="" Sortable="false" Filterable="false">
-                        <CellTemplate>
-                            <MudIconButton Icon="@Icons.Material.Filled.Info"   Color="Color.Primary"
-                                           OnClick="@(() => ShowModelDetails(context.Item))" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                           OnClick="@(() => ConfirmDelete(context.Item))" />
-                        </CellTemplate>
-                    </TemplateColumn>
-                </Columns>
-                <PagerContent>
-                    <MudDataGridPager T="SentimentAnalysisModel" />
-                </PagerContent>
-            </MudDataGrid>
-        }
+            @if (_isLoading)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+            }
+            else if (_models.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info">Nema dostupnih modela.</MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="SentimentAnalysisModel" Items="_models"
+                             SortMode="SortMode.Multiple" Filterable="true"
+                             Hover="true" Striped="true" Elevation="0">
+                    <Columns>
+                        <PropertyColumn Property="x => x.Name" Title="Naziv" Sortable="true" />
+                        <PropertyColumn Property="x => x.Language" Title="Jezik" Sortable="true">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small"
+                                         Color="@(context.Item.Language == ModelLanguage.CSharp ? Color.Primary : Color.Secondary)">
+                                    @context.Item.Language.ToString()
+                                </MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.TrainerAlgorithm" Title="Algoritam" Sortable="true" />
+                        <PropertyColumn Property="x => x.TestingAccuracy" Title="Test Acc." Sortable="true">
+                            <CellTemplate>
+                                @if (context.Item.TestingAccuracy.HasValue)
+                                {
+                                    <MudText>@($"{context.Item.TestingAccuracy.Value * 100:F1}%")</MudText>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.TestingF1Score" Title="Test F1" Sortable="true">
+                            <CellTemplate>
+                                @if (context.Item.TestingF1Score.HasValue)
+                                {
+                                    <MudText>@($"{context.Item.TestingF1Score.Value * 100:F1}%")</MudText>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Primary"
+                                               OnClick="@(() => ShowModelDetails(context.Item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                               OnClick="@(() => ConfirmDelete(context.Item))" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="SentimentAnalysisModel" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+
+
+        </MudItem>
     </MudPaper>
 </MudContainer>
 

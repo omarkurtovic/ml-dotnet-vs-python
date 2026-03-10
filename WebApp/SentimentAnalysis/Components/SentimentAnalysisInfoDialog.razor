@@ -2,13 +2,14 @@
 @using SharedCL.SentimentAnalysis.Models
 @using WebApp.SentimentAnalysis.ApiClients
 @inject ISnackbar Snackbar
-@inject SentimentAnalysisApiClient SentimentAnalysisApi
+@inject CSharpSentimentAnalysisApiClient SentimentAnalysisApi
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />Performanse Modela</MudText>
+        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />Performanse Model: @Model.Name</MudText>
     </TitleContent>
     <DialogContent>
+        <MudText>Algoritam: @Model.TrainerAlgorithm</MudText>
         @if (Model != null)
         {
             <MudGrid>

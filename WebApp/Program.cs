@@ -17,11 +17,18 @@ builder.Services.AddSingleton<CarPricePredictionService,  CarPricePredictionServ
 builder.Services.AddSingleton<LungCancerPredictionService, LungCancerPredictionService>();
 
 #pragma warning disable EXTEXP0001
-builder.Services.AddHttpClient<SentimentAnalysisApiClient>(client =>
+builder.Services.AddHttpClient<CSharpSentimentAnalysisApiClient>(client =>
 {
     // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
     // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
     client.BaseAddress = new("https+http://apiservice");
+    client.Timeout = TimeSpan.FromMinutes(30);
+}).RemoveAllResilienceHandlers();
+
+
+builder.Services.AddHttpClient<PythonSentimentAnalysisApiClient>(client =>
+{
+    client.BaseAddress = new("https+http://pythonapi");
     client.Timeout = TimeSpan.FromMinutes(30);
 }).RemoveAllResilienceHandlers();
 #pragma warning restore EXTEXP0001

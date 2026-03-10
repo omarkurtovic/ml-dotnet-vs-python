@@ -10,7 +10,21 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
     public class SentimentAnalysisPredictionServices
     {
-        public SentimentPrediction PredictWithMlNet(SentimentAnalysisModel model, string review)
+
+        public SentimentPrediction Predict(SentimentAnalysisModel model, string review)
+        {
+            if(model.Language == SharedCL.Shared.Enums.ModelLanguage.CSharp)
+            {
+                return PredictWithMlNet(model, review);
+            }
+            else if(model.Language == SharedCL.Shared.Enums.ModelLanguage.Python)
+            {
+                return PredictWithOnnx(model, review);
+            }
+
+            return new SentimentPrediction();
+        }
+        private SentimentPrediction PredictWithMlNet(SentimentAnalysisModel model, string review)
         {
             MLContext mlContext = new MLContext(); 
 
@@ -30,9 +44,10 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
         }
 
 
-        public SentimentPrediction PredictWithOnnx(string repoRoot, string review)
+        public SentimentPrediction PredictWithOnnx(SentimentAnalysisModel model, string review)
         {
-            var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "python", "python_rf_sentiment_analysis.onnx");
+            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
+            var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "python", $"{model.Name}.onnx");
 
             var features = new string[1];
             features[0] = review;
