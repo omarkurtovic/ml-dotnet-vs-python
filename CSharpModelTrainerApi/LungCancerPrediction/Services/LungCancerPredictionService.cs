@@ -1,29 +1,40 @@
-﻿using Microsoft.ML.OnnxRuntime;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
+using SharedCL.LungCancerPrediction.Models;
 using TorchSharp;
+using static TorchSharp.torch.nn;
+using static TorchSharp.torch.nn.functional;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class LungCancerPredictionService
     {
-        public async Task<SharedCL.LungCancerPrediction.Models.LungCancerPredictionModel> Predict(SharedCL.LungCancerPrediction.Models.LungCancerPredictionModel model, IFile file)
+        public async Task<LungCancerPredictionModel> Predict(LungCancerModel model, IBrowserFile file)
         {
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-            return modelType switch
+            if(model.Language == SharedCL.Shared.Enums.ModelLanguage.CSharp)
             {
-                LungCancerPredictionModelType.Onnx => await PredictWithOnnx(repoRoot),
-                LungCancerPredictionModelType.TorchSharp => await PredictWithTorchSharp(repoRoot),
-                _ => throw new ArgumentException("Invalid model type")
-            };
+                return await PredictWithTorchSharp(repoRoot, file);
+            }
+            else if(model.Language == SharedCL.Shared.Enums.ModelLanguage.Python)
+            {
+                return await PredictWithOnnx(repoRoot, file);
+            }
+            else
+            {
+                throw new ArgumentException("Invalid model language");
+            }
         }
-        private async Task<SharedCL.LungCancerPrediction.Models.LungCancerPredictionModel> PredictWithTorchSharp(string repoRoot)
+
+        private async Task<LungCancerPredictionModel> PredictWithTorchSharp(string repoRoot, IBrowserFile file)
         {
-            if (_file == null) return null!;
+            if (file == null) return null!;
 
             const int imgSize = 256;
             var modelPath = Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", "lung-cancer-model.weights");
 
-            var resizedFile = await _file.RequestImageFileAsync("image/png", imgSize, imgSize);
+            var resizedFile = await file.RequestImageFileAsync("image/png", imgSize, imgSize);
             using var stream = resizedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
             using var image = await SixLabors.ImageSharp.Image.LoadAsync<SixLabors.ImageSharp.PixelFormats.L8>(stream);
 
@@ -52,7 +63,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             using var probs = softmax(output, dim: 1);
             var scores = probs.data<float>().ToArray();
 
-            return new SharedCL.LungCancerPrediction.LungCancerPrediction
+            return new LungCancerPredictionModel
             {
                 BenignScore = scores[0],
                 MalignantScore = scores[1],
@@ -61,16 +72,16 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         }
 
 
-        private async Task<SharedCL.LungCancerPrediction.Models.LungCancerPredictionModel> PredictWithOnnx(string repoRoot)
+        private async Task<LungCancerPredictionModel> PredictWithOnnx(string repoRoot, IBrowserFile file)
         {
-            if (_file == null)
+            if (file == null)
                 return null!;
 
             var modelPath = Path.Combine(repoRoot, "models", "lung-cancer-prediction", "python", "lung_cancer_prediction.onnx");
 
             const int imgSize = 256;
 
-            var resizedFile = await _file.RequestImageFileAsync("image/png", imgSize, imgSize);
+            var resizedFile = await file.RequestImageFileAsync("image/png", imgSize, imgSize);
             using var stream = resizedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
             using var image = await SixLabors.ImageSharp.Image.LoadAsync<SixLabors.ImageSharp.PixelFormats.L8>(stream);
 
@@ -87,7 +98,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             using var results = session.Run(inputs);
             var scores = results[0].AsEnumerable<float>().ToArray();
 
-            return new SharedCL.LungCancerPrediction.LungCancerPrediction
+            return new LungCancerPredictionModel
             {
                 BenignScore = scores[0],
                 MalignantScore = scores[1],

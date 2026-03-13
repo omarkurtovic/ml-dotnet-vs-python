@@ -1,7 +1,6 @@
 using MudBlazor.Services;
-using WebApp.CarValuePrediction.Services;
 using WebApp.Components;
-using WebApp.LungCancerPrediction.Services;
+using WebApp.LungCancerPrediction.ApiClients;
 using WebApp.SentimentAnalysis.ApiClients;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,8 +12,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
 
-builder.Services.AddSingleton<CarPricePredictionService,  CarPricePredictionService>();
-builder.Services.AddSingleton<LungCancerPredictionService, LungCancerPredictionService>();
 
 #pragma warning disable EXTEXP0001
 builder.Services.AddHttpClient<CSharpSentimentAnalysisApiClient>(client =>
@@ -27,6 +24,21 @@ builder.Services.AddHttpClient<CSharpSentimentAnalysisApiClient>(client =>
 
 
 builder.Services.AddHttpClient<PythonSentimentAnalysisApiClient>(client =>
+{
+    client.BaseAddress = new("https+http://pythonapi");
+    client.Timeout = TimeSpan.FromMinutes(30);
+}).RemoveAllResilienceHandlers();
+
+builder.Services.AddHttpClient<CSharpLungCancerApiClient>(client =>
+{
+    // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
+    // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
+    client.BaseAddress = new("https+http://apiservice");
+    client.Timeout = TimeSpan.FromMinutes(30);
+}).RemoveAllResilienceHandlers();
+
+
+builder.Services.AddHttpClient<PythonLungCancerApiClient>(client =>
 {
     client.BaseAddress = new("https+http://pythonapi");
     client.Timeout = TimeSpan.FromMinutes(30);

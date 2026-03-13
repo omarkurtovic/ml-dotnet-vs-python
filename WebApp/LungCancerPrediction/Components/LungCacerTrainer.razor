@@ -1,56 +1,47 @@
-﻿@page "/sentimentAnalysis/trainer"
+﻿@page "/lungCancer/trainer"
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
-@using SharedCL.SentimentAnalysis.Enums
-@using SharedCL.SentimentAnalysis.Models
+@using SharedCL.LungCancerPrediction.Models
 @using SharedCL.Shared.Enums
 @using SharedCL.Shared.Models
-@using WebApp.SentimentAnalysis.ApiClients
+@using WebApp.LungCancerPrediction.ApiClients
 @using WebApp.SharedKernel
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
-@inject CSharpSentimentAnalysisApiClient CSharpSentimentAnalysisApi
-@inject PythonSentimentAnalysisApiClient PythonSentimentAnalysisApi
+@inject CSharpLungCancerApiClient CSharpLungCancerApi
+@inject PythonLungCancerApiClient PythonLungCancerApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer
 
-<PageTitle>Treniranje Analize Sentimenta</PageTitle>
+<PageTitle>Treniranje Modela za Rak Pluća</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
         <MudGrid>
             <MudItem xs="12" Style="position: relative; display: flex; align-items: center;">
                 <MudIconButton Style="margin-left: 24px; position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
-                               Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis" />
+                               Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer" />
                 <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Treniranje Modela</MudText>
             </MudItem>
             <MudItem xs="12">
-        <MudForm @ref="_form">
-            <MudPaper Outlined="true" Class="pa-4 mb-4">
+                <MudForm @ref="_form">
+                    <MudPaper Outlined="true" Class="pa-4 mb-4">
                         <MudTextField @bind-Value="trainingParams.ModelName" Required="true"
                                       RequiredError="Naziv modela je obavezan!" Variant="Variant.Outlined" Label="Naziv modela" Class="mb-4" />
-                
-                    <MudSelect T="ModelLanguage" @bind-Value="trainingParams.ModelLanguage" Label="Jezik modela"
-                                Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Class="mb-4">
-                        @foreach (var item in Enum.GetValues<ModelLanguage>())
-                        {
-                            <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
-                        }
-                    </MudSelect>
-                        <MudSelect T="TrainerAlgorithm" @bind-Value="trainingParams.Algorithm" Label="Algoritam"
-                                   Variant="Variant.Outlined" HelperText="@AlgorithmDescription">
-                            @foreach (var algo in Enum.GetValues<TrainerAlgorithm>())
+
+                        <MudSelect T="ModelLanguage" @bind-Value="trainingParams.ModelLanguage" Label="Jezik modela"
+                                   Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Class="mb-4">
+                            @foreach (var item in Enum.GetValues<ModelLanguage>())
                             {
-                                <MudSelectItem Value="@algo">@algo.ToString()</MudSelectItem>
+                                <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
                             }
                         </MudSelect>
-
                     </MudPaper>
                 </MudForm>
             </MudItem>
             <MudItem xs="12" Style="display: flex; justify-content: center; gap:1rem;">
                 <MudButton OnClick="TrainModel" Color="Color.Primary" Variant="Variant.Filled"
-                            Size="Size.Large" Disabled="_isLoading">
+                           Size="Size.Large" Disabled="_isLoading">
                     @if (_isLoading)
                     {
                         <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
@@ -68,9 +59,6 @@
                     </MudButton>
                 }
             </MudItem>
-
-
-
         </MudGrid>
     </MudPaper>
 </MudContainer>
@@ -79,21 +67,11 @@
 @code {
 
     private MudForm _form = null!;
-    private SentimentAnalysisTrainingParams trainingParams = new SentimentAnalysisTrainingParams();
+    private LungCancerTrainingParams trainingParams = new LungCancerTrainingParams();
 
-    private SentimentAnalysisModel? model;
+    private LungCancerModel? model;
     private bool _isLoading = false;
 
-    private string AlgorithmDescription => trainingParams.Algorithm switch
-    {
-        TrainerAlgorithm.SdcaLogisticRegression  => "Brz i stabilan. Dobar za velike skupove podataka.",
-        TrainerAlgorithm.LbfgsLogisticRegression => "Visoka preciznost, sporije treniranje.",
-        TrainerAlgorithm.AveragedPerceptron      => "Najbrži algoritam. Osnovan, ali efektivan za tekst.",
-        TrainerAlgorithm.LinearSvm               => "SVM klasifikator. Dobar za binarne probleme.",
-        TrainerAlgorithm.FastTree                => "Gradijentno pojačana stabla. Visoka preciznost, sporo treniranje.",
-        TrainerAlgorithm.FastForest              => "Nasumična šuma. Otporan na pretreniranje.",
-        _ => ""
-    };
 
 
     private async Task TrainModel()
@@ -105,14 +83,14 @@
         _isLoading = true;
         StateHasChanged();
 
-        Result<SentimentAnalysisModel> result;
-        if(trainingParams.ModelLanguage == ModelLanguage.CSharp)
+        Result<LungCancerModel> result;
+        if (trainingParams.ModelLanguage == ModelLanguage.CSharp)
         {
-            result = await CSharpSentimentAnalysisApi.TrainModelAsync(trainingParams);
+            result = await CSharpLungCancerApi.TrainModelAsync(trainingParams);
         }
         else
         {
-            result = await PythonSentimentAnalysisApi.TrainModelAsync(trainingParams);
+            result = await PythonLungCancerApi.TrainModelAsync(trainingParams);
         }
 
         _isLoading = false;
@@ -131,13 +109,13 @@
 
     private async Task ShowModelDetails()
     {
-        var parameters = new DialogParameters<SentimentAnalysisInfoDialog>
+        var parameters = new DialogParameters<LungCancerInfoDialog>
         {
             { x => x.Model, model },
             { x => x.ShowSaveOption, true }
         };
 
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
-        await DialogService.ShowAsync<SentimentAnalysisInfoDialog>("Detalji Modela", parameters, options);
+        await DialogService.ShowAsync<LungCancerInfoDialog>("Detalji Modela", parameters, options);
     }
 }

@@ -1,51 +1,48 @@
-﻿@page "/sentimentAnalysis/inference"
-@using CsvHelper
+﻿@page "/lungCancer/inference"
 @using Microsoft.AspNetCore.Components.Web
-@using Microsoft.ML
-@using Microsoft.ML.OnnxRuntime
-@using Microsoft.ML.OnnxRuntime.Tensors
 @using MudBlazor
 @using System.Globalization
-@using SharedCL.SentimentAnalysis.Mappings
-@using SharedCL.SentimentAnalysis.Models
+@using SharedCL.LungCancerPrediction.Models
 @using SharedCL.Shared.Models
-@using WebApp.SentimentAnalysis.ApiClients
+@using WebApp.LungCancerPrediction.ApiClients
 @using WebApp.SharedKernel
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
-@inject CSharpSentimentAnalysisApiClient SentimentAnalysisApi
+@using Microsoft.AspNetCore.Components.Forms
+@inject CSharpLungCancerApiClient CSharpLungCancerApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer
 
-<PageTitle>Sentiment Analysis</PageTitle>
+<PageTitle>Rak pluća </PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
         <MudGrid>
             <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
                 <MudIconButton Style="margin-left: 24px; position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
-                               Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis" />
-                <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Analiza Sentimenta</MudText>
+                               Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer" />
+                <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Analiza Rak Pluća</MudText>
             </MudItem>
             <MudItem xs="12">
                 <MudForm @ref="_form">
 
                     <MudPaper Class="pa-4 mb-4">
-                        <MudTextField @bind-Value="Review" Required="true"
-                                      RequiredError="Recenzija je obavezna!" Label="Napišite ili nalijepite recenziju filma..."
-                                      Variant="Variant.Outlined" Lines="8" />
+                        <MudPaper Outlined="true" Class="pa-4 mb-4">
+                            <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Please upload an image</b></MudText>
+                            <MudFileUpload T="IBrowserFile" @bind-Files="_file" Required="true" RequiredError="An image is required!" Accept=".png,.jpg,.jpeg" Hidden="false" />
+                        </MudPaper>
 
-                        <MudSelect T="SentimentAnalysisModel" @bind-Value="SentimentAnalysisModel" Label="Model" Variant="Variant.Outlined"
+                        <MudSelect T="LungCancerModel" @bind-Value="SelectedModel" Label="Model" Variant="Variant.Outlined"
                                    Required="true" RequiredError="Model Mašinskog Učenja je obavezan!">
-                            @foreach (var item in MLModels)
+                            @foreach (var item in Models)
                             {
                                 <MudSelectItem Value="@item">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         @item.Name
                                         <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Primary"
-                                                OnClick="@(() => ShowModelDetails(item))" />
+                                                       OnClick="@(() => ShowModelDetails(item))" />
                                     </div>
-                                    </MudSelectItem>
+                                </MudSelectItem>
                             }
                         </MudSelect>
                     </MudPaper>
@@ -67,40 +64,39 @@
                 </MudButton>
                 @if (Prediction != null)
                 {
-                    <MudAlert Severity="@(Prediction.IsPositive? Severity.Success: Severity.Error)"
-                              Variant="Variant.Filled" Dense="true" NoIcon="false">
-                        <b>@(Prediction.IsPositive ? "Positivno" : "Negativno")</b> — @((Prediction.Probability * 100).ToString("F1"))% confidence
+                    <MudAlert Variant="Variant.Filled" Dense="true" NoIcon="false">
+                        <b>@Prediction.PredictedLabel</b>
                     </MudAlert>
                 }
             </MudItem>
         </MudGrid>
-        
+
     </MudPaper>
 </MudContainer>
 
 <MudPaper Class="d-flex justify-center align-center gap-4 pa-4"
           Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;"
           Elevation="10">
-    
+
 </MudPaper>
 
-    @code {
+@code {
 
     private MudForm _form = null!;
-    private string Review = "";
+    private IBrowserFile? _file = null;
 
-    private List<SentimentAnalysisModel> MLModels { get; set; } = new List<SentimentAnalysisModel>();
-    private SentimentAnalysisModel SentimentAnalysisModel = null!;
+    private List<LungCancerModel> Models { get; set; } = new List<LungCancerModel>();
+    private LungCancerModel SelectedModel = null!;
 
-    private SentimentPrediction Prediction = null!;
+    private LungCancerPredictionModel Prediction = null!;
     private bool _isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await SentimentAnalysisApi.GetModelsAsync();
+        var result = await CSharpLungCancerApi.GetModelsAsync();
         if (result.IsSuccess)
         {
-            MLModels = result.Data!;
+            Models = result.Data!;
         }
         else
         {
@@ -121,24 +117,19 @@
         _isLoading = true;
         StateHasChanged();
 
-        Prediction = await SentimentAnalysisApi.Predict(SentimentAnalysisModel.Id, Review);
+        Prediction = await CSharpLungCancerApi.PredictAsync(SelectedModel.Id, _file);
 
         _isLoading = false;
     }
 
-    private async Task ShowModelDetails(SentimentAnalysisModel model)
+    private async Task ShowModelDetails(LungCancerModel model)
     {
-        var parameters = new DialogParameters<SentimentAnalysisInfoDialog>
+        var parameters = new DialogParameters<LungCancerInfoDialog>
         {
             { x => x.Model, model }
         };
 
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
-        await DialogService.ShowAsync<SentimentAnalysisInfoDialog>("Detalji Modela", parameters, options);
-    }
-
-    private string GetRepoPath()
-    {
-        return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
+        await DialogService.ShowAsync<LungCancerInfoDialog>("Detalji Modela", parameters, options);
     }
 }

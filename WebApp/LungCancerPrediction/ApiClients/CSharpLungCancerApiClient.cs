@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using SharedCL.LungCancerPrediction.Models;
-using SharedCL.SentimentAnalysis.Models;
 using SharedCL.Shared.Models;
 using System.Net.Http.Headers;
 
@@ -33,7 +32,7 @@ namespace WebApp.LungCancerPrediction.ApiClients
             }
         }
 
-        public async Task<LungCancerPredictionModel> Predict(int id, IBrowserFile file)
+        public async Task<LungCancerPredictionModel> PredictAsync(int id, IBrowserFile file)
         {
             try
             {
