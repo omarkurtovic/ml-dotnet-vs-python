@@ -27,5 +27,9 @@ namespace SharedCL.LungCancerPrediction.Models
         public double? MacroPrecision { get; set; }
         public double? MacroRecall { get; set; }
         public double? MacroF1Score { get; set; }
+
+        public double? WeightedPrecision { get; set; }
+        public double? WeightedRecall { get; set; }
+        public double? WeightedF1Score { get; set; }
     }
 }

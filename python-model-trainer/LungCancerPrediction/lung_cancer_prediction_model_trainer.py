@@ -8,84 +8,93 @@ import random
 import os
 import imageio
 from collections import Counter
-
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
-
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras.src.legacy.preprocessing.image import ImageDataGenerator
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
+from enum import IntEnum
+from pydantic import BaseModel
 
-app = FastAPI()
+router = APIRouter()
 
 repo_root = Path("..")
 directory = repo_root.joinpath('data/lung-cancer-prediction')
 
+class ModelLanguage(IntEnum):
+    CSharp = 0
+    Python = 1
 
 
-@app.post("/Python/LungCancer/Train")
-def train():
+class TrainData(BaseModel):
+    modelName: str
+    modelLanguage: ModelLanguage
+
+
+
+@router.post("/Python/LungCancer/Train")
+def train(train_data: TrainData):
     
     categories = ['Bengin cases', 'Malignant cases', 'Normal cases']
     # just showing the different image sizes in the dataset
-    size_data = {}
-    for i in categories:
-        path = os.path.join(directory, i)
-        class_num = categories.index(i)
-        temp_dict = {}
-        for file in os.listdir(path):
-            filepath = os.path.join(path, file)
-            height, width, channels = imageio.imread(filepath).shape
-            if str(height) + ' x ' + str(width) in temp_dict:
-                temp_dict[str(height) + ' x ' + str(width)] += 1 
-            else:
-                temp_dict[str(height) + ' x ' + str(width)] = 1
+    # size_data = {}
+    # for i in categories:
+    #     path = os.path.join(directory, i)
+    #     class_num = categories.index(i)
+    #     temp_dict = {}
+    #     for file in os.listdir(path):
+    #         filepath = os.path.join(path, file)
+    #         height, width, channels = imageio.imread(filepath).shape
+    #         if str(height) + ' x ' + str(width) in temp_dict:
+    #             temp_dict[str(height) + ' x ' + str(width)] += 1 
+    #         else:
+    #             temp_dict[str(height) + ' x ' + str(width)] = 1
     
-        size_data[i] = temp_dict
+    #     size_data[i] = temp_dict
         
-    print(size_data)
+    # print(size_data)
 
     # showing a sample image from each category
-    for i in categories:
-        path = os.path.join(directory, i)
-        class_num = categories.index(i)
-        for file in os.listdir(path):
-            filepath = os.path.join(path, file)
-            print(i)
-            img = cv2.imread(filepath, 0)
-            plt.imshow(img)
-            plt.show()
-            break
+    # for i in categories:
+    #     path = os.path.join(directory, i)
+    #     class_num = categories.index(i)
+    #     for file in os.listdir(path):
+    #         filepath = os.path.join(path, file)
+    #         print(i)
+    #         img = cv2.imread(filepath, 0)
+    #         plt.imshow(img)
+    #         plt.show()
+    #         break
 
 
     # showing some images from all categories after resizing and blurring
-    img_size = 256
-    for i in categories:
-        cnt, samples = 0, 3
-        fig, ax = plt.subplots(samples, 3, figsize=(15, 15))
-        fig.suptitle(i)
+    # img_size = 256
+    # for i in categories:
+    #     cnt, samples = 0, 3
+    #     fig, ax = plt.subplots(samples, 3, figsize=(15, 15))
+    #     fig.suptitle(i)
     
-        path = os.path.join(directory, i)
-        class_num = categories.index(i)
-        for curr_cnt, file in enumerate(os.listdir(path)):
-            filepath = os.path.join(path, file)
-            img = cv2.imread(filepath, 0)
+    #     path = os.path.join(directory, i)
+    #     class_num = categories.index(i)
+    #     for curr_cnt, file in enumerate(os.listdir(path)):
+    #         filepath = os.path.join(path, file)
+    #         img = cv2.imread(filepath, 0)
         
-            img0 = cv2.resize(img, (img_size, img_size))
+    #         img0 = cv2.resize(img, (img_size, img_size))
         
-            img1 = cv2.GaussianBlur(img0, (5, 5), 0)
+    #         img1 = cv2.GaussianBlur(img0, (5, 5), 0)
         
-            ax[cnt, 0].imshow(img)
-            ax[cnt, 1].imshow(img0)
-            ax[cnt, 2].imshow(img1)
-            cnt += 1
-            if cnt == samples:
-                break
+    #         ax[cnt, 0].imshow(img)
+    #         ax[cnt, 1].imshow(img0)
+    #         ax[cnt, 2].imshow(img1)
+    #         cnt += 1
+    #         if cnt == samples:
+    #             break
         
-    plt.show()
+    # plt.show()
 
 
 
@@ -163,13 +172,12 @@ def train():
 
 
     y_pred = model.predict(X_valid, verbose=1)
+
     y_pred_bool = np.argmax(y_pred, axis=1)
 
-    print(classification_report(y_valid, y_pred_bool))
+    report = classification_report(y_valid, y_pred_bool, output_dict=True)
 
     print(confusion_matrix(y_true=y_valid, y_pred=y_pred_bool))
-
-
 
     # Save Model
     import tensorflow as tf
@@ -182,4 +190,27 @@ def train():
     input_signature = [tf.TensorSpec([None, img_size, img_size, 1], tf.float32, name='x')]
     onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature, opset=13)
     onnx.save(onnx_model, model_dir / "lung_cancer_prediction.onnx")
+
+    return {
+        "name":               train_data.modelName,
+        "language":           ModelLanguage.Python,
+        "trainingAccuracy":   history.history['accuracy'][-1],
+        "validationAccuracy": history.history['val_accuracy'][-1],
+        "validationLoss":     history.history['val_loss'][-1],
+        "benignPrecision":    report["0"]['precision'],
+        "benignRecall":       report["0"]['recall'],
+        "benignF1Score":      report["0"]['f1-score'],
+        "malignantPrecision": report["1"]['precision'],
+        "malignantRecall":    report["1"]['recall'],
+        "malignantF1Score":   report["1"]['f1-score'],
+        "normalPrecision":    report["2"]['precision'],
+        "normalRecall":       report["2"]['recall'],
+        "normalF1Score":      report["2"]['f1-score'],
+        "macroPrecision":     report["macro avg"]['precision'],
+        "macroRecall":        report["macro avg"]['recall'],
+        "macroF1Score":       report["macro avg"]['f1-score'],
+        "weightedPrecision":  report["weighted avg"]['precision'],
+        "weightedRecall":     report["weighted avg"]['recall'],
+        "weightedF1Score":    report["weighted avg"]['f1-score']
+    }
 

@@ -150,6 +150,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             double Recall(int c) => (tp[c] + fn[c]) == 0 ? 0 : (double)tp[c] / (tp[c] + fn[c]);
             double F1(int c) => (Precision(c) + Recall(c)) == 0 ? 0 : 2 * Precision(c) * Recall(c) / (Precision(c) + Recall(c));
 
+            int[] support = Enumerable.Range(0, numClasses).Select(c => tp[c] + fn[c]).ToArray();
+            int totalSupport = support.Sum();
+
             double valAccuracy = (double)allPreds.Zip(allLabels).Count(p => p.First == p.Second) / allLabels.Count;
 
             return Result<LungCancerModel>.Success(new LungCancerModel
@@ -169,6 +172,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 MacroPrecision = Enumerable.Range(0, numClasses).Average(Precision),
                 MacroRecall = Enumerable.Range(0, numClasses).Average(Recall),
                 MacroF1Score = Enumerable.Range(0, numClasses).Average(F1),
+                WeightedPrecision = Enumerable.Range(0, numClasses).Sum(c => Precision(c) * support[c]) / totalSupport,
+                WeightedRecall = Enumerable.Range(0, numClasses).Sum(c => Recall(c) * support[c]) / totalSupport,
+                WeightedF1Score = Enumerable.Range(0, numClasses).Sum(c => F1(c) * support[c]) / totalSupport,
             });
 
         }

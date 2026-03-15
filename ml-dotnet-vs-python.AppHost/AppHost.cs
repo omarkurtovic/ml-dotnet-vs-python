@@ -7,9 +7,9 @@ var apiService = builder.AddProject<Projects.CSharpModelTrainerApi>("apiservice"
 // .venv\Scripts\pip.exe install -r .\requirements.txt
 
 var pythonApi = builder.AddUvicornApp(
-        name: "pythonapi",
-        appDirectory: @"..\python-model-trainer",
-        app: "SentimentAnalysis.sentiment_analysis_model_trainer:app");
+name: "pythonapi",
+appDirectory: @"..\python-model-trainer",
+app: "main:app");
 
 builder.AddProject<Projects.WebApp>("webfrontend")
     .WithExternalHttpEndpoints()

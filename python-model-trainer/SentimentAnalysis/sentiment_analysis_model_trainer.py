@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, HTTPException
+﻿from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from enum import IntEnum
 from pathlib import Path
@@ -14,7 +14,7 @@ from skl2onnx import to_onnx
 from skl2onnx.common.data_types import StringTensorType
 import pandas as pd
 
-app = FastAPI()
+router = APIRouter()
 
 repo_root = Path("..")
 data_path = repo_root.joinpath('data/sentiment-analysis/IMDB Dataset.csv')
@@ -53,7 +53,7 @@ def build_pipeline(algorithm: TrainerAlgorithm) -> Pipeline:
         ("classifier", classifiers[algorithm]),
     ])
 
-@app.post("/Python/SentimentAnalysis/Train")
+@router.post("/Python/SentimentAnalysis/Train")
 def train(train_data: TrainData):
     if train_data.modelLanguage != ModelLanguage.Python:
         raise HTTPException(status_code=400, detail="Only Python models are supported here.")
