@@ -6,3 +6,7 @@ some of them don't return accuracy correctly...
 
 Useful stuff
 https://scikit-learn.org/stable/machine_learning_map.html
+
+
+za python env treba ovo uraditi
+py -3.12 -m venv .venv

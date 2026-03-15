@@ -53,11 +53,6 @@ def build_pipeline(algorithm: TrainerAlgorithm) -> Pipeline:
         ("classifier", classifiers[algorithm]),
     ])
 
-@app.get("/")
-def root():
-    return {"message": "Hello World"}
-
-
 @app.post("/Python/SentimentAnalysis/Train")
 def train(train_data: TrainData):
     if train_data.modelLanguage != ModelLanguage.Python:

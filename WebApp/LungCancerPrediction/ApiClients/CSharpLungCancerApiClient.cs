@@ -32,7 +32,7 @@ namespace WebApp.LungCancerPrediction.ApiClients
             }
         }
 
-        public async Task<LungCancerPredictionModel> PredictAsync(int id, IBrowserFile file)
+        public async Task<Result<LungCancerPredictionModel>> PredictAsync(int id, IBrowserFile file)
         {
             try
             {
@@ -46,18 +46,18 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 if (response.IsSuccessStatusCode)
                 {
                     var prediction = await response.Content.ReadFromJsonAsync<LungCancerPredictionModel>();
-                    return prediction!;
+                    return Result<LungCancerPredictionModel>.Success(prediction!);
                 }
                 else
                 {
                     Console.WriteLine("Failed to get prediction. Status code: " + response.StatusCode);
-                    return new LungCancerPredictionModel();
+                    return Result<LungCancerPredictionModel>.Failure("");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("An error occurred while getting prediction: " + ex.Message);
-                return new LungCancerPredictionModel();
+                return Result<LungCancerPredictionModel>.Failure("");
             }
         }
 

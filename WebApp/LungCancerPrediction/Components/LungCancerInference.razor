@@ -117,8 +117,15 @@
         _isLoading = true;
         StateHasChanged();
 
-        Prediction = await CSharpLungCancerApi.PredictAsync(SelectedModel.Id, _file);
-
+        var predResult = await CSharpLungCancerApi.PredictAsync(SelectedModel.Id, _file);
+        if (predResult.IsSuccess)
+        {
+            Prediction = predResult.Data!;
+        }
+        else
+        {
+            Snackbar.Add("Greška prilikom analiziranja!", Severity.Error);
+        }
         _isLoading = false;
     }
 

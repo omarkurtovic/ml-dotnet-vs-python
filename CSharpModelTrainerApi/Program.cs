@@ -1,4 +1,5 @@
 using CSharpModelTrainerApi.Database;
+using CSharpModelTrainerApi.LungCancerPrediction.Services;
 using CSharpModelTrainerApi.SentimentAnalysis.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -21,6 +22,9 @@ builder.Services.AddSingleton<SentimentAnalysisModelTrainer>();
 builder.Services.AddScoped<SentimentAnalysisRepository>();
 builder.Services.AddSingleton<SentimentAnalysisPredictionServices>();
 
+builder.Services.AddSingleton<LungCancerModelTrainer>();
+builder.Services.AddScoped<LungCancerModelRepository>();
+builder.Services.AddSingleton<LungCancerPredictionService>();
 
 var app = builder.Build();
 
