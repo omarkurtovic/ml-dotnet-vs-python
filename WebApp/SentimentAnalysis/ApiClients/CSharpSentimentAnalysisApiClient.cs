@@ -32,7 +32,7 @@ namespace WebApp.SentimentAnalysis.ApiClients
             }
         }
 
-        public async Task<SentimentPrediction> Predict(int id, string review)
+        public async Task<Result<SentimentPrediction>> Predict(int id, string review)
         {
             try
             {
@@ -42,18 +42,18 @@ namespace WebApp.SentimentAnalysis.ApiClients
                 if (response.IsSuccessStatusCode)
                 {
                     var prediction = await response.Content.ReadFromJsonAsync<SentimentPrediction>();
-                    return prediction!;
+                    return Result<SentimentPrediction>.Success(prediction!);
                 }
                 else
                 {
                     Console.WriteLine("Failed to get prediction. Status code: " + response.StatusCode);
-                    return new SentimentPrediction();
+                    return Result<SentimentPrediction>.Failure("");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("An error occurred while getting prediction: " + ex.Message);
-                return new SentimentPrediction();
+                return Result<SentimentPrediction>.Failure("");
             }
         }
 

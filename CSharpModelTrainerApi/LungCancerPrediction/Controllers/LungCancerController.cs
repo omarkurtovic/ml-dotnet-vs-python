@@ -1,6 +1,5 @@
 ﻿using CSharpModelTrainerApi.LungCancerPrediction.Services;
 using CSharpModelTrainerApi.SentimentAnalysis.Services;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using SharedCL.LungCancerPrediction.Models;
 using SharedCL.SentimentAnalysis.Models;
@@ -42,7 +41,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 
         [HttpPost]
         [Route("Predict")]
-        public async Task<IActionResult> Predict([FromQuery] int id, [FromBody] IBrowserFile image)
+        public async Task<IActionResult> Predict([FromQuery] int id, [FromForm] IFormFile file)
         {
             var modelResult = await LungCancerModelRepository.GetById(id);
             if (!modelResult.IsSuccess)
@@ -57,7 +56,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             }
 
 
-            var prediction = LungCancerPredictionService.Predict(model, image);
+            var prediction = await LungCancerPredictionService.Predict(model, file);
             return Ok(prediction);
         }
 

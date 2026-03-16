@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SharedCL.LungCancerPrediction.Models;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using TorchSharp;
 using static TorchSharp.torch.nn;
 using static TorchSharp.torch.nn.functional;
@@ -10,7 +12,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class LungCancerPredictionService
     {
-        public async Task<LungCancerPredictionModel> Predict(LungCancerModel model, IBrowserFile file)
+        public async Task<LungCancerPredictionModel> Predict(LungCancerModel model, IFormFile file)
         {
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
             if(model.Language == SharedCL.Shared.Enums.ModelLanguage.CSharp)
@@ -27,16 +29,16 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             }
         }
 
-        private async Task<LungCancerPredictionModel> PredictWithTorchSharp(string repoRoot, IBrowserFile file)
+        private async Task<LungCancerPredictionModel> PredictWithTorchSharp(string repoRoot, IFormFile file)
         {
             if (file == null) return null!;
 
             const int imgSize = 256;
             var modelPath = Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", "lung-cancer-model.weights");
 
-            var resizedFile = await file.RequestImageFileAsync("image/png", imgSize, imgSize);
-            using var stream = resizedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var stream = file.OpenReadStream();
             using var image = await SixLabors.ImageSharp.Image.LoadAsync<SixLabors.ImageSharp.PixelFormats.L8>(stream);
+            image.Mutate(x => x.Resize(imgSize, imgSize));
 
             var floatData = new float[imgSize * imgSize];
             for (int y = 0; y < imgSize; y++)
@@ -72,7 +74,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         }
 
 
-        private async Task<LungCancerPredictionModel> PredictWithOnnx(string repoRoot, IBrowserFile file)
+        private async Task<LungCancerPredictionModel> PredictWithOnnx(string repoRoot, IFormFile file)
         {
             if (file == null)
                 return null!;
@@ -81,9 +83,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             const int imgSize = 256;
 
-            var resizedFile = await file.RequestImageFileAsync("image/png", imgSize, imgSize);
-            using var stream = resizedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var stream = file.OpenReadStream();
             using var image = await SixLabors.ImageSharp.Image.LoadAsync<SixLabors.ImageSharp.PixelFormats.L8>(stream);
+            image.Mutate(x => x.Resize(imgSize, imgSize));
 
             var floatData = new float[imgSize * imgSize];
             for (int y = 0; y < imgSize; y++)
