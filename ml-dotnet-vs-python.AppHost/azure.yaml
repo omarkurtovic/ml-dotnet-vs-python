@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: ml-dotnet-vs-python
+services:  
+  app:
+    language: dotnet
+    project: ./ml-dotnet-vs-python.AppHost.csproj
+    host: containerapp

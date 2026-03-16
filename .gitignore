@@ -1,19 +1,27 @@
 
+
 /.vscode
 /models
 /data
 
 # python
-/python-model-trainer/.venv
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+/python-model-trainer/env1
 
 # c#
-
-bin
-obj
+bin/
+obj/
 appsettings.json
 appsettings.Development.json
+*.user
 /.vs
-/python-model-trainer/env1
-/CSharpModelTrainerApi/app.db-shm
-/CSharpModelTrainerApi/app.db-wal
-/CSharpModelTrainerApi/app.db
+UpgradeLog.htm
+
+# database
+*.db
+*.db-shm
+*.db-wal
+
