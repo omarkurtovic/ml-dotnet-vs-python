@@ -15,6 +15,8 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="13.1.2" />
+    <PackageReference Include="Azure.Identity" Version="1.19.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.13">
@@ -27,6 +29,7 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="SkiaSharp" Version="2.88.6" />
     <PackageReference Include="TorchSharp" Version="0.106.0" />
+    <PackageReference Include="libtorch-cpu-linux-x64" Version="2.10.0" />
   </ItemGroup>
 
   <ItemGroup>

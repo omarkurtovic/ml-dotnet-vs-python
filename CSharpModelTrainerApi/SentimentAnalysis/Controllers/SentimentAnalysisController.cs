@@ -62,11 +62,11 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
 
         [HttpPost]
         [Route("Train")]
-        public IActionResult Train([FromBody] SentimentAnalysisTrainingParams trainData)
+        public async Task<IActionResult> Train([FromBody] SentimentAnalysisTrainingParams trainData)
         {
             if (trainData.ModelLanguage == ModelLanguage.CSharp)
             {
-                var modelRes = ModelTrainer.TrainModel(trainData);
+                var modelRes = await ModelTrainer.TrainModel(trainData);
                 if (!modelRes.IsSuccess)
                 {
                     return BadRequest();

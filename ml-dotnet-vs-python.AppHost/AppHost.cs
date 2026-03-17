@@ -1,7 +1,13 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+var storage = builder.AddAzureStorage("omarmldotnetstorage");
+
+var blobs = storage.AddBlobs("blobs");
+
 var apiService = builder.AddProject<Projects.CSharpModelTrainerApi>("apiservice")
-    .WithHttpHealthCheck("/health");
+    .WithHttpHealthCheck("/health")
+    .WithReference(blobs)
+    .WaitFor(blobs);
 
 // py -3.12 -m venv .venv
 // .venv\Scripts\pip.exe install -r .\requirements.txt

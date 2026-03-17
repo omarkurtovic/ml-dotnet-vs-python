@@ -12,12 +12,13 @@ using static TorchSharp.torch.nn.functional;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LungCancerModelTrainer
+    public class LungCancerModelTrainer(CSharpModelTrainerApi.Shared.BlobService blobService)
     {
-        public Result<LungCancerModel> TrainModel(LungCancerTrainingParams trainInfo)
+        public async Task<Result<LungCancerModel>> TrainModel(LungCancerTrainingParams trainInfo)
         {
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
             var directory = Path.Join(repoRoot, "data", "lung-cancer-prediction");
+            await blobService.EnsureDataDownloadedAsync(directory, "lung-cancer");
             var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
             int imageSize = 256;
 

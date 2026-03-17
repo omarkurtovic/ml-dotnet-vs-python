@@ -1,4 +1,5 @@
 ﻿using CSharpModelTrainerApi.Database;
+using CSharpModelTrainerApi.Shared;
 using Microsoft.ML;
 using Microsoft.ML.Trainers.FastTree;
 using SharedCL.SentimentAnalysis.Enums;
@@ -10,23 +11,19 @@ using System.Data;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
-    public class SentimentAnalysisModelTrainer
+    public class SentimentAnalysisModelTrainer(BlobService blobService)
     {
-        public Result<SentimentAnalysisModel> TrainModel(SentimentAnalysisTrainingParams trainData)
+        public async Task<Result<SentimentAnalysisModel>> TrainModel(SentimentAnalysisTrainingParams trainData)
         {
             MLContext mlContext = new();
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
 
             var directoryPath = Path.Combine(repoRoot, "data", "sentiment-analysis");
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
+            await blobService.EnsureDataDownloadedAsync(directoryPath, "sentiment-analysis");
 
             var dataPath = Path.Combine(directoryPath, "IMDB Dataset.csv");
             if (!File.Exists(dataPath))
             {
-                Console.WriteLine("Preuzimanje podataka za treniranje...");
                 return Result<SentimentAnalysisModel>.Failure("Podaci za treniranje nisu pronađeni!");
             }
 
