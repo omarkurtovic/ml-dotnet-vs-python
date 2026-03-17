@@ -17,8 +17,10 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
         {
             MLContext mlContext = new();
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
+            var isContainer = !Directory.Exists(Path.Combine(repoRoot, "data"));
+            var dataBase = isContainer ? "/tmp" : repoRoot;
 
-            var directoryPath = Path.Combine(repoRoot, "data", "sentiment-analysis");
+            var directoryPath = Path.Combine(dataBase, "data", "sentiment-analysis");
             await blobService.EnsureDataDownloadedAsync(directoryPath, "sentiment-analysis");
 
             var dataPath = Path.Combine(directoryPath, "IMDB Dataset.csv");

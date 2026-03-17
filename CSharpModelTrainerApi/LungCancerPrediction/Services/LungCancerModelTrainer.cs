@@ -17,7 +17,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         public async Task<Result<LungCancerModel>> TrainModel(LungCancerTrainingParams trainInfo)
         {
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-            var directory = Path.Join(repoRoot, "data", "lung-cancer-prediction");
+            var isContainer = !Directory.Exists(Path.Combine(repoRoot, "data"));
+            var dataBase = isContainer ? "/tmp" : repoRoot;
+            var directory = Path.Join(dataBase, "data", "lung-cancer-prediction");
             await blobService.EnsureDataDownloadedAsync(directory, "lung-cancer");
             var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
             int imageSize = 256;

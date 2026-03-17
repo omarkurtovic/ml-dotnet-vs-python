@@ -57,7 +57,7 @@ void ConfigureDatabase(IServiceCollection services, IWebHostEnvironment env)
             options.UseSqlite("Data Source=app.db"));
     else
         services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlite("Data Source=/home/app.db"));
+            options.UseSqlite("Data Source=/tmp/app.db"));
 
 
 }
