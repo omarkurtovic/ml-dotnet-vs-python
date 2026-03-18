@@ -14,7 +14,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class LungCancerModelTrainer()
     {
-        public async Task<Result<LungCancerModel>> TrainModel(LungCancerTrainingParams trainInfo)
+        public  Result<LungCancerModel> TrainModel(LungCancerTrainingParams trainInfo)
         {
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
             var directory = Path.Join(repoRoot, "data", "lung-cancer-prediction");

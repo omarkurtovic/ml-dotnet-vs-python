@@ -67,7 +67,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         {
             if (trainParams.ModelLanguage == ModelLanguage.CSharp)
             {
-                var modelRes = await ModelTrainer.TrainModel(trainParams);
+                var modelRes = ModelTrainer.TrainModel(trainParams);
                 if (!modelRes.IsSuccess)
                 {
                     return BadRequest();

@@ -55,7 +55,7 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
             }
 
 
-            var prediction = SentimentAnalysisPredictionServices.Predict(model, review);
+            var prediction = await SentimentAnalysisPredictionServices.Predict(model, review);
             return Ok(prediction);
         }
 

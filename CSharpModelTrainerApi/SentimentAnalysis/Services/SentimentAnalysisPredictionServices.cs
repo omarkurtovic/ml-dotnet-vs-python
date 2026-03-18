@@ -9,49 +9,36 @@ using SharedCL.Shared.Models;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
-    public class SentimentAnalysisPredictionServices
+    public class SentimentAnalysisPredictionServices(BlobService blobService)
     {
-
-        public SentimentPrediction Predict(SentimentAnalysisModel model, string review)
+        public async Task<SentimentPrediction> Predict(SentimentAnalysisModel model, string review)
         {
-            if(model.Language == SharedCL.Shared.Enums.ModelLanguage.CSharp)
-            {
-                return PredictWithMlNet(model, review);
-            }
-            else if(model.Language == SharedCL.Shared.Enums.ModelLanguage.Python)
-            {
-                return PredictWithOnnx(model, review);
-            }
+            if (model.Language == SharedCL.Shared.Enums.ModelLanguage.CSharp)
+                return await PredictWithMlNet(model, review);
+            else if (model.Language == SharedCL.Shared.Enums.ModelLanguage.Python)
+                return await PredictWithOnnx(model, review);
 
             return new SentimentPrediction();
         }
-        private SentimentPrediction PredictWithMlNet(SentimentAnalysisModel model, string review)
+
+        private async Task<SentimentPrediction> PredictWithMlNet(SentimentAnalysisModel model, string review)
         {
             MLContext mlContext = new MLContext();
-            var basePath = BlobService.GetBasePath();
-            var modelPath = Path.Combine(basePath, "models", "sentiment-analysis", "csharp", $"{model.Name}.zip");
+            var modelPath = await blobService.EnsureModelDownloadedAsync($"sentiment-analysis/csharp/{model.Name}.zip");
 
             mlContext.ComponentCatalog.RegisterAssembly(typeof(SentimentCleanerMapping).Assembly);
             ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
 
-            var sentimentData = new SentimentData()
-            {
-                Review = review
-            };
-
+            var sentimentData = new SentimentData() { Review = review };
             var predictionEngine = mlContext.Model.CreatePredictionEngine<SentimentData, SentimentPrediction>(trainedModel);
-            SentimentPrediction prediction = predictionEngine.Predict(sentimentData);
-            return prediction;
+            return predictionEngine.Predict(sentimentData);
         }
 
-
-        public SentimentPrediction PredictWithOnnx(SentimentAnalysisModel model, string review)
+        private async Task<SentimentPrediction> PredictWithOnnx(SentimentAnalysisModel model, string review)
         {
-            var basePath = BlobService.GetBasePath();
-            var modelPath = Path.Combine(basePath, "models", "sentiment-analysis", "python", $"{model.Name}.onnx");
+            var modelPath = await blobService.EnsureModelDownloadedAsync($"sentiment-analysis/python/{model.Name}.onnx");
 
-            var features = new string[1];
-            features[0] = review;
+            var features = new string[] { review };
 
             using var session = new InferenceSession(modelPath);
             var inputName = session.InputMetadata.Keys.First();
@@ -59,13 +46,12 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
             var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, tensor) };
 
             using var results = session.Run(inputs);
-            List<object> resultList = results as List<object>;
             NamedOnnxValue label = results[0];
             NamedOnnxValue prediction = results[1];
 
             var result = new SentimentPrediction();
             result.IsPositive = label.Value is IEnumerable<long> labelValues && labelValues.FirstOrDefault() == 1;
-            result.Probability = ((prediction.Value as IEnumerable<DisposableNamedOnnxValue>).First().Value as Dictionary<long, float>)[1];
+            result.Probability = ((prediction.Value as IEnumerable<DisposableNamedOnnxValue>)!.First().Value as Dictionary<long, float>)![1];
 
             return result;
         }
