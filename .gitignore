@@ -1,7 +1,6 @@
 
 
 /.vscode
-/models
 /data
 
 # python
@@ -19,9 +18,4 @@ appsettings.Development.json
 *.user
 /.vs
 UpgradeLog.htm
-
-# database
-*.db
-*.db-shm
-*.db-wal
 

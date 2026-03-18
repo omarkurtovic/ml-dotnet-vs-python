@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using CSharpModelTrainerApi.Shared;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SharedCL.LungCancerPrediction.Models;
@@ -14,14 +15,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
     {
         public async Task<LungCancerPredictionModel> Predict(LungCancerModel model, IFormFile file)
         {
-            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-            if(model.Language == SharedCL.Shared.Enums.ModelLanguage.CSharp)
+            var basePath = BlobService.GetBasePath();
+            if (model.Language == SharedCL.Shared.Enums.ModelLanguage.CSharp)
             {
-                return await PredictWithTorchSharp(repoRoot, file);
+                return await PredictWithTorchSharp(basePath, file);
             }
             else if(model.Language == SharedCL.Shared.Enums.ModelLanguage.Python)
             {
-                return await PredictWithOnnx(repoRoot, file);
+                return await PredictWithOnnx(basePath, file);
             }
             else
             {

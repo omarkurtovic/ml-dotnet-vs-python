@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewEngines;
+using CSharpModelTrainerApi.Shared;
 using Microsoft.ML;
 using SharedCL.SentimentAnalysis.Mappings;
 using SharedCL.SentimentAnalysis.Models;
@@ -26,10 +27,10 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
         }
         private SentimentPrediction PredictWithMlNet(SentimentAnalysisModel model, string review)
         {
-            MLContext mlContext = new MLContext(); 
+            MLContext mlContext = new MLContext();
+            var basePath = BlobService.GetBasePath();
+            var modelPath = Path.Combine(basePath, "models", "sentiment-analysis", "csharp", $"{model.Name}.zip");
 
-            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-            var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", $"{model.Name}.zip");
             mlContext.ComponentCatalog.RegisterAssembly(typeof(SentimentCleanerMapping).Assembly);
             ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
 
@@ -46,8 +47,8 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 
         public SentimentPrediction PredictWithOnnx(SentimentAnalysisModel model, string review)
         {
-            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-            var modelPath = Path.Combine(repoRoot, "models", "sentiment-analysis", "python", $"{model.Name}.onnx");
+            var basePath = BlobService.GetBasePath();
+            var modelPath = Path.Combine(basePath, "models", "sentiment-analysis", "python", $"{model.Name}.onnx");
 
             var features = new string[1];
             features[0] = review;

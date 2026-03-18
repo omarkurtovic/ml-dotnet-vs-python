@@ -12,15 +12,13 @@ using static TorchSharp.torch.nn.functional;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LungCancerModelTrainer(CSharpModelTrainerApi.Shared.BlobService blobService)
+    public class LungCancerModelTrainer()
     {
         public async Task<Result<LungCancerModel>> TrainModel(LungCancerTrainingParams trainInfo)
         {
             var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-            var isContainer = !Directory.Exists(Path.Combine(repoRoot, "data"));
-            var dataBase = isContainer ? "/tmp" : repoRoot;
-            var directory = Path.Join(dataBase, "data", "lung-cancer-prediction");
-            await blobService.EnsureDataDownloadedAsync(directory, "lung-cancer");
+            var directory = Path.Join(repoRoot, "data", "lung-cancer-prediction");
+
             var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
             int imageSize = 256;
 
@@ -112,7 +110,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             model.eval();
 
-            var modelDir = Path.Join(repoRoot, "models", "lung-cancer-prediction", "csharp");
+            var modelDir = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp");
             Directory.CreateDirectory(modelDir);
             var modelPath = Path.Join(modelDir, $"{trainInfo.ModelName}.weights");
             model.save(modelPath);

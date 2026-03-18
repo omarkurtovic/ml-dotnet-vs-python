@@ -52,14 +52,9 @@ app.Run();
 
 void ConfigureDatabase(IServiceCollection services, IWebHostEnvironment env)
 {
-    if (env.IsDevelopment())
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlite("Data Source=app.db"));
-    else
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlite("Data Source=/tmp/app.db"));
-
-
+    var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app.db");
+    services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite($"Data Source={dbPath}"));
 }
 
 void InitializeDatabase(WebApplication app)
