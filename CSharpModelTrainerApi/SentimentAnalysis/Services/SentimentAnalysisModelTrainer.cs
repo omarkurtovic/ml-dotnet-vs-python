@@ -11,16 +11,13 @@ using System.Data;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
-    public class SentimentAnalysisModelTrainer(BlobService blobService)
+    public class SentimentAnalysisModelTrainer(PathResolver pathResolver)
     {
         public async Task<Result<SentimentAnalysisModel>> TrainModel(SentimentAnalysisTrainingParams trainData)
         {
             MLContext mlContext = new();
-            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
+            var dataPath = pathResolver.GetSentimentDataPath();
 
-            var directoryPath = Path.Combine(repoRoot, "data", "sentiment-analysis");
-
-            var dataPath = Path.Combine(directoryPath, "IMDB Dataset.csv");
             if (!File.Exists(dataPath))
             {
                 return Result<SentimentAnalysisModel>.Failure("Podaci za treniranje nisu pronađeni!");
@@ -60,17 +57,9 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
             };
 
             var pipeline = featurize.Append(trainer);
-
             var model = pipeline.Fit(trainSetDV);
 
-            var modelDir = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp");
-            if (!Directory.Exists(modelDir))
-            {
-                Directory.CreateDirectory(modelDir);
-            }
-
-            mlContext.Model.Save(model, trainSetDV.Schema, Path.Combine(modelDir, $"{trainData.ModelName}.zip"));
-
+            mlContext.Model.Save(model, trainSetDV.Schema, pathResolver.GetModelPath(trainData));
 
             var trainMetrics = mlContext.BinaryClassification.Evaluate(model.Transform(trainSetDV), labelColumnName: "SentimentValue");
             var testMetrics = mlContext.BinaryClassification.Evaluate(model.Transform(testSetDV), labelColumnName: "SentimentValue");

@@ -1,5 +1,4 @@
 ﻿@page "/sentimentAnalysis"
-@inject IConfiguration Configuration
 @using MudBlazor
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
@@ -10,32 +9,19 @@
             </MudItem>
             <MudItem xs="4">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/inference" FullWidth
-                    StartIcon="@Icons.Material.Filled.PlayArrow">
+                           StartIcon="@Icons.Material.Filled.PlayArrow">
                     Pokreni analizu
                 </MudButton>
             </MudItem>
-            @if(isTrainingDisabled)
-            {
-                <MudItem xs="4">
-                    <MudTooltip Text="Treniranje modela je onemogućeno" Placement="Placement.Top">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth StartIcon="@Icons.Material.Filled.ModelTraining" Disabled>
-                            Traniraj Model
-                        </MudButton>
-                    </MudTooltip>
-                </MudItem>
-            }
-            else
-            {
-                <MudItem xs="4">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/trainer" FullWidth
-                               StartIcon="@Icons.Material.Filled.ModelTraining">
-                        Traniraj Model
-                    </MudButton>
-                </MudItem>
-            }
+            <MudItem xs="4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/trainer" FullWidth
+                           StartIcon="@Icons.Material.Filled.ModelTraining">
+                    Traniraj Model
+                </MudButton>
+            </MudItem>
             <MudItem xs="4">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sentimentAnalysis/models" FullWidth
-                    StartIcon="@Icons.Material.Filled.List">
+                           StartIcon="@Icons.Material.Filled.List">
                     Pregled Modela
                 </MudButton>
             </MudItem>
@@ -46,33 +32,20 @@
                 </MudText>
             </MudExpansionPanel>
 
-        <MudExpansionPanel Text="Podaci">
-            <MudText>
-                Za treniranje modela koristi se skup podataka IMDB Movie Reviews, koji sadrži 50.000 recenzija filmova, od kojih je 25.000 pozitivno i 25.000 negativno ocijenjeno. Ovaj skup podataka je široko korišten u istraživanjima analize sentimenta i omogućava modelima da nauče prepoznavati različite obrasce u tekstu koji su povezani s pozitivnim ili negativnim sentimentom.
+            <MudExpansionPanel Text="Podaci">
+                <MudText>
+                    Za treniranje modela koristi se skup podataka IMDB Movie Reviews, koji sadrži 50.000 recenzija filmova, od kojih je 25.000 pozitivno i 25.000 negativno ocijenjeno. Ovaj skup podataka je široko korišten u istraživanjima analize sentimenta i omogućava modelima da nauče prepoznavati različite obrasce u tekstu koji su povezani s pozitivnim ili negativnim sentimentom.
                     <MudLink Href="https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews?select=IMDB+Dataset.csv">Link</MudLink>
-            </MudText>
-        </MudExpansionPanel>
+                </MudText>
+            </MudExpansionPanel>
 
-        <MudExpansionPanel Text="Treniranje">
-            <MudText>
-                Korisnik ima par opcija prilikom treniranja modela. Prva opcija je sam naziv model koji korisnik proizvoljno unosi.
-                Druga opcija je izbor algoritma koji se koristi za treniranje modela. Korisnik može birati između različitih algoritama zavisno od svojih preferencija i potreba, a svaki algoritam ima svoje prednosti i nedostatke u kontekstu analize sentimenta.
-            </MudText>
-        </MudExpansionPanel>
+            <MudExpansionPanel Text="Treniranje">
+                <MudText>
+                    Korisnik ima par opcija prilikom treniranja modela. Prva opcija je sam naziv model koji korisnik proizvoljno unosi.
+                    Druga opcija je izbor algoritma koji se koristi za treniranje modela. Korisnik može birati između različitih algoritama zavisno od svojih preferencija i potreba, a svaki algoritam ima svoje prednosti i nedostatke u kontekstu analize sentimenta.
+                </MudText>
+            </MudExpansionPanel>
         </MudGrid>
     </MudPaper>
 </MudContainer>
 
-
-
-
-@code{
-    private bool isTrainingDisabled = false;
-
-
-    protected override Task OnInitializedAsync()
-    {
-        isTrainingDisabled = Configuration.GetValue<bool>("TRAINING_DISABLED");
-        return base.OnInitializedAsync();
-    }
-}

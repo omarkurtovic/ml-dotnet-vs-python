@@ -19,8 +19,6 @@ builder.Services.AddOpenApi();
 
 ConfigureDatabase(builder.Services, builder.Environment);
 
-builder.AddAzureBlobServiceClient(connectionName: "blobs"); 
-builder.Services.AddSingleton<BlobService>();
 
 builder.Services.AddSingleton<SentimentAnalysisModelTrainer>();
 builder.Services.AddScoped<SentimentAnalysisRepository>();
@@ -29,6 +27,8 @@ builder.Services.AddSingleton<SentimentAnalysisPredictionServices>();
 builder.Services.AddSingleton<LungCancerModelTrainer>();
 builder.Services.AddScoped<LungCancerModelRepository>();
 builder.Services.AddSingleton<LungCancerPredictionService>();
+
+builder.Services.AddSingleton<PathResolver>();
 
 var app = builder.Build();
 
@@ -59,7 +59,6 @@ void ConfigureDatabase(IServiceCollection services, IWebHostEnvironment env)
 
 void InitializeDatabase(WebApplication app)
 {
-
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();

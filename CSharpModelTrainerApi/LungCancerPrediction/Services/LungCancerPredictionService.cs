@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using CSharpModelTrainerApi.Shared;
+﻿using CSharpModelTrainerApi.Shared;
+using Microsoft.AspNetCore.Http;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SharedCL.LungCancerPrediction.Models;
@@ -11,24 +11,24 @@ using static TorchSharp.torch.nn.functional;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LungCancerPredictionService(BlobService blobService)
+    public class LungCancerPredictionService(PathResolver pathResolver)
     {
         public async Task<LungCancerPredictionModel> Predict(LungCancerModel model, IFormFile file)
         {
             if (model.Language == SharedCL.Shared.Enums.ModelLanguage.CSharp)
-                return await PredictWithTorchSharp(file);
+                return await PredictWithTorchSharp(model, file);
             else if (model.Language == SharedCL.Shared.Enums.ModelLanguage.Python)
-                return await PredictWithOnnx(file);
+                return await PredictWithOnnx(model, file);
             else
                 throw new ArgumentException("Invalid model language");
         }
 
-        private async Task<LungCancerPredictionModel> PredictWithTorchSharp(IFormFile file)
+        private async Task<LungCancerPredictionModel> PredictWithTorchSharp(LungCancerModel dbModel, IFormFile file)
         {
             if (file == null) return null!;
 
             const int imgSize = 256;
-            var modelPath = await blobService.EnsureModelDownloadedAsync("lung-cancer-prediction/csharp/lung-cancer-model.weights");
+            var modelPath = pathResolver.GetModelPath(dbModel);
 
             using var stream = file.OpenReadStream();
             using var image = await SixLabors.ImageSharp.Image.LoadAsync<SixLabors.ImageSharp.PixelFormats.L8>(stream);
@@ -67,12 +67,11 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             };
         }
 
-        private async Task<LungCancerPredictionModel> PredictWithOnnx(IFormFile file)
+        private async Task<LungCancerPredictionModel> PredictWithOnnx(LungCancerModel dbModel, IFormFile file)
         {
             if (file == null) return null!;
 
-            var modelPath = await blobService.EnsureModelDownloadedAsync("lung-cancer-prediction/python/lung_cancer_prediction.onnx");
-
+            var modelPath = pathResolver.GetModelPath(dbModel);
             const int imgSize = 256;
 
             using var stream = file.OpenReadStream();

@@ -11,7 +11,6 @@
 @inject PythonLungCancerApiClient PythonLungCancerApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
-@inject IConfiguration Configuration
 @rendermode InteractiveServer
 
 <PageTitle>Treniranje Modela za Rak Pluća</PageTitle>
@@ -41,8 +40,6 @@
                 </MudForm>
             </MudItem>
             <MudItem xs="12" Style="display: flex; justify-content: center; gap:1rem;">
-                @if (!isTrainingDisabled)
-                {
                 <MudButton OnClick="TrainModel" Color="Color.Primary" Variant="Variant.Filled"
                            Size="Size.Large" Disabled="_isLoading">
                     @if (_isLoading)
@@ -55,7 +52,6 @@
                         <span>Treniraj</span>
                     }
                 </MudButton>
-                }
                 @if (model != null)
                 {
                     <MudButton OnClick="ShowModelDetails" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Large">
@@ -75,12 +71,7 @@
 
     private LungCancerModel? model;
     private bool _isLoading = false;
-    private bool isTrainingDisabled;
 
-    protected override void OnInitialized()
-    {
-        isTrainingDisabled = Configuration.GetValue<bool>("TRAINING_DISABLED");
-    }
 
     private async Task TrainModel()
     {

@@ -9,7 +9,7 @@ using SharedCL.Shared.Models;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
-    public class SentimentAnalysisPredictionServices(BlobService blobService)
+    public class SentimentAnalysisPredictionServices(PathResolver pathResolver)
     {
         public async Task<SentimentPrediction> Predict(SentimentAnalysisModel model, string review)
         {
@@ -24,7 +24,7 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
         private async Task<SentimentPrediction> PredictWithMlNet(SentimentAnalysisModel model, string review)
         {
             MLContext mlContext = new MLContext();
-            var modelPath = await blobService.EnsureModelDownloadedAsync($"sentiment-analysis/csharp/{model.Name}.zip");
+            var modelPath = pathResolver.GetModelPath(model);
 
             mlContext.ComponentCatalog.RegisterAssembly(typeof(SentimentCleanerMapping).Assembly);
             ITransformer trainedModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
@@ -36,8 +36,7 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 
         private async Task<SentimentPrediction> PredictWithOnnx(SentimentAnalysisModel model, string review)
         {
-            var modelPath = await blobService.EnsureModelDownloadedAsync($"sentiment-analysis/python/{model.Name}.onnx");
-
+            var modelPath = pathResolver.GetModelPath(model);
             var features = new string[] { review };
 
             using var session = new InferenceSession(modelPath);

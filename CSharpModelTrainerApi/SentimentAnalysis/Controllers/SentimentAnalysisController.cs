@@ -1,4 +1,5 @@
 ﻿using CSharpModelTrainerApi.SentimentAnalysis.Services;
+using CSharpModelTrainerApi.Shared;
 using Microsoft.AspNetCore.Mvc;
 using SharedCL.SentimentAnalysis.Models;
 using SharedCL.Shared.Enums;
@@ -13,14 +14,17 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
         private SentimentAnalysisModelTrainer ModelTrainer { get; set; }
         private SentimentAnalysisPredictionServices SentimentAnalysisPredictionServices { get; set; }
         private SentimentAnalysisRepository SentimentAnalysisRepository { get; set; }
+        private PathResolver PathResolver { get; set; }
 
         public SentimentAnalysisController(SentimentAnalysisModelTrainer modelTrainer, 
             SentimentAnalysisRepository sentimentAnalysisRepository,
-            SentimentAnalysisPredictionServices sentimentAnalysisPredictionServices)
+            SentimentAnalysisPredictionServices sentimentAnalysisPredictionServices,
+            PathResolver pathResolver)
         {
             ModelTrainer = modelTrainer;
             SentimentAnalysisRepository = sentimentAnalysisRepository;
             SentimentAnalysisPredictionServices = sentimentAnalysisPredictionServices;
+            PathResolver = pathResolver;
         }
 
         [HttpGet]
@@ -106,25 +110,17 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
                 return NotFound();
             }
 
-            if (model.Language != ModelLanguage.CSharp)
-            {
-                return BadRequest();
-            }
-
             var deleteResult = await SentimentAnalysisRepository.Delete(model.Id);
             if(!deleteResult.IsSuccess)
             {
                 return BadRequest();
             }
 
-            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-
-            string filePath = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", $"{model.Name}.zip");
-
-            if (!System.IO.File.Exists(filePath))
+            var modelPath = PathResolver.GetModelPath(model);
+            if (!System.IO.File.Exists(modelPath))
                 return Ok();
 
-            System.IO.File.Delete(filePath);
+            System.IO.File.Delete(modelPath);
             return Ok();
         }
     }

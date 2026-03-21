@@ -1,4 +1,5 @@
-﻿using Microsoft.ML;
+﻿using CSharpModelTrainerApi.Shared;
+using Microsoft.ML;
 using SharedCL.LungCancerPrediction.Models;
 using SharedCL.SentimentAnalysis.Enums;
 using SharedCL.SentimentAnalysis.Mappings;
@@ -12,12 +13,11 @@ using static TorchSharp.torch.nn.functional;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LungCancerModelTrainer()
+    public class LungCancerModelTrainer(PathResolver pathResolver)
     {
         public  Result<LungCancerModel> TrainModel(LungCancerTrainingParams trainInfo)
         {
-            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-            var directory = Path.Join(repoRoot, "data", "lung-cancer-prediction");
+            var dataDirectory = pathResolver.GetLungCancerDataPath();
 
             var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
             int imageSize = 256;
@@ -27,7 +27,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             foreach (var category in categories)
             {
                 int classNum = categories.IndexOf(category);
-                var path = Path.Join(directory, category);
+                var path = Path.Join(dataDirectory, category);
 
                 foreach (var filepath in Directory.GetFiles(path))
                 {
@@ -110,12 +110,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             model.eval();
 
-            var modelDir = Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp");
-            Directory.CreateDirectory(modelDir);
-            var modelPath = Path.Join(modelDir, $"{trainInfo.ModelName}.weights");
+            var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
-
-
 
             model.eval();
             var allPreds = new List<int>();

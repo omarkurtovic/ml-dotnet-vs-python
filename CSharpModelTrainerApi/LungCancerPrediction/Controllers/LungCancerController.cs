@@ -1,5 +1,6 @@
 ﻿using CSharpModelTrainerApi.LungCancerPrediction.Services;
 using CSharpModelTrainerApi.SentimentAnalysis.Services;
+using CSharpModelTrainerApi.Shared;
 using Microsoft.AspNetCore.Mvc;
 using SharedCL.LungCancerPrediction.Models;
 using SharedCL.SentimentAnalysis.Models;
@@ -15,13 +16,16 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         private LungCancerModelTrainer ModelTrainer { get; set; }
         private LungCancerPredictionService LungCancerPredictionService { get; set; }
         private LungCancerModelRepository LungCancerModelRepository { get; set; }
+        private PathResolver PathResolver { get; set; }
         public LungCancerController(LungCancerModelTrainer modelTrainer,
             LungCancerModelRepository lungCancerModelRepository,
-            LungCancerPredictionService lungCancerPredictionService)
+            LungCancerPredictionService lungCancerPredictionService,
+            PathResolver pathResolver)
         {
             ModelTrainer = modelTrainer;
             LungCancerModelRepository = lungCancerModelRepository;
             LungCancerPredictionService = lungCancerPredictionService;
+            PathResolver = pathResolver;
         }
 
         [HttpGet]
@@ -107,25 +111,17 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return NotFound();
             }
 
-            if (model.Language != ModelLanguage.CSharp)
-            {
-                return BadRequest();
-            }
-
             var deleteResult = await LungCancerModelRepository.Delete(model.Id);
             if (!deleteResult.IsSuccess)
             {
                 return BadRequest();
             }
 
-            var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
-
-            string filePath = Path.Combine(repoRoot, "models", "lung-cancer", "csharp", $"{model.Name}.weights");
-
-            if (!System.IO.File.Exists(filePath))
+            var modelPath = PathResolver.GetModelPath(model);
+            if (!System.IO.File.Exists(modelPath))
                 return Ok();
 
-            System.IO.File.Delete(filePath);
+            System.IO.File.Delete(modelPath);
             return Ok();
         }
     }

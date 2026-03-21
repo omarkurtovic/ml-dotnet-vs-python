@@ -1,13 +1,8 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var blobs = builder.AddConnectionString("blobs");
-
-var isProduction = builder.Environment.EnvironmentName == "Production";
 
 var apiService = builder.AddProject<Projects.CSharpModelTrainerApi>("apiservice")
-    .WithHttpHealthCheck("/health")
-    .WithReference(blobs)
-    .WithEnvironment("TRAINING_DISABLED", isProduction ? "true" : "false");
+    .WithHttpHealthCheck("/health");
 
 // py -3.12 -m venv .venv
 // .venv\Scripts\pip.exe install -r .\requirements.txt
@@ -22,7 +17,6 @@ builder.AddProject<Projects.WebApp>("webfrontend")
 .WithHttpHealthCheck("/health")
 .WithReference(apiService)
 .WithReference(pythonApi)
-.WithEnvironment("TRAINING_DISABLED", isProduction ? "true" : "false")
 .WaitFor(apiService);
 
 builder.Build().Run();

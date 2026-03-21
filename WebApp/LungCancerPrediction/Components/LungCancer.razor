@@ -1,5 +1,4 @@
 ﻿@page "/lungCancer"
-@inject IConfiguration Configuration
 @using MudBlazor
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
@@ -14,25 +13,12 @@
                     Pokreni analizu
                 </MudButton>
             </MudItem>
-            @if (isTrainingDisabled)
-            {
-                <MudItem xs="4">
-                    <MudTooltip Text="Treniranje modela je onemogućeno" Placement="Placement.Top">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth StartIcon="@Icons.Material.Filled.ModelTraining" Disabled>
-                            Traniraj Model
-                        </MudButton>
-                    </MudTooltip>
-                </MudItem>
-            }
-            else
-            {
                 <MudItem xs="4">
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer/trainer" FullWidth
                                StartIcon="@Icons.Material.Filled.ModelTraining">
                         Traniraj Model
                     </MudButton>
                 </MudItem>
-            }
             <MudItem xs="4">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer/models" FullWidth
                            StartIcon="@Icons.Material.Filled.List">
@@ -60,13 +46,3 @@
 </MudContainer>
 
 
-
-@code {
-    private bool isTrainingDisabled = false;
-
-    protected override Task OnInitializedAsync()
-    {
-        isTrainingDisabled = Configuration.GetValue<bool>("TRAINING_DISABLED");
-        return base.OnInitializedAsync();
-    }
-}
