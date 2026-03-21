@@ -20,3 +20,8 @@ appsettings.Development.json
 /.vs
 UpgradeLog.htm
 
+/CSharpModelTrainerApi/app.db-shm
+/CSharpModelTrainerApi/app.db-wal
+/models/sentiment-analysis/csharp/Test.zip
+/models/sentiment-analysis/python/TestX.onnx
+/models/sentiment-analysis/python/Texst123.onnx
