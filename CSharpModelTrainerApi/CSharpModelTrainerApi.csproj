@@ -34,11 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\models\**" CopyToOutputDirectory="PreserveNewest" Link="models\%(RecursiveDir)%(Filename)%(Extension)" />
-    <None Include="app.db" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj" />
     <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
   </ItemGroup>
