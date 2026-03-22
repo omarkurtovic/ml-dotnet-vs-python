@@ -136,7 +136,7 @@ Restart=always
 RestartSec=10
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=ASPNETCORE_URLS=http://localhost:5000
-Environment=REPO_ROOT=/opt/app
+Environment=REPO_ROOT=/opt/app  # tells the app where to find /data and /models
 
 [Install]
 WantedBy=multi-user.target
@@ -197,6 +197,12 @@ systemctl status ml-api ml-python ml-web
 
 ## 7. Configure Nginx
 
+First, install Nginx if not already installed:
+```sh
+apt-get install -y nginx
+```
+
+Then create the config:
 ```sh
 cat > /etc/nginx/sites-available/ml-app << 'EOF'
 map $http_upgrade $connection_upgrade {
