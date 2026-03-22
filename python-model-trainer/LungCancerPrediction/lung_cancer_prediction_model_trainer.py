@@ -189,7 +189,7 @@ def train(train_data: TrainData):
 
     input_signature = [tf.TensorSpec([None, img_size, img_size, 1], tf.float32, name='x')]
     onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature, opset=13)
-    onnx.save(onnx_model, model_dir / "lung_cancer_prediction.onnx")
+    onnx.save(onnx_model, model_dir / f"{train_data.modelName}.onnx")
 
     return {
         "name":               train_data.modelName,
