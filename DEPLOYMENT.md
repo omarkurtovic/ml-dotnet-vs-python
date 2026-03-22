@@ -30,8 +30,11 @@ python3 --version  # should print 3.x.x
 ```sh
 mkdir -p /opt/app
 cd /opt/app
-git clone https://github.com/omarkurtovic/ml-dotnet-vs-python .
+git clone https://github.com/omarkurtovic/ml-dotnet-vs-python
+cd ml-dotnet-vs-python
 ```
+
+> The repo will be at `/opt/app/ml-dotnet-vs-python/`. All subsequent server commands assume this path.
 
 ---
 
@@ -51,7 +54,7 @@ scp -r C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\mode
 ## 3. Set Up Python
 
 ```sh
-cd /opt/app/python-model-trainer
+cd /opt/app/ml-dotnet-vs-python/python-model-trainer
 python3 -m venv .venv
 .venv/bin/pip install --upgrade pip
 .venv/bin/pip install -r requirements.txt
@@ -62,7 +65,7 @@ python3 -m venv .venv
 ## 4. Publish .NET Projects
 
 ```sh
-cd /opt/app
+cd /opt/app/ml-dotnet-vs-python
 dotnet publish CSharpModelTrainerApi/CSharpModelTrainerApi.csproj -c Release -o /opt/app/publish/api
 dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web
 ```
@@ -147,8 +150,8 @@ Description=ML Python API
 After=network.target
 
 [Service]
-WorkingDirectory=/opt/app/python-model-trainer
-ExecStart=/opt/app/python-model-trainer/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+WorkingDirectory=/opt/app/ml-dotnet-vs-python/python-model-trainer
+ExecStart=/opt/app/ml-dotnet-vs-python/python-model-trainer/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=10
 
@@ -237,7 +240,7 @@ The app should now be accessible at `http://<your-server-ip>`.
 ## Updating the App
 
 ```sh
-cd /opt/app
+cd /opt/app/ml-dotnet-vs-python
 git pull
 dotnet publish CSharpModelTrainerApi/CSharpModelTrainerApi.csproj -c Release -o /opt/app/publish/api
 dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web

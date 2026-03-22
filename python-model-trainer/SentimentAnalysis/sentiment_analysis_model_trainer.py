@@ -59,7 +59,7 @@ def train(train_data: TrainData):
         raise HTTPException(status_code=400, detail="Only Python models are supported here.")
 
     if not data_path.exists():
-        raise HTTPException(status_code=405, detail="Dataset not found.")
+        raise HTTPException(status_code=404, detail="Dataset not found.")
 
     df = pd.read_csv(data_path)
     df["sentiment"] = df["sentiment"].map({"positive": 1, "negative": 0})
