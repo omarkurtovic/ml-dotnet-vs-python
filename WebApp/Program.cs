@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using MudBlazor.Services;
 using WebApp.Components;
 using WebApp.LungCancerPrediction.ApiClients;
@@ -57,6 +58,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();

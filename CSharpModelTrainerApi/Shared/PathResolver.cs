@@ -11,6 +11,9 @@ namespace CSharpModelTrainerApi.Shared
     {
         private string GetRepoRoot()
         {
+            var envRoot = Environment.GetEnvironmentVariable("REPO_ROOT");
+            if (!string.IsNullOrEmpty(envRoot))
+                return envRoot;
             return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".."));
         }
 
