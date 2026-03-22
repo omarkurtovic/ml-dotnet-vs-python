@@ -26,20 +26,20 @@
                 <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Treniranje Modela</MudText>
             </MudItem>
             <MudItem xs="12">
-        <MudForm @ref="_form">
-            <MudPaper Outlined="true" Class="pa-4 mb-4">
+                <MudForm @ref="_form">
+                    <MudPaper Class="pa-4 mb-4" Elevation="0">
                         <MudTextField @bind-Value="trainingParams.ModelName" Required="true"
                                       RequiredError="Naziv modela je obavezan!" Variant="Variant.Outlined" Label="Naziv modela" Class="mb-4" />
                 
-                    <MudSelect T="ModelLanguage" @bind-Value="trainingParams.ModelLanguage" Label="Jezik modela"
-                                Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Class="mb-4">
-                        @foreach (var item in Enum.GetValues<ModelLanguage>())
-                        {
-                            <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
-                        }
-                    </MudSelect>
+                        <MudSelect T="ModelLanguage" @bind-Value="trainingParams.ModelLanguage" Label="Jezik modela"
+                                   Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Class="mb-4">
+                            @foreach (var item in Enum.GetValues<ModelLanguage>())
+                            {
+                                <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
+                            }
+                        </MudSelect>
                         <MudSelect T="TrainerAlgorithm" @bind-Value="trainingParams.Algorithm" Label="Algoritam"
-                                   Variant="Variant.Outlined" HelperText="@AlgorithmDescription">
+                                   Variant="Variant.Outlined">
                             @foreach (var algo in Enum.GetValues<TrainerAlgorithm>())
                             {
                                 <MudSelectItem Value="@algo">@algo.ToString()</MudSelectItem>
@@ -52,18 +52,18 @@
             <MudItem xs="12" Style="display: flex; justify-content: center; gap:1rem;">
                 @if (!isTrainingDisabled)
                 {
-                <MudButton OnClick="TrainModel" Color="Color.Primary" Variant="Variant.Filled"
-                            Size="Size.Large" Disabled="_isLoading">
-                    @if (_isLoading)
-                    {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                        <span>Treniranje...</span>
-                    }
-                    else
-                    {
-                        <span>Treniraj</span>
-                    }
-                </MudButton>
+                    <MudButton OnClick="TrainModel" Color="Color.Primary" Variant="Variant.Filled"
+                               Size="Size.Large" Disabled="_isLoading">
+                        @if (_isLoading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Treniranje...</span>
+                        }
+                        else
+                        {
+                            <span>Treniraj</span>
+                        }
+                    </MudButton>
                 }
                 @if (model != null)
                 {
@@ -92,12 +92,12 @@
 
     private string AlgorithmDescription => trainingParams.Algorithm switch
     {
-        TrainerAlgorithm.SdcaLogisticRegression  => "Brz i stabilan. Dobar za velike skupove podataka.",
+        TrainerAlgorithm.SdcaLogisticRegression => "Brz i stabilan. Dobar za velike skupove podataka.",
         TrainerAlgorithm.LbfgsLogisticRegression => "Visoka preciznost, sporije treniranje.",
-        TrainerAlgorithm.AveragedPerceptron      => "Najbrži algoritam. Osnovan, ali efektivan za tekst.",
-        TrainerAlgorithm.LinearSvm               => "SVM klasifikator. Dobar za binarne probleme.",
-        TrainerAlgorithm.FastTree                => "Gradijentno pojačana stabla. Visoka preciznost, sporo treniranje.",
-        TrainerAlgorithm.FastForest              => "Nasumična šuma. Otporan na pretreniranje.",
+        TrainerAlgorithm.AveragedPerceptron => "Najbrži algoritam. Osnovan, ali efektivan za tekst.",
+        TrainerAlgorithm.LinearSvm => "SVM klasifikator. Dobar za binarne probleme.",
+        TrainerAlgorithm.FastTree => "Gradijentno pojačana stabla. Visoka preciznost, sporo treniranje.",
+        TrainerAlgorithm.FastForest => "Nasumična šuma. Otporan na pretreniranje.",
         _ => ""
     };
 
@@ -118,7 +118,7 @@
         StateHasChanged();
 
         Result<SentimentAnalysisModel> result;
-        if(trainingParams.ModelLanguage == ModelLanguage.CSharp)
+        if (trainingParams.ModelLanguage == ModelLanguage.CSharp)
         {
             result = await CSharpSentimentAnalysisApi.TrainModelAsync(trainingParams);
         }

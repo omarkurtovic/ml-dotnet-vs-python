@@ -27,7 +27,7 @@
             <MudItem xs="12">
                 <MudForm @ref="_form">
 
-                    <MudPaper Class="pa-4 mb-4">
+                    <MudPaper Class="pa-4 mb-4" Elevation="0">
                         <MudTextField @bind-Value="Review" Required="true"
                                       RequiredError="Recenzija je obavezna!" Label="Napišite ili nalijepite recenziju filma..."
                                       Variant="Variant.Outlined" Lines="8" />
@@ -37,12 +37,10 @@
                             @foreach (var item in MLModels)
                             {
                                 <MudSelectItem Value="@item">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; justify-content: space-between;">
                                         @item.Name
-                                        <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Primary"
-                                                OnClick="@(() => ShowModelDetails(item))" />
                                     </div>
-                                    </MudSelectItem>
+                                </MudSelectItem>
                             }
                         </MudSelect>
                     </MudPaper>

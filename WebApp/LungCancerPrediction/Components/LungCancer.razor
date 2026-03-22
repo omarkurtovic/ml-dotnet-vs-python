@@ -28,17 +28,21 @@
 
             <MudExpansionPanel Text="Opis">
                 <MudText>
+                    Ova komponenta omogućava korisnicima da unesu sliku pluća i odaberu model mašinskog učenja za analizu raka pluća. Nakon klika na gumb "Analiziraj Sliku", komponenta će koristiti odabrani model za predviđanje prisutnosti raka pluća na slici i prikazati rezultat korisniku.
                 </MudText>
             </MudExpansionPanel>
 
             <MudExpansionPanel Text="Podaci">
                 <MudText>
+                    Za treniranje modela koristi se skup podataka IQOTHNCCD Lung Cancer Dataset, koji sadrži CT snimke pluća sa oznakama koje ukazuju na prisutnost ili odsutnost raka pluća. Ovaj skup podataka je široko korišten u istraživanjima medicinske dijagnostike i omogućava modelima da nauče prepoznavati različite obrasce u slikama koji su povezani s rakom pluća.
                     <MudLink Href="https://www.kaggle.com/datasets/adityamahimkar/iqothnccd-lung-cancer-dataset">Podaci</MudLink>
                 </MudText>
             </MudExpansionPanel>
 
             <MudExpansionPanel Text="Treniranje">
                 <MudText>
+                    Korisnik ima par opcija prilikom treniranja modela. Prva opcija je sam naziv model koji korisnik proizvoljno unosi.
+                    Druga opcija jeste jezik u kojem će biti rađeno treniranje, a korisnik može birati između C# i Pythona. Ovisno o odabranom jeziku, treniranje će se odvijati na različitim backendovima, ali će rezultati biti prikazani na isti način.
                 </MudText>
             </MudExpansionPanel>
         </MudGrid>

@@ -26,7 +26,7 @@
             <MudItem xs="12">
                 <MudForm @ref="_form">
 
-                    <MudPaper Class="pa-4 mb-4">
+                    <MudPaper Class="pa-4 mb-4" Elevation="0">
                         <MudPaper Outlined="true" Class="pa-4 mb-4">
                             <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Odaberite sliku pluća</b></MudText>
                             <MudFileUpload T="IBrowserFile" @bind-Files="_file" Required="true" RequiredError="Slika je obavezna!" Accept=".png,.jpg,.jpeg" Hidden="false" />
@@ -37,10 +37,8 @@
                             @foreach (var item in Models)
                             {
                                 <MudSelectItem Value="@item">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; justify-content: space-between;">
                                         @item.Name
-                                        <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Primary"
-                                                       OnClick="@(() => ShowModelDetails(item))" />
                                     </div>
                                 </MudSelectItem>
                             }
