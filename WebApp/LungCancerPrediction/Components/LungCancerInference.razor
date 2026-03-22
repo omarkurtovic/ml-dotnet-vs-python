@@ -28,8 +28,8 @@
 
                     <MudPaper Class="pa-4 mb-4">
                         <MudPaper Outlined="true" Class="pa-4 mb-4">
-                            <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Please upload an image</b></MudText>
-                            <MudFileUpload T="IBrowserFile" @bind-Files="_file" Required="true" RequiredError="An image is required!" Accept=".png,.jpg,.jpeg" Hidden="false" />
+                            <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Odaberite sliku pluća</b></MudText>
+                            <MudFileUpload T="IBrowserFile" @bind-Files="_file" Required="true" RequiredError="Slika je obavezna!" Accept=".png,.jpg,.jpeg" Hidden="false" />
                         </MudPaper>
 
                         <MudSelect T="LungCancerModel" @bind-Value="SelectedModel" Label="Model" Variant="Variant.Outlined"
@@ -59,7 +59,7 @@
                     }
                     else
                     {
-                        <span>Analiziraj Sentiment</span>
+                        <span>Analiziraj Sliku</span>
                     }
                 </MudButton>
                 @if (Prediction != null)

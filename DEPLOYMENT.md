@@ -35,22 +35,20 @@ git clone https://github.com/omarkurtovic/ml-dotnet-vs-python .
 
 ---
 
-## 2. Transfer Data, Models and Database (run from your Windows machine)
+## 2. Transfer Data, Models
 
 ```powershell
-# data folder (lung cancer images + sentiment CSV)
+# data folder
 scp -r C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\data root@<ip>:/opt/app/data
 
-# models folder (any pre-trained models)
+# models folder
 scp -r C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\models root@<ip>:/opt/app/models
 
-# SQLite database (app.db only - shm and wal are not needed)
-scp C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\CSharpModelTrainerApi\app.db root@<ip>:/tmp/app.db
 ```
 
 ---
 
-## 3. Set Up Python Virtual Environment (on server)
+## 3. Set Up Python
 
 ```sh
 cd /opt/app/python-model-trainer
@@ -59,11 +57,9 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
 
-Note: tensorflow is large (~500 MB). This will take a few minutes.
-
 ---
 
-## 4. Publish .NET Projects (on server)
+## 4. Publish .NET Projects
 
 ```sh
 cd /opt/app
@@ -71,9 +67,9 @@ dotnet publish CSharpModelTrainerApi/CSharpModelTrainerApi.csproj -c Release -o 
 dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web
 ```
 
-Copy the database to the API publish folder:
+Copy the database
 ```sh
-cp /tmp/app.db /opt/app/publish/api/app.db
+scp C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\CSharpModelTrainerApi\bin\Debug\net10.0\app.db root@<ip>:/opt/publish/api/app.db
 ```
 
 ---
@@ -136,7 +132,7 @@ Restart=always
 RestartSec=10
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=ASPNETCORE_URLS=http://localhost:5000
-Environment=REPO_ROOT=/opt/app  # tells the app where to find /data and /models
+Environment=REPO_ROOT=/opt/app
 
 [Install]
 WantedBy=multi-user.target
@@ -237,34 +233,8 @@ The app should now be accessible at `http://<your-server-ip>`.
 
 ---
 
-## 8. Optional: Add a Swap File (safety net for training)
-
-```sh
-fallocate -l 2G /swapfile
-chmod 600 /swapfile
-mkswap /swapfile
-swapon /swapfile
-echo '/swapfile none swap sw 0 0' >> /etc/fstab
-```
-
----
-
-## 9. Optional: Free HTTPS with Let's Encrypt
-
-Only do this if you have a domain pointing to the server IP.
-
-```sh
-apt-get install -y certbot python3-certbot-nginx
-certbot --nginx -d yourdomain.com
-```
-
-Certbot will auto-update the Nginx config and set up auto-renewal.
-
----
 
 ## Updating the App
-
-When you push new code and want to redeploy:
 
 ```sh
 cd /opt/app
@@ -274,7 +244,7 @@ dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web
 systemctl restart ml-api ml-web
 ```
 
-For Python changes:
+For Python:
 ```sh
 systemctl restart ml-python
 ```
@@ -284,9 +254,9 @@ systemctl restart ml-python
 ## Checking Logs
 
 ```sh
-journalctl -u ml-api -f      # C# API logs (live)
-journalctl -u ml-python -f   # Python API logs (live)
-journalctl -u ml-web -f      # Blazor app logs (live)
+journalctl -u ml-api -f
+journalctl -u ml-python -f
+journalctl -u ml-web -f
 ```
 
 ---
