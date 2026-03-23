@@ -11,5 +11,6 @@
             ("Malignant", MalignantScore),
             ("Normal", NormalScore)
         }.MaxBy(x => x.Item2).Item1;
+
     }
 }

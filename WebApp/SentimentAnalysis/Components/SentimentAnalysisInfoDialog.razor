@@ -13,10 +13,10 @@
     </TitleContent>
     <DialogContent>
         <div style="display: flex; flex-direction: column; gap: 1rem;">
-        <MudText>Jezik: @Model.Language</MudText>
-        <MudText>Algoritam: @Model.TrainerAlgorithm</MudText>
         @if (Model != null)
         {
+            <MudText>Jezik: @Model.Language</MudText>
+            <MudText>Algoritam: @Model.TrainerAlgorithm</MudText>
             <MudGrid>
                 <MudItem xs="12" sm="6">
                     <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Trening</b></MudText>

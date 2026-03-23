@@ -46,10 +46,8 @@
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12">
-                </MudItem>
-                <MudItem xs="12">
-                    <MudSelect T="LungCancerModel" @bind-Value="SelectedModel" Label="Model" Variant="Variant.Outlined"
-                               Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Clearable>
+                    <MudSelect T="LungCancerModel" Label="Model" @bind-Value="SelectedModel"
+                               Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Clearable Variant="Variant.Outlined">
                         @foreach (var item in Models)
                         {
                             <MudSelectItem Value="@item">
@@ -75,7 +73,7 @@
                     </MudButton>
                     @if (Prediction != null)
                     {
-                        <MudAlert Variant="Variant.Filled" Dense="true" NoIcon="false">
+                        <MudAlert Variant="Variant.Filled" Dense="true" NoIcon="false" Severity="@GetPredictionSeverity(Prediction.PredictedLabel)">
                             <b>@Prediction.PredictedLabel</b>
                         </MudAlert>
                     }
@@ -86,11 +84,6 @@
     </MudPaper>
 </MudContainer>
 
-<MudPaper Class="d-flex justify-center align-center gap-4 pa-4"
-          Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;"
-          Elevation="10">
-
-</MudPaper>
 
 @code {
 
@@ -134,7 +127,7 @@
         if (predResult.IsSuccess)
         {
             Prediction = predResult.Data!;
-            
+
         }
         else
         {
@@ -154,10 +147,11 @@
         }
         if (_file.Size > 5242880)
         {
+            Snackbar.Add("Veličina fajla prevelika! (preko 5MB)");
             return;
         }
 
-        using var stream = _file.OpenReadStream(5242880); // Limit to 5MB.
+        using var stream = _file.OpenReadStream(5242880);
         using var memoryStream = new MemoryStream();
         await stream.CopyToAsync(memoryStream);
         var fileBytes = memoryStream.ToArray();
@@ -165,5 +159,22 @@
         // Update base64 string
         _base64 = $"data:{_file.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
 
+    }
+
+
+    private Severity GetPredictionSeverity(string prediction)
+    {
+        if(prediction == "Benign")
+        {
+            return Severity.Success;
+        }
+        else if (prediction == "Malignant")
+        {
+            return Severity.Error;
+        }
+        else
+        {
+            return Severity.Info;
+        }
     }
 }

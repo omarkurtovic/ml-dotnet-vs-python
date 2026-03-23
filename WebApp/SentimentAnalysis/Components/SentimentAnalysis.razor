@@ -26,25 +26,27 @@
                 </MudButton>
             </MudItem>
 
-            <MudExpansionPanel Text="Opis">
-                <MudText>
-                    Ova komponenta omogućava korisnicima da unesu tekstualnu recenziju filma i odaberu model mašinskog učenja za analizu sentimenta. Nakon klika na gumb "Analiziraj Sentiment", komponenta će koristiti odabrani model za predviđanje sentimenta recenzije i prikazati rezultat korisniku.
-                </MudText>
-            </MudExpansionPanel>
-
-            <MudExpansionPanel Text="Podaci">
-                <MudText>
-                    Za treniranje modela koristi se skup podataka IMDB Movie Reviews, koji sadrži 50.000 recenzija filmova, od kojih je 25.000 pozitivno i 25.000 negativno ocijenjeno. Ovaj skup podataka je široko korišten u istraživanjima analize sentimenta i omogućava modelima da nauče prepoznavati različite obrasce u tekstu koji su povezani s pozitivnim ili negativnim sentimentom.
-                    <MudLink Href="https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews?select=IMDB+Dataset.csv">Link</MudLink>
-                </MudText>
-            </MudExpansionPanel>
-
-            <MudExpansionPanel Text="Treniranje">
-                <MudText>
-                    Korisnik ima par opcija prilikom treniranja modela. Prva opcija je sam naziv model koji korisnik proizvoljno unosi.
-                    Druga opcija je izbor algoritma koji se koristi za treniranje modela. Korisnik može birati između različitih algoritama zavisno od svojih preferencija i potreba, a svaki algoritam ima svoje prednosti i nedostatke u kontekstu analize sentimenta.
-                </MudText>
-            </MudExpansionPanel>
+            <MudItem xs="12">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Opis">
+                        <MudText>
+                            Ova komponenta omogućava korisnicima da unesu tekstualnu recenziju filma i odaberu model mašinskog učenja za analizu sentimenta. Nakon klika na gumb "Analiziraj Sentiment", komponenta će koristiti odabrani model za predviđanje sentimenta recenzije i prikazati rezultat korisniku.
+                        </MudText>
+                    </MudExpansionPanel>
+                    <MudExpansionPanel Text="Podaci">
+                        <MudText>
+                            Za treniranje modela koristi se skup podataka IMDB Movie Reviews, koji sadrži 50.000 recenzija filmova, od kojih je 25.000 pozitivno i 25.000 negativno ocijenjeno. Ovaj skup podataka je široko korišten u istraživanjima analize sentimenta i omogućava modelima da nauče prepoznavati različite obrasce u tekstu koji su povezani s pozitivnim ili negativnim sentimentom.
+                            <MudLink Href="https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews?select=IMDB+Dataset.csv">Link</MudLink>
+                        </MudText>
+                    </MudExpansionPanel>
+                    <MudExpansionPanel Text="Treniranje">
+                        <MudText>
+                            Korisnik ima par opcija prilikom treniranja modela. Prva opcija je sam naziv model koji korisnik proizvoljno unosi.
+                            Druga opcija je izbor algoritma koji se koristi za treniranje modela. Korisnik može birati između različitih algoritama zavisno od svojih preferencija i potreba, a svaki algoritam ima svoje prednosti i nedostatke u kontekstu analize sentimenta.
+                        </MudText>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
         </MudGrid>
     </MudPaper>
 </MudContainer>

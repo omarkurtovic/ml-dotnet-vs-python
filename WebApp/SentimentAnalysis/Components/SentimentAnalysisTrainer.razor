@@ -50,21 +50,18 @@
                 </MudForm>
             </MudItem>
             <MudItem xs="12" Style="display: flex; justify-content: center; gap:1rem;">
-                @if (!isTrainingDisabled)
-                {
-                    <MudButton OnClick="TrainModel" Color="Color.Primary" Variant="Variant.Filled"
-                               Size="Size.Large" Disabled="_isLoading">
-                        @if (_isLoading)
-                        {
-                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                            <span>Treniranje...</span>
-                        }
-                        else
-                        {
-                            <span>Treniraj</span>
-                        }
-                    </MudButton>
-                }
+                <MudButton OnClick="TrainModel" Color="Color.Primary" Variant="Variant.Filled"
+                            Size="Size.Large" Disabled="_isLoading">
+                    @if (_isLoading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Treniranje...</span>
+                    }
+                    else
+                    {
+                        <span>Treniraj</span>
+                    }
+                </MudButton>
                 @if (model != null)
                 {
                     <MudButton OnClick="ShowModelDetails" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Large">
@@ -88,29 +85,15 @@
     private SentimentAnalysisModel? model;
     private bool _isLoading = false;
 
-    private bool isTrainingDisabled = false;
-
-    private string AlgorithmDescription => trainingParams.Algorithm switch
-    {
-        TrainerAlgorithm.SdcaLogisticRegression => "Brz i stabilan. Dobar za velike skupove podataka.",
-        TrainerAlgorithm.LbfgsLogisticRegression => "Visoka preciznost, sporije treniranje.",
-        TrainerAlgorithm.AveragedPerceptron => "Najbrži algoritam. Osnovan, ali efektivan za tekst.",
-        TrainerAlgorithm.LinearSvm => "SVM klasifikator. Dobar za binarne probleme.",
-        TrainerAlgorithm.FastTree => "Gradijentno pojačana stabla. Visoka preciznost, sporo treniranje.",
-        TrainerAlgorithm.FastForest => "Nasumična šuma. Otporan na pretreniranje.",
-        _ => ""
-    };
-
     protected override Task OnInitializedAsync()
     {
-        isTrainingDisabled = Configuration.GetValue<bool>("TRAINING_DISABLED");
         return base.OnInitializedAsync();
     }
 
 
     private async Task TrainModel()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
         if (!_form.IsValid)
             return;
 

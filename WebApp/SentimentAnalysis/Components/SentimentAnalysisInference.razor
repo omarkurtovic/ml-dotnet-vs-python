@@ -72,14 +72,7 @@
         
     </MudPaper>
 </MudContainer>
-
-<MudPaper Class="d-flex justify-center align-center gap-4 pa-4"
-          Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;"
-          Elevation="10">
-    
-</MudPaper>
-
-    @code {
+@code {
 
     private MudForm _form = null!;
     private string Review = "";
@@ -87,7 +80,7 @@
     private List<SentimentAnalysisModel> MLModels { get; set; } = new List<SentimentAnalysisModel>();
     private SentimentAnalysisModel SentimentAnalysisModel = null!;
 
-    private SentimentPrediction Prediction = null!;
+    private SentimentPrediction? Prediction = null;
     private bool _isLoading = false;
 
     protected override async Task OnInitializedAsync()
@@ -106,7 +99,7 @@
 
     private async Task Predict()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
         if (!_form.IsValid)
         {
             StateHasChanged();
