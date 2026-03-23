@@ -30,7 +30,7 @@
                                       RequiredError="Naziv modela je obavezan!" Variant="Variant.Outlined" Label="Naziv modela" Class="mb-4" />
 
                         <MudSelect T="ModelLanguage" @bind-Value="trainingParams.ModelLanguage" Label="Jezik modela"
-                                   Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Class="mb-4">
+                                   Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Class="mb-4" Clearable>
                             @foreach (var item in Enum.GetValues<ModelLanguage>())
                             {
                                 <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>

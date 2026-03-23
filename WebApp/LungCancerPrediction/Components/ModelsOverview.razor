@@ -13,7 +13,7 @@
 
 <PageTitle>Pregled Modela</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
 
         <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
@@ -34,7 +34,7 @@
             else
             {
                 <MudDataGrid T="LungCancerModel" Items="_models"
-                             SortMode="SortMode.Multiple" Filterable="true"
+                             SortMode="SortMode.Multiple" Filterable="false"
                              Hover="true" Striped="true" Elevation="0">
                     <Columns>
                         <PropertyColumn Property="x => x.Name" Title="Naziv" Sortable="true" />
@@ -46,13 +46,15 @@
                                 </MudChip>
                             </CellTemplate>
                         </PropertyColumn>
-                        <PropertyColumn Property="x => x.ValidationAccuracy" Title="Preciznost" Sortable="true" />
+                        <PropertyColumn Property="x => x.ValidationAccuracy" Title="Preciznost" Sortable="true" Format="P" />
                         <TemplateColumn Title="" Sortable="false" Filterable="false">
                             <CellTemplate>
-                                <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Primary"
-                                               OnClick="@(() => ShowModelDetails(context.Item))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                               OnClick="@(() => ConfirmDelete(context.Item))" />
+                                <div style="display: flex; justify-content: space-around;">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Primary"
+                                                   OnClick="@(() => ShowModelDetails(context.Item))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                                   OnClick="@(() => ConfirmDelete(context.Item))" />
+                                </div>
                             </CellTemplate>
                         </TemplateColumn>
                     </Columns>

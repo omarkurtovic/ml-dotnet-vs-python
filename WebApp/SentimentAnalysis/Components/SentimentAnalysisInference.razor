@@ -33,7 +33,7 @@
                                       Variant="Variant.Outlined" Lines="8" />
 
                         <MudSelect T="SentimentAnalysisModel" @bind-Value="SentimentAnalysisModel" Label="Model" Variant="Variant.Outlined"
-                                   Required="true" RequiredError="Model Mašinskog Učenja je obavezan!">
+                                   Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Clearable>
                             @foreach (var item in MLModels)
                             {
                                 <MudSelectItem Value="@item">

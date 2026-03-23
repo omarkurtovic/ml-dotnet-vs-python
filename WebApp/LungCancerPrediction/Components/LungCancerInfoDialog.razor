@@ -6,7 +6,10 @@
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />Performanse Model: @Model.Name</MudText>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />
+            <MudText Typo="Typo.h6">Performanse Modela: @Model.Name</MudText>
+        </div>
     </TitleContent>
     <DialogContent>
         <MudText Class="mb-3">Jezik: @Model.Language</MudText>

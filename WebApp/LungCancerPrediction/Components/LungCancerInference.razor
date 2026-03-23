@@ -16,58 +16,72 @@
 <PageTitle>Rak pluća </PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
-    <MudPaper Class="pa-6 mt-6" Elevation="15">
-        <MudGrid>
-            <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
-                <MudIconButton Style="margin-left: 24px; position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
-                               Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer" />
-                <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Analiza Rak Pluća</MudText>
-            </MudItem>
-            <MudItem xs="12">
-                <MudForm @ref="_form">
-
-                    <MudPaper Class="pa-4 mb-4" Elevation="0">
-                        <MudPaper Outlined="true" Class="pa-4 mb-4">
-                            <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Odaberite sliku pluća</b></MudText>
-                            <MudFileUpload T="IBrowserFile" @bind-Files="_file" Required="true" RequiredError="Slika je obavezna!" Accept=".png,.jpg,.jpeg" Hidden="false" />
-                        </MudPaper>
-
-                        <MudSelect T="LungCancerModel" @bind-Value="SelectedModel" Label="Model" Variant="Variant.Outlined"
-                                   Required="true" RequiredError="Model Mašinskog Učenja je obavezan!">
-                            @foreach (var item in Models)
-                            {
-                                <MudSelectItem Value="@item">
-                                    <div style="display: flex; justify-content: space-between;">
-                                        @item.Name
-                                    </div>
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
+    <MudPaper Elevation="15" Class="pa-6 mt-6">
+        <MudForm @ref="_form">
+            <MudGrid>
+                <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
+                    <MudIconButton Style="margin-left: 24px; position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
+                                   Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer" />
+                    <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Analiza Slike</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudPaper Outlined Style="display: flex; flex-direction: column; gap:1rem; padding: 1rem;">
+                        <MudText Typo="Typo.body2">Odaberite sliku pluća*</MudText>
+                        <MudFileUpload T="IBrowserFile" @bind-Files="_file" @bind-Files:after="UploadImage"
+                                       Required="true" RequiredError="Slika je obavezna!"
+                                       Accept=".png,.jpg,.jpeg" Hidden="true">
+                            <CustomContent>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           OnClick="@context.OpenFilePickerAsync"
+                                           StartIcon="@Icons.Material.Filled.CloudUpload">
+                                    Pretraži fajlove
+                                </MudButton>
+                            </CustomContent>
+                        </MudFileUpload>
+                        @if (!string.IsNullOrWhiteSpace(_base64))
+                        {
+                            <MudImage Src="@_base64" Alt="Employee Image" Height="64" Width="64" Elevation="25" Class="rounded-lg" />
+                        }
                     </MudPaper>
-
-                </MudForm>
-            </MudItem>
-            <MudItem xs="12" Style="display: flex; justify-content: center; gap:1rem;">
-                <MudButton OnClick="Predict" Color="Color.Primary" Variant="Variant.Filled"
-                           Size="Size.Large" Disabled="_isLoading">
-                    @if (_isLoading)
+                </MudItem>
+                <MudItem xs="12">
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect T="LungCancerModel" @bind-Value="SelectedModel" Label="Model" Variant="Variant.Outlined"
+                               Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Clearable>
+                        @foreach (var item in Models)
+                        {
+                            <MudSelectItem Value="@item">
+                                <div style="display: flex; justify-content: space-between;">
+                                    @item.Name
+                                </div>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" Style="display: flex; justify-content: center; gap:1rem;">
+                    <MudButton OnClick="Predict" Color="Color.Primary" Variant="Variant.Filled"
+                               Size="Size.Large" Disabled="_isLoading">
+                        @if (_isLoading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Analiziranje...</span>
+                        }
+                        else
+                        {
+                            <span>Analiziraj Sliku</span>
+                        }
+                    </MudButton>
+                    @if (Prediction != null)
                     {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                        <span>Analiziranje...</span>
+                        <MudAlert Variant="Variant.Filled" Dense="true" NoIcon="false">
+                            <b>@Prediction.PredictedLabel</b>
+                        </MudAlert>
                     }
-                    else
-                    {
-                        <span>Analiziraj Sliku</span>
-                    }
-                </MudButton>
-                @if (Prediction != null)
-                {
-                    <MudAlert Variant="Variant.Filled" Dense="true" NoIcon="false">
-                        <b>@Prediction.PredictedLabel</b>
-                    </MudAlert>
-                }
-            </MudItem>
-        </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
 
     </MudPaper>
 </MudContainer>
@@ -82,11 +96,12 @@
 
     private MudForm _form = null!;
     private IBrowserFile? _file = null;
+    private string _base64 = string.Empty;
 
     private List<LungCancerModel> Models { get; set; } = new List<LungCancerModel>();
     private LungCancerModel SelectedModel = null!;
 
-    private LungCancerPredictionModel Prediction = null!;
+    private LungCancerPredictionModel? Prediction = null;
     private bool _isLoading = false;
 
     protected override async Task OnInitializedAsync()
@@ -105,7 +120,7 @@
 
     private async Task Predict()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
         if (!_form.IsValid)
         {
             StateHasChanged();
@@ -119,22 +134,36 @@
         if (predResult.IsSuccess)
         {
             Prediction = predResult.Data!;
+            
         }
         else
         {
             Snackbar.Add("Greška prilikom analiziranja!", Severity.Error);
         }
         _isLoading = false;
+        StateHasChanged();
     }
 
-    private async Task ShowModelDetails(LungCancerModel model)
+    private async Task UploadImage()
     {
-        var parameters = new DialogParameters<LungCancerInfoDialog>
+        if (_file == null)
         {
-            { x => x.Model, model }
-        };
+            _base64 = string.Empty;
+            StateHasChanged();
+            return;
+        }
+        if (_file.Size > 5242880)
+        {
+            return;
+        }
 
-        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
-        await DialogService.ShowAsync<LungCancerInfoDialog>("Detalji Modela", parameters, options);
+        using var stream = _file.OpenReadStream(5242880); // Limit to 5MB.
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var fileBytes = memoryStream.ToArray();
+
+        // Update base64 string
+        _base64 = $"data:{_file.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
+
     }
 }
