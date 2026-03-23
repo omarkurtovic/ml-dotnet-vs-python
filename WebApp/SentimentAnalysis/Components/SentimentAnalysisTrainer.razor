@@ -12,7 +12,6 @@
 @inject PythonSentimentAnalysisApiClient PythonSentimentAnalysisApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
-@inject IConfiguration Configuration
 @rendermode InteractiveServer
 
 <PageTitle>Treniranje Analize Sentimenta</PageTitle>
@@ -85,12 +84,6 @@
     private SentimentAnalysisModel? model;
     private bool _isLoading = false;
 
-    protected override Task OnInitializedAsync()
-    {
-        return base.OnInitializedAsync();
-    }
-
-
     private async Task TrainModel()
     {
         await _form.ValidateAsync();
@@ -111,6 +104,7 @@
         }
 
         _isLoading = false;
+        StateHasChanged();
 
         if (result.IsSuccess)
         {
