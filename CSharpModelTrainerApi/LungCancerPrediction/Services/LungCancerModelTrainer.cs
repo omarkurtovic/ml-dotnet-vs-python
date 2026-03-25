@@ -132,7 +132,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         {
             public NeuralNetwork() : base("LungCancerCNN")
             {
-                flatten = nn.Flatten();
                 model = Sequential(
                     ("conv2d", Conv2d(in_channels: 1, out_channels: 64, kernel_size: 3)),
                     ("relu1", ReLU()),
@@ -148,14 +147,11 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 RegisterComponents();
             }
 
-            Flatten flatten;
             Sequential model;
 
             public override Tensor forward(Tensor input)
             {
-                var x = flatten.call(input);
-                var logits = model.call(x);
-                return logits;
+                return model.call(input);
             }
         }
 

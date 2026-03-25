@@ -67,7 +67,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 
         [HttpPost]
         [Route("Train")]
-        public async Task<IActionResult> Train([FromBody] LungCancerTrainingParams trainParams)
+        public IActionResult Train([FromBody] LungCancerTrainingParams trainParams)
         {
             if (trainParams.ModelLanguage == ModelLanguage.CSharp)
             {
