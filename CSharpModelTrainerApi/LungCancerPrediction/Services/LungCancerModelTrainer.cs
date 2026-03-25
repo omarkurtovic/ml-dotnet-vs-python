@@ -7,9 +7,14 @@ using SharedCL.Shared.Enums;
 using SharedCL.Shared.Models;
 using SkiaSharp;
 using TorchSharp;
+using TorchSharp.Modules;
 using static TorchSharp.TensorExtensionMethods;
+using static TorchSharp.torch;
+using static TorchSharp.torch.distributions;
 using static TorchSharp.torch.nn;
 using static TorchSharp.torch.nn.functional;
+using static TorchSharp.torch.utils;
+using static TorchSharp.torch.utils.data;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
@@ -17,211 +22,249 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
     {
         public  Result<LungCancerModel> TrainModel(LungCancerTrainingParams trainInfo)
         {
+            Device defaultDevice = GetOptimalDevice();
+            torch.set_default_device(defaultDevice);
+
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 
-            var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
-            int imageSize = 256;
+            var trainingData = new LungCancerTrainDataset(dataDirectory);
+            var testData = new LungCancerTestDataset(dataDirectory);
 
-            var data = new List<(float[] pixels, int label)>();
+            var trainLoader = torch.utils.data.DataLoader(trainingData, batchSize: 64, shuffle: true, device: defaultDevice);
+            var testLoader = torch.utils.data.DataLoader(testData, batchSize: 64, shuffle: false, device: defaultDevice);
 
-            foreach (var category in categories)
-            {
-                int classNum = categories.IndexOf(category);
-                var path = Path.Join(dataDirectory, category);
-
-                foreach (var filepath in Directory.GetFiles(path))
-                {
-                    using var original = SKBitmap.Decode(filepath);
-                    using var resized = original.Resize(new SKImageInfo(imageSize, imageSize, SKColorType.Gray8), SKFilterQuality.Medium);
-
-                    var pixelBytes = resized.Bytes;
-                    var pixels = new float[imageSize * imageSize];
-                    for (int i = 0; i < pixels.Length; i++)
-                        pixels[i] = pixelBytes[i] / 255.0f;
-
-                    data.Add((pixels, classNum));
-                }
-            }
-
-
-            var rng = new Random(10);
-            data = [.. data.OrderBy(_ => rng.Next())];
-
-            int trainSize = (int)(data.Count * 0.75);
-
-            var trainData = data.Take(trainSize).ToList();
-            var validData = data.Skip(trainSize).ToList();
-
-
-            var model = Sequential(
-                ("conv2d", Conv2d(in_channels: 1, out_channels: 64, kernel_size: 3)),
-                ("relu1", ReLU()),
-                ("maxpooling2d1", MaxPool2d((2, 2))),
-                ("conv2d2", Conv2d(in_channels: 64, out_channels: 64, kernel_size: 3)),
-                ("relu2", ReLU()),
-                ("maxpooling2d2", MaxPool2d((2, 2))),
-                ("flatten", Flatten()),
-                ("dense1", Linear(inputSize: 246016, outputSize: 16)),
-                ("dense2", Linear(inputSize: 16, outputSize: 3))
-            );
-
+            var model = new NeuralNetwork().to(defaultDevice);
+            var loss = nn.CrossEntropyLoss();
             var optimizer = torch.optim.Adam(model.parameters());
-            int epochs = 5;
-            int batchSize = 8;
 
-            for (int epoch = 0; epoch < epochs; epoch++)
+            var epochs = 5;
+
+            foreach (var epoch in Enumerable.Range(0, epochs))
             {
-                model.train();
-                float trainLoss = 0;
-                int total = 0;
-                long correct = 0;
-                foreach (var (X, y) in MakeBatches(trainData, batchSize, imageSize, augment: true))
-                {
-                    optimizer.zero_grad();
-                    var output = model.forward(X);
-
-                    var loss = cross_entropy(output, y);
-                    loss.backward();
-                    optimizer.step();
-
-                    trainLoss += loss.item<float>();
-                    correct += output.argmax(1).eq(y).sum().item<long>();
-                    total += (int)y.shape[0];
-                }
-
-                model.eval();
-                long valCorrect = 0, valTotal = 0;
-
-                using (torch.no_grad())
-                {
-                    foreach (var (X, y) in MakeBatches(validData, batchSize, imageSize, augment: false))
-                    {
-                        var output = model.forward(X);
-                        valCorrect += output.argmax(1).eq(y).sum().item<long>();
-                        valTotal += (int)y.shape[0];
-                    }
-                }
-
-                Console.WriteLine($"Epoch {epoch + 1}/{epochs} " +
-                                  $"- loss: {trainLoss / total:F4} " +
-                                  $"- accuracy: {(float)correct / total:F4} " +
-                                  $"- val_accuracy: {(float)valCorrect / valTotal:F4}");
+                Console.WriteLine($"Epoch {epoch + 1}\n-------------------------------");
+                Train(trainLoader, model, loss, optimizer);
+                Test(testLoader, model, loss);
             }
 
-            model.eval();
+            Console.WriteLine("Done!");
 
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 
-            model.eval();
-            var allPreds = new List<int>();
-            var allLabels = new List<int>();
-
-            using (torch.no_grad())
-            {
-                foreach (var (X, y) in MakeBatches(validData, batchSize, imageSize, augment: false))
-                {
-                    var output = model.forward(X);
-                    var preds = output.argmax(1);
-                    allPreds.AddRange(preds.data<long>().Select(p => (int)p));
-                    allLabels.AddRange(y.data<long>().Select(l => (int)l));
-                }
-            }
-
-            var categoryNames = new[] { "Benign", "Malignant", "Normal" };
-            int numClasses = categoryNames.Length;
-
-            var tp = new int[numClasses];
-            var fp = new int[numClasses];
-            var fn = new int[numClasses];
-
-            for (int i = 0; i < allLabels.Count; i++)
-            {
-                int pred = allPreds[i];
-                int label = allLabels[i];
-                if (pred == label) tp[pred]++;
-                else { fp[pred]++; fn[label]++; }
-            }
-
-            double Precision(int c) => (tp[c] + fp[c]) == 0 ? 0 : (double)tp[c] / (tp[c] + fp[c]);
-            double Recall(int c) => (tp[c] + fn[c]) == 0 ? 0 : (double)tp[c] / (tp[c] + fn[c]);
-            double F1(int c) => (Precision(c) + Recall(c)) == 0 ? 0 : 2 * Precision(c) * Recall(c) / (Precision(c) + Recall(c));
-
-            int[] support = Enumerable.Range(0, numClasses).Select(c => tp[c] + fn[c]).ToArray();
-            int totalSupport = support.Sum();
-
-            double valAccuracy = (double)allPreds.Zip(allLabels).Count(p => p.First == p.Second) / allLabels.Count;
+            var (valAccuracy, valLoss) = Test(testLoader, model, loss);
 
             return Result<LungCancerModel>.Success(new LungCancerModel
             {
                 Name = trainInfo.ModelName,
                 Language = ModelLanguage.CSharp,
                 ValidationAccuracy = valAccuracy,
-                BenignPrecision = Precision(0),
-                BenignRecall = Recall(0),
-                BenignF1Score = F1(0),
-                MalignantPrecision = Precision(1),
-                MalignantRecall = Recall(1),
-                MalignantF1Score = F1(1),
-                NormalPrecision = Precision(2),
-                NormalRecall = Recall(2),
-                NormalF1Score = F1(2),
-                MacroPrecision = Enumerable.Range(0, numClasses).Average(Precision),
-                MacroRecall = Enumerable.Range(0, numClasses).Average(Recall),
-                MacroF1Score = Enumerable.Range(0, numClasses).Average(F1),
-                WeightedPrecision = Enumerable.Range(0, numClasses).Sum(c => Precision(c) * support[c]) / totalSupport,
-                WeightedRecall = Enumerable.Range(0, numClasses).Sum(c => Recall(c) * support[c]) / totalSupport,
-                WeightedF1Score = Enumerable.Range(0, numClasses).Sum(c => F1(c) * support[c]) / totalSupport,
+                ValidationLoss = valLoss,
             });
-
         }
 
-        private static IEnumerable<(torch.Tensor X, torch.Tensor y)> MakeBatches(
-            List<(float[] pixels, int label)> data, int batchSize, int imageSize, bool augment)
+        static void Train(DataLoader dataloader, NeuralNetwork model, CrossEntropyLoss loss_fn, Adam optimizer)
         {
-            var rng = new Random();
+            var size = dataloader.dataset.Count;
+            model.train();
 
-            for (int i = 0; i < data.Count; i += batchSize)
+            int batch = 0;
+            foreach (var item in dataloader)
             {
-                var batch = data.Skip(i).Take(batchSize).ToList();
+                var x = item["image"];
+                var y = item["label"];
 
-                var allPixels = new float[batch.Count * imageSize * imageSize];
-                var allLabels = new long[batch.Count];
+                var pred = model.call(x);
 
-                for (int j = 0; j < batch.Count; j++)
+                var loss = loss_fn.call(pred, y);
+
+                loss.backward();
+
+                optimizer.step();
+
+                optimizer.zero_grad();
+
+                if (batch % 100 == 0)
                 {
-                    float[] pixels = augment ? RandomFlip(batch[j].pixels, imageSize, rng) : batch[j].pixels;
+                    loss = loss.item<float>();
 
-                    Array.Copy(pixels, 0, allPixels, j * imageSize * imageSize, pixels.Length);
+                    var current = (batch + 1) * x.shape[0];
 
-                    allLabels[j] = batch[j].label;
+                    Console.WriteLine($"loss: {loss.item<float>(),7}  [{current,5}/{size,5}]");
                 }
 
-                var X = torch.tensor(allPixels).reshape(batch.Count, 1, imageSize, imageSize);
-                var y = torch.tensor(allLabels);
+                batch++;
+            }
+        }
+        static (double accuracy, double avgLoss) Test(DataLoader dataloader, NeuralNetwork model, CrossEntropyLoss loss_fn)
+        {
+            var size = (int)dataloader.dataset.Count;
+            var num_batches = (int)dataloader.Count;
 
-                yield return (X, y);
+            model.eval();
+
+            var test_loss = 0F;
+            var correct = 0F;
+
+            using (var n = torch.no_grad())
+            {
+                foreach (var item in dataloader)
+                {
+                    var x = item["image"];
+                    var y = item["label"];
+
+                    var pred = model.call(x);
+
+                    test_loss += loss_fn.call(pred, y).item<float>();
+                    correct += (pred.argmax(1) == y).type(ScalarType.Float32).sum().item<float>();
+                }
+            }
+
+            test_loss /= num_batches;
+            correct /= size;
+            Console.WriteLine($"Test Error: \n Accuracy: {(100 * correct):F1}%, Avg loss: {test_loss:F8} \n");
+
+            return (correct, test_loss);
+        }
+
+
+
+        public class NeuralNetwork : nn.Module<Tensor, Tensor>
+        {
+            public NeuralNetwork() : base("LungCancerCNN")
+            {
+                flatten = nn.Flatten();
+                model = Sequential(
+                    ("conv2d", Conv2d(in_channels: 1, out_channels: 64, kernel_size: 3)),
+                    ("relu1", ReLU()),
+                    ("maxpooling2d1", MaxPool2d((2, 2))),
+                    ("conv2d2", Conv2d(in_channels: 64, out_channels: 64, kernel_size: 3)),
+                    ("relu2", ReLU()),
+                    ("maxpooling2d2", MaxPool2d((2, 2))),
+                    ("flatten", Flatten()),
+                    ("dense1", Linear(inputSize: 246016, outputSize: 16)),
+                    ("dense2", Linear(inputSize: 16, outputSize: 3))
+                );
+
+                RegisterComponents();
+            }
+
+            Flatten flatten;
+            Sequential model;
+
+            public override Tensor forward(Tensor input)
+            {
+                var x = flatten.call(input);
+                var logits = model.call(x);
+                return logits;
             }
         }
 
-        private static float[] RandomFlip(float[] pixels, int imageSize, Random rng)
+        public static torch.Device GetOptimalDevice()
         {
-            var result = (float[])pixels.Clone();
+            Device defaultDevice = default!;
+            if (torch.cuda.is_available())
+            {
+                defaultDevice = torch.device("cuda", index: 0);
+            }
+            else if (torch.mps_is_available())
+            {
+                defaultDevice = torch.device("mps", index: 0);
+            }
+            else
+            {
+                defaultDevice = torch.device("cpu");
+            }
 
-            if (rng.NextDouble() > 0.5)
-                for (int y = 0; y < imageSize; y++)
-                    for (int x = 0; x < imageSize / 2; x++)
-                        (result[y * imageSize + x], result[y * imageSize + (imageSize - 1 - x)]) =
-                        (result[y * imageSize + (imageSize - 1 - x)], result[y * imageSize + x]);
-
-            if (rng.NextDouble() > 0.5)
-                for (int y = 0; y < imageSize / 2; y++)
-                    for (int x = 0; x < imageSize; x++)
-                        (result[y * imageSize + x], result[(imageSize - 1 - y) * imageSize + x]) =
-                        (result[(imageSize - 1 - y) * imageSize + x], result[y * imageSize + x]);
-
-            return result;
+            return defaultDevice;
         }
     }
+
+    public class LungCancerTrainDataset : Dataset
+    {
+        private readonly List<string> _imagePaths = [];
+        private readonly List<long> _labels = [];
+
+        public LungCancerTrainDataset(string dataDirectory)
+        {
+            var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
+
+            for (int i = 0; i < categories.Count; ++i)
+            {
+                var path = Path.Join(dataDirectory, categories[i]);
+
+                int categoryImageCount = (int)(Directory.GetFiles(path).Length * 0.75);
+
+                for(int j = 0; j < categoryImageCount; ++j)
+                {
+                    _imagePaths.Add(Directory.GetFiles(path)[j]);
+                    _labels.Add(i);
+                }
+            }
+        }
+        public override long Count => _imagePaths.Count;
+
+        public override Dictionary<string, Tensor> GetTensor(long index)
+        {
+            var path = _imagePaths[(int)index];
+            var label = _labels[(int)index];
+            
+            var imageTensor = ImageLoader.ImageToTensor(path);
+            return new Dictionary<string, Tensor>
+            {
+                ["image"] = imageTensor,
+                ["label"] = torch.tensor(label)
+            };
+        }
+    }
+
+    public class LungCancerTestDataset : Dataset
+    {
+        private readonly List<string> _imagePaths = [];
+        private readonly List<long> _labels = [];
+
+        public LungCancerTestDataset(string dataDirectory)
+        {
+            var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
+
+            for (int i = 0; i < categories.Count; ++i)
+            {
+                var path = Path.Join(dataDirectory, categories[i]);
+                var files = Directory.GetFiles(path);
+                for (int j = (int)(files.Length * 0.75); j < files.Length; ++j)
+                {
+                    _imagePaths.Add(files[j]);
+                    _labels.Add(i);
+                }
+            }
+        }
+        public override long Count => _imagePaths.Count;
+
+        public override Dictionary<string, Tensor> GetTensor(long index)
+        {
+            var path = _imagePaths[(int)index];
+            var label = _labels[(int)index];
+
+            var imageTensor = ImageLoader.ImageToTensor(path);
+            return new Dictionary<string, Tensor>
+            {
+                ["image"] = imageTensor,
+                ["label"] = torch.tensor(label)
+            };
+        }
+    }
+
+
+    public class ImageLoader
+    {
+        public static Tensor ImageToTensor(string imagePath)
+        {
+            int imageSize = 256;
+            using SKBitmap bitmap = SKBitmap.Decode(imagePath);
+            using var resized = bitmap.Resize(new SKImageInfo(imageSize, imageSize, SKColorType.Gray8), SKFilterQuality.Medium);
+
+            return torch.tensor(resized.Bytes, 1, imageSize, imageSize);
+        }
+    }
+
 }
 

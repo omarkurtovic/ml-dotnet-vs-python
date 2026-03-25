@@ -16,3 +16,4 @@ The app lets you train, view, and delete machine learning models for two use cas
 - **C# API:** ASP.NET Core / ML.NET
 - **Python API:** FastAPI / scikit-learn / keras
 - **Infrastructure:** HETZNER
+
