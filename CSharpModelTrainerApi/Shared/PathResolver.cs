@@ -58,7 +58,7 @@ namespace CSharpModelTrainerApi.Shared
             var repoRoot = GetRepoRoot();
             if (trainParams.ModelLanguage == ModelLanguage.CSharp)
             {
-                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", $"{trainParams.ModelName}.weights");
+                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", $"{trainParams.ModelName}.dat");
             }
             else if (trainParams.ModelLanguage == ModelLanguage.Python)
             {

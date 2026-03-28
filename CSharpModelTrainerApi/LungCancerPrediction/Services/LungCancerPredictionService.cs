@@ -1,4 +1,6 @@
-﻿using CSharpModelTrainerApi.Shared;
+﻿using CSharpModelTrainerApi.LungCancerPrediction.Datasets;
+using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
+using CSharpModelTrainerApi.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -6,8 +8,10 @@ using SharedCL.LungCancerPrediction.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using TorchSharp;
+using static TorchSharp.torch;
 using static TorchSharp.torch.nn;
 using static TorchSharp.torch.nn.functional;
+using Tensor = TorchSharp.torch.Tensor;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
@@ -27,44 +31,33 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         {
             if (file == null) return null!;
 
-            const int imgSize = 256;
+            Device defaultDevice = TrainingHelper.GetOptimalDevice();
+            torch.set_default_device(defaultDevice);
+
+            var model = new LungCancerNN().to(defaultDevice);
             var modelPath = pathResolver.GetModelPath(dbModel);
-
-            using var stream = file.OpenReadStream();
-            using var image = await SixLabors.ImageSharp.Image.LoadAsync<SixLabors.ImageSharp.PixelFormats.L8>(stream);
-            image.Mutate(x => x.Resize(imgSize, imgSize));
-
-            var floatData = new float[imgSize * imgSize];
-            for (int y = 0; y < imgSize; y++)
-                for (int x = 0; x < imgSize; x++)
-                    floatData[y * imgSize + x] = image[x, y].PackedValue / 255.0f;
-
-            var model = Sequential(
-                ("conv2d", Conv2d(in_channels: 1, out_channels: 64, kernel_size: 3)),
-                ("relu1", ReLU()),
-                ("maxpooling2d1", MaxPool2d((2, 2))),
-                ("conv2d2", Conv2d(in_channels: 64, out_channels: 64, kernel_size: 3)),
-                ("relu2", ReLU()),
-                ("maxpooling2d2", MaxPool2d((2, 2))),
-                ("flatten", Flatten()),
-                ("dense1", Linear(inputSize: 246016, outputSize: 16)),
-                ("dense2", Linear(inputSize: 16, outputSize: 3))
-            );
 
             model.load(modelPath);
             model.eval();
 
-            using var input = torch.tensor(floatData).reshape(1, 1, imgSize, imgSize);
-            using var output = model.forward(input);
-            using var probs = softmax(output, dim: 1);
-            var scores = probs.data<float>().ToArray();
-
-            return new LungCancerPredictionModel
+            Tensor image = await ImageLoader.FormFileImageToTensor(file);
+            image = image.to(defaultDevice);
+            
+            using (torch.no_grad())
             {
-                BenignScore = scores[0],
-                MalignantScore = scores[1],
-                NormalScore = scores[2]
-            };
+                var output = model.call(image);
+                var prediction = output.softmax(dim: 1);
+
+                return new LungCancerPredictionModel
+                {
+                    BenignScore = prediction[0, 0].item<float>(),
+                    MalignantScore = prediction[0, 1].item<float>(),
+                    NormalScore = prediction[0, 2].item<float>()
+                };
+            }
+
+
+            
         }
 
         private async Task<LungCancerPredictionModel> PredictWithOnnx(LungCancerModel dbModel, IFormFile file)
