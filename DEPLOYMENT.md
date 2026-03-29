@@ -72,7 +72,7 @@ dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web
 
 Copy the database
 ```sh
-scp C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\CSharpModelTrainerApi\bin\Debug\net10.0\app.db root@<ip>:/opt/publish/api/app.db
+scp C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\CSharpModelTrainerApi\bin\Debug\net10.0\app.db root@<ip>:/opt/app/publish/api/app.db
 ```
 
 ---
