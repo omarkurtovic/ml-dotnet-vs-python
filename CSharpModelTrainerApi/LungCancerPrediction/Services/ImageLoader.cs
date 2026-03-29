@@ -13,9 +13,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             using SKBitmap bitmap = SKBitmap.Decode(imagePath);
             using var resized = bitmap.Resize(new SKImageInfo(imageSize, imageSize, SKColorType.Gray8), SKFilterQuality.Medium);
 
-            var pixelBytes = resized.Bytes; // single copy
+            var pixelBytes = resized.Bytes;
 
-            return torch.tensor(pixelBytes, dtype: ScalarType.Int8)
+            return torch.tensor(pixelBytes, dtype: ScalarType.Byte)
                         .to(ScalarType.Float32)
                         .div(255F)
                         .reshape(1, imageSize, imageSize);

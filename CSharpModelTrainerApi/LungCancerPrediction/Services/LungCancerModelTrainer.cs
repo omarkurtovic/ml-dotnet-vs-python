@@ -39,7 +39,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             var model = new LungCancerNN().to(defaultDevice);
             var loss = nn.CrossEntropyLoss(classWeights);
-            var optimizer = torch.optim.Adam(model.parameters());
+            var optimizer = torch.optim.Adam(model.parameters(), lr: 1e-4);
 
             var epochs = 5;
 
@@ -78,22 +78,40 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 var x = item["image"];
                 var y = item["label"];
 
+                if (torch.isnan(x).any().item<bool>())
+                {
+                    Console.WriteLine($"[batch {batch}] NaN in INPUT");
+                    batch++;
+                    continue;
+                }
+
                 var pred = model.call(x);
+
+                if (torch.isnan(pred).any().item<bool>())
+                {
+                    Console.WriteLine($"[batch {batch}] NaN in MODEL OUTPUT");
+                    batch++;
+                    continue;
+                }
 
                 var loss = loss_fn.call(pred, y);
 
+                if (float.IsNaN(loss.item<float>()))
+                {
+                    Console.WriteLine($"[batch {batch}] NaN in LOSS");
+                    batch++;
+                    continue;
+                }
+
                 loss.backward();
 
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm: 1.0);
                 optimizer.step();
-
                 optimizer.zero_grad();
 
                 if (batch % 100 == 0)
                 {
-                    loss = loss.item<float>();
-
                     var current = (batch + 1) * x.shape[0];
-
                     Console.WriteLine($"loss: {loss.item<float>(),7}  [{current,5}/{size,5}]");
                 }
 
@@ -117,10 +135,10 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     var x = item["image"];
                     var y = item["label"];
 
-                    var pred = model.call(x);
+                    var prediction = model.call(x);
 
-                    test_loss += loss_fn.call(pred, y).item<float>();
-                    correct += (pred.argmax(1) == y).type(ScalarType.Float32).sum().item<float>();
+                    test_loss += loss_fn.call(prediction, y).item<float>();
+                    correct += (prediction.argmax(1) == y).type(ScalarType.Float32).sum().item<float>();
                 }
             }
 

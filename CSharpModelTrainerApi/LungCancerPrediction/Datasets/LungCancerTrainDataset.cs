@@ -26,10 +26,10 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
                     _images.Add(tensor);
                     _labels.Add(i);
 
-                    _images.Add(tensor.flip([2]));
+                    _images.Add(tensor.flip([2]).clone());
                     _labels.Add(i);
 
-                    _images.Add(tensor.flip([1]));
+                    _images.Add(tensor.flip([1]).clone());
                     _labels.Add(i);
                 }
             }
@@ -53,7 +53,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
             int numClasses = 3;
             var counts = _labels.GroupBy(l => l).ToDictionary(g => g.Key, g => g.Count());
             return Enumerable.Range(0, numClasses)
-                .Select(i => (float)(total / (numClasses * counts[(long)i])))
+                .Select(i => (float)total / (numClasses * counts[(long)i]))
                 .ToArray();
         }
     }
