@@ -55,19 +55,15 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 
-            var (valAccuracy, valLoss) = Test(testLoader, model, loss);
+            LungCancerModel modelDB = Test(testLoader, model, loss);
+            modelDB.Name = trainInfo.ModelName;
+            modelDB.Language = ModelLanguage.CSharp;
 
-            return Result<LungCancerModel>.Success(new LungCancerModel
-            {
-                Name = trainInfo.ModelName,
-                Language = ModelLanguage.CSharp,
-                ValidationAccuracy = valAccuracy,
-                ValidationLoss = valLoss,
-            });
+            return Result<LungCancerModel>.Success(modelDB);
         }
-        
 
-        static void Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
+
+        private static void Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
         {
             var size = dataloader.dataset.Count;
             model.train();
@@ -78,33 +74,11 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 var x = item["image"];
                 var y = item["label"];
 
-                if (torch.isnan(x).any().item<bool>())
-                {
-                    Console.WriteLine($"[batch {batch}] NaN in INPUT");
-                    batch++;
-                    continue;
-                }
-
                 var pred = model.call(x);
-
-                if (torch.isnan(pred).any().item<bool>())
-                {
-                    Console.WriteLine($"[batch {batch}] NaN in MODEL OUTPUT");
-                    batch++;
-                    continue;
-                }
 
                 var loss = loss_fn.call(pred, y);
 
-                if (float.IsNaN(loss.item<float>()))
-                {
-                    Console.WriteLine($"[batch {batch}] NaN in LOSS");
-                    batch++;
-                    continue;
-                }
-
                 loss.backward();
-
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm: 1.0);
                 optimizer.step();
                 optimizer.zero_grad();
@@ -118,35 +92,128 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 batch++;
             }
         }
-        static (double accuracy, double avgLoss) Test(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn)
+        private static LungCancerModel Test(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn)
         {
-            var size = (int)dataloader.dataset.Count;
-            var num_batches = (int)dataloader.Count;
-
             model.eval();
 
-            var test_loss = 0F;
-            var correct = 0F;
+            float totalLoss = 0f;
+            int batchCount = 0;
+            int[,] confusionMatrix = new int[3, 3];
+            long total = dataloader.dataset.Count;
 
             using (var n = torch.no_grad())
             {
                 foreach (var item in dataloader)
                 {
-                    var x = item["image"];
-                    var y = item["label"];
+                    var images = item["image"];
+                    var correctIndicies = item["label"];
 
-                    var prediction = model.call(x);
+                    var predictions = model.call(images); 
+                    var loss = loss_fn.call(predictions, correctIndicies);
+                    totalLoss += loss.item<float>();
+                    batchCount++;
 
-                    test_loss += loss_fn.call(prediction, y).item<float>();
-                    correct += (prediction.argmax(1) == y).type(ScalarType.Float32).sum().item<float>();
+                    var winningIndices = predictions.argmax(1);
+
+                    long[] predArray = winningIndices.cpu().data<long>().ToArray();
+                    long[] labelArray = correctIndicies.cpu().data<long>().ToArray();
+
+                    for(int i = 0; i < predArray.Length; ++i)
+                    {
+                        confusionMatrix[labelArray[i], predArray[i]]++;
+                    }
                 }
             }
 
-            test_loss /= num_batches;
-            correct /= size;
-            Console.WriteLine($"Test Error: \n Accuracy: {(100 * correct):F1}%, Avg loss: {test_loss:F8} \n");
+            float averageValidationLoss = totalLoss / batchCount;
+            return ClassificationReport(confusionMatrix, 3, total, averageValidationLoss);
+        }
 
-            return (correct, test_loss);
+
+        private static LungCancerModel ClassificationReport(int[,] confusionMatrix, int numClasses, long total, float averageValidationLoss)
+        {
+            LungCancerModel result = new LungCancerModel();
+            result.ValidationLoss = averageValidationLoss;
+
+            float macroPrecision = 0f, macroRecall = 0f, macroF1 = 0f;
+            float weightedPrecision = 0f, weightedRecall = 0f, weightedF1 = 0f;
+            int totalSupport = 0;
+            int correct = 0;
+
+            for (int i = 0; i < numClasses; ++i)
+            {
+                int truePositives = 0;
+                int falsePositives = 0;
+                int falseNegatives = 0;
+
+                int classSupport = 0;
+
+                for (int j = 0; j < numClasses; ++j)
+                {
+                    classSupport += confusionMatrix[i, j];
+                    if (i == j)
+                    {
+                        truePositives += confusionMatrix[i, j];
+                        correct += confusionMatrix[i, j];
+                    }
+                    else
+                    {
+                        falseNegatives += confusionMatrix[i, j];
+                        falsePositives += confusionMatrix[j, i];
+                    }
+                }
+
+                float precision = (truePositives + falsePositives) == 0 ? 0 :
+                  truePositives / (float)(truePositives + falsePositives);
+
+                float recall = (truePositives + falseNegatives) == 0 ? 0 :
+                               truePositives / (float)(truePositives + falseNegatives);
+
+                float F1 = (precision + recall) == 0 ? 0 :
+                           2 * (precision * recall) / (precision + recall);
+
+                macroPrecision += precision;
+                macroRecall += recall;
+                macroF1 += F1;
+
+                weightedPrecision += precision * classSupport;
+                weightedRecall += recall * classSupport;
+                weightedF1 += F1 * classSupport;
+                totalSupport += classSupport;
+
+
+                if (i == 0)
+                {
+                    result.BenignPrecision = precision;
+                    result.BenignRecall = recall;
+                    result.BenignF1Score = F1;
+                }
+                else if(i == 1)
+                {
+                    result.MalignantPrecision = precision;
+                    result.MalignantRecall = recall;
+                    result.MalignantF1Score = F1;
+                }
+                else if(i == 2)
+                {
+                    result.NormalPrecision = precision;
+                    result.NormalRecall = recall;
+                    result.NormalF1Score = F1;
+                }
+            }
+
+            result.ValidationAccuracy = correct / (float)total;
+
+
+            result.MacroPrecision = macroPrecision / numClasses;
+            result.MacroRecall = macroRecall / numClasses;
+            result.MacroF1Score = macroF1 / numClasses;
+
+            result.WeightedPrecision = weightedPrecision / totalSupport;
+            result.WeightedRecall = weightedRecall / totalSupport;
+            result.WeightedF1Score = weightedF1 / totalSupport;
+
+            return result;
         }
     }
 }
