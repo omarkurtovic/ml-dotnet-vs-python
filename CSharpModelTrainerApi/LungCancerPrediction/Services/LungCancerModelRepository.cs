@@ -22,13 +22,13 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
         public async Task<Result<List<LungCancerModel>>> GetAll()
         {
-            var models = await _context.LungCancerModels.ToListAsync();
+            var models = await _context.LungCancerModels.Include(m => m.EpochData).ToListAsync();
             return Result<List<LungCancerModel>>.Success(models);
         }
 
         public async Task<Result<LungCancerModel>> GetById(int id)
         {
-            var model = await _context.LungCancerModels.FindAsync(id);
+            var model = await _context.LungCancerModels.Include(m => m.EpochData).FirstAsync();
             if (model == null)
             {
                 return Result<LungCancerModel>.Failure("Model not found");

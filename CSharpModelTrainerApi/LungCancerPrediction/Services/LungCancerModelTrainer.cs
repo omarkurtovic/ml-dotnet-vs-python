@@ -24,6 +24,12 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
     {
         public  Result<LungCancerModel> TrainModel(LungCancerTrainingParams trainInfo)
         {
+            var modelDB = new LungCancerModel();
+            modelDB.Name = trainInfo.ModelName;
+            modelDB.Language = trainInfo.ModelLanguage;
+            modelDB.EpochData = new List<LungCancerModelEpochData>();
+
+
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
             torch.set_default_device(defaultDevice);
 
@@ -43,31 +49,28 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             var epochs = trainInfo.Epochs;
 
+
             foreach (var epoch in Enumerable.Range(0, epochs))
             {
-                Console.WriteLine($"Epoch {epoch + 1}\n-------------------------------");
-                Train(trainLoader, model, loss, optimizer);
-                Test(testLoader, model, loss);
-            }
+                var trainingLoss = Train(trainLoader, model, loss, optimizer);
+                var epochData = Test(testLoader, model, loss);
+                epochData.TrainingLoss = trainingLoss;
 
-            Console.WriteLine("Done!");
+                modelDB.EpochData.Add(epochData);
+            }
 
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
-
-            LungCancerModel modelDB = Test(testLoader, model, loss);
-            modelDB.Name = trainInfo.ModelName;
-            modelDB.Language = ModelLanguage.CSharp;
 
             return Result<LungCancerModel>.Success(modelDB);
         }
 
 
-        private static void Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
+        private static float Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
         {
             var size = dataloader.dataset.Count;
             model.train();
-
+            Tensor? loss = null;
             int batch = 0;
             foreach (var item in dataloader)
             {
@@ -76,7 +79,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
                 var pred = model.call(x);
 
-                var loss = loss_fn.call(pred, y);
+                loss = loss_fn.call(pred, y);
 
                 loss.backward();
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm: 1.0);
@@ -91,8 +94,10 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
                 batch++;
             }
+
+            return loss!.item<float>();
         }
-        private static LungCancerModel Test(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn)
+        private static LungCancerModelEpochData Test(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn)
         {
             model.eval();
 
@@ -130,9 +135,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         }
 
 
-        private static LungCancerModel ClassificationReport(int[,] confusionMatrix, int numClasses, long total, float averageValidationLoss)
+        private static LungCancerModelEpochData ClassificationReport(int[,] confusionMatrix, int numClasses, long total, float averageValidationLoss)
         {
-            LungCancerModel result = new LungCancerModel();
+            LungCancerModelEpochData result = new();
             result.ValidationLoss = averageValidationLoss;
 
             float macroPrecision = 0f, macroRecall = 0f, macroF1 = 0f;

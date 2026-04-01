@@ -22,6 +22,24 @@ namespace CSharpModelTrainerApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Language")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LungCancerModels");
+                });
+
+            modelBuilder.Entity("SharedCL.LungCancerPrediction.Models.LungCancerModelEpochData", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
                     b.Property<double?>("BenignF1Score")
                         .HasColumnType("REAL");
 
@@ -31,7 +49,10 @@ namespace CSharpModelTrainerApi.Migrations
                     b.Property<double?>("BenignRecall")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("Language")
+                    b.Property<int>("Epoch")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LungCancerModelId")
                         .HasColumnType("INTEGER");
 
                     b.Property<double?>("MacroF1Score")
@@ -52,10 +73,6 @@ namespace CSharpModelTrainerApi.Migrations
                     b.Property<double?>("MalignantRecall")
                         .HasColumnType("REAL");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<double?>("NormalF1Score")
                         .HasColumnType("REAL");
 
@@ -66,6 +83,9 @@ namespace CSharpModelTrainerApi.Migrations
                         .HasColumnType("REAL");
 
                     b.Property<double?>("TrainingAccuracy")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("TrainingLoss")
                         .HasColumnType("REAL");
 
                     b.Property<double?>("ValidationAccuracy")
@@ -85,7 +105,9 @@ namespace CSharpModelTrainerApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LungCancerModels");
+                    b.HasIndex("LungCancerModelId");
+
+                    b.ToTable("LungCancerModelEpochData");
                 });
 
             modelBuilder.Entity("SharedCL.SentimentAnalysis.Models.SentimentAnalysisModel", b =>
@@ -137,6 +159,22 @@ namespace CSharpModelTrainerApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SentimentAnalysisModels");
+                });
+
+            modelBuilder.Entity("SharedCL.LungCancerPrediction.Models.LungCancerModelEpochData", b =>
+                {
+                    b.HasOne("SharedCL.LungCancerPrediction.Models.LungCancerModel", "LungCancerModel")
+                        .WithMany("EpochData")
+                        .HasForeignKey("LungCancerModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LungCancerModel");
+                });
+
+            modelBuilder.Entity("SharedCL.LungCancerPrediction.Models.LungCancerModel", b =>
+                {
+                    b.Navigation("EpochData");
                 });
 #pragma warning restore 612, 618
         }
