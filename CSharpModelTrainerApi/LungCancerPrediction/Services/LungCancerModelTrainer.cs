@@ -41,7 +41,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var loss = nn.CrossEntropyLoss(classWeights);
             var optimizer = torch.optim.Adam(model.parameters(), lr: 1e-4);
 
-            var epochs = 5;
+            var epochs = trainInfo.Epochs;
 
             foreach (var epoch in Enumerable.Range(0, epochs))
             {

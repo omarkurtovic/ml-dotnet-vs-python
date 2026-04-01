@@ -32,6 +32,7 @@ class ModelLanguage(IntEnum):
 class TrainData(BaseModel):
     modelName: str
     modelLanguage: ModelLanguage
+    epochs: int
 
 
 
@@ -168,7 +169,7 @@ def train(train_data: TrainData):
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 
-    history = model.fit(train_generator, epochs=5, validation_data=val_generator, class_weight=new_weights)
+    history = model.fit(train_generator, epochs=train_data.epochs, validation_data=val_generator, class_weight=new_weights)
 
 
     y_pred = model.predict(X_valid, verbose=1)

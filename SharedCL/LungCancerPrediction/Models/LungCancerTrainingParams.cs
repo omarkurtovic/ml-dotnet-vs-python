@@ -10,5 +10,6 @@ namespace SharedCL.LungCancerPrediction.Models
     {
         public string ModelName { get; set; } = null!;
         public ModelLanguage ModelLanguage { get; set; }
+        public int Epochs { get; set; }
     }
 }
