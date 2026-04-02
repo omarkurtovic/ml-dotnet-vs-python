@@ -1,0 +1,171 @@
+﻿@page "/lungCancer/comparison"
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using SharedCL.LungCancerPrediction.Models
+@using SharedCL.Shared.Enums
+@using WebApp.LungCancerPrediction.ApiClients
+@using WebApp.Shared.Components
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject CSharpLungCancerApiClient LungCancerApi
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@rendermode InteractiveServer
+
+<PageTitle>Poređenje Modela</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
+    <MudPaper Class="pa-6 mt-6" Elevation="15">
+
+        <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
+            <MudIconButton Style="position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
+                           Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer" />
+            <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Poređenje Modela</MudText>
+        </MudItem>
+        <MudItem xs="12">
+
+            @if (_isLoading)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+            }
+            else if (_models.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info">Nema dostupnih modela.</MudAlert>
+            }
+            else
+            {
+                <MudSelect T="LungCancerModel" Label="Modeli" MultiSelection="true"@bind-SelectedValues="_selectedModels">
+                    @foreach (var model in _models)
+                    {
+                        <MudSelectItem T="LungCancerModel" Value="@model">@model.Name</MudSelectItem>
+                    }
+                </MudSelect>
+
+
+                <MudSelect T="string" Label="Metrike" MultiSelection="true" @bind-SelectedValues="_selectedMetrics">
+                    @foreach (var metric in _metrics)
+                    {
+                        <MudSelectItem T="string" Value="@metric.Key">@metric.Value</MudSelectItem>
+                    }
+                </MudSelect>
+
+
+                @foreach(var metric in _selectedMetrics)
+                {
+                    <MudChart ChartType="ChartType.Line"
+                              ChartSeries="@GetLineSeries(metric)" ChartLabels="@GetChartXLabels()"
+                              ChartOptions="@GetChartOptions(metric)" Width="100%" Height="350px" />
+                }
+            }
+
+
+        </MudItem>
+    </MudPaper>
+</MudContainer>
+
+@code {
+
+    private bool _isLoading = true;
+
+    private List<LungCancerModel> _models = [];
+    private IReadOnlyCollection<LungCancerModel> _selectedModels = [];
+
+    private Dictionary<string, string> _metrics = [];
+    private IReadOnlyCollection<string> _selectedMetrics = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadModels();
+        _metrics = GetMetricTranslations();
+    }
+
+    private async Task LoadModels()
+    {
+        _isLoading = true;
+        var result = await LungCancerApi.GetModelsAsync();
+        _models = result.IsSuccess ? result.Data! : [];
+        _isLoading = false;
+    }
+
+    public static Dictionary<string, string> GetMetricTranslations()
+    {
+        return new Dictionary<string, string>
+    {
+        { nameof(LungCancerModelEpochData.TrainingLoss), "Gubitak pri treniranju" },
+        { nameof(LungCancerModelEpochData.TrainingAccuracy), "Tačnost pri treniranju" },
+        { nameof(LungCancerModelEpochData.ValidationLoss), "Gubitak pri validaciji" },
+        { nameof(LungCancerModelEpochData.ValidationAccuracy), "Tačnost pri validaciji" },
+
+        { nameof(LungCancerModelEpochData.BenignPrecision), "Preciznost (Benigno)" },
+        { nameof(LungCancerModelEpochData.BenignRecall), "Odziv (Benigno)" },
+        { nameof(LungCancerModelEpochData.BenignF1Score), "F1 skor (Benigno)" },
+
+        { nameof(LungCancerModelEpochData.MalignantPrecision), "Preciznost (Maligno)" },
+        { nameof(LungCancerModelEpochData.MalignantRecall), "Odziv (Maligno)" },
+        { nameof(LungCancerModelEpochData.MalignantF1Score), "F1 skor (Maligno)" },
+
+        { nameof(LungCancerModelEpochData.NormalPrecision), "Preciznost (Normalno)" },
+        { nameof(LungCancerModelEpochData.NormalRecall), "Odziv (Normalno)" },
+        { nameof(LungCancerModelEpochData.NormalF1Score), "F1 skor (Normalno)" },
+
+        { nameof(LungCancerModelEpochData.MacroPrecision), "Makro preciznost" },
+        { nameof(LungCancerModelEpochData.MacroRecall), "Makro odziv" },
+        { nameof(LungCancerModelEpochData.MacroF1Score), "Makro F1 skor" },
+
+        { nameof(LungCancerModelEpochData.WeightedPrecision), "Ponderisana preciznost" },
+        { nameof(LungCancerModelEpochData.WeightedRecall), "Ponderisani odziv" },
+        { nameof(LungCancerModelEpochData.WeightedF1Score), "Ponderisani F1 skor" }
+    };
+    }
+
+    private List<ChartSeries<double>> GetLineSeries(string metric)
+    {
+        if (_selectedModels.Count == 0 || _selectedMetrics.Count == 0)
+        {
+            return new List<ChartSeries<double>>();
+        }
+        var series = new List<ChartSeries<double>>();
+
+        foreach(var model in _selectedModels)
+        {
+            List<double> points = new List<double>();
+            foreach(var epochData in model.EpochData)
+            {
+                var value = epochData.GetType().GetProperty(metric)?.GetValue(epochData);
+                if (value is double doubleValue)
+                {
+                    doubleValue = Math.Round(doubleValue, 2);
+                    points.Add(doubleValue);
+                }
+                else
+                {
+                    points.Add(0);
+                }
+            }
+            series.Add(new ChartSeries<double>() { Name = model.Name, Data = points.ToArray() });
+        }
+
+        return series;
+
+    }
+
+
+    private string[] GetChartXLabels()
+    {
+        if (_selectedModels.Count == 0 || _selectedMetrics.Count == 0)
+        {
+            return [];
+        }
+        int maxEpochs = _selectedModels.Max(model => model.EpochData.Count);
+        return Enumerable.Range(1, maxEpochs).Select(i => i.ToString()).ToArray();
+    }
+
+    private LineChartOptions GetChartOptions(string metric)
+    {
+        return new LineChartOptions()
+        {
+            XAxisTitle = "Epoh",
+            YAxisTitle = _metrics[metric],
+        };
+    }
+}
+
