@@ -2,6 +2,7 @@
 using SharedCL.LungCancerPrediction.Models;
 using SharedCL.Shared.Models;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace WebApp.LungCancerPrediction.ApiClients
 {
@@ -23,11 +24,14 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 }
                 else
                 {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
                     return Result<List<LungCancerModel>>.Failure("");
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
                 return Result<List<LungCancerModel>>.Failure("");
             }
         }
@@ -50,13 +54,14 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 }
                 else
                 {
-                    Console.WriteLine("Failed to get prediction. Status code: " + response.StatusCode);
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
                     return Result<LungCancerPredictionModel>.Failure("");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while getting prediction: " + ex.Message);
+                Console.WriteLine($"API FAILURE: {ex.Message}");
                 return Result<LungCancerPredictionModel>.Failure("");
             }
         }
@@ -77,11 +82,14 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 }
                 else
                 {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
                     return Result<LungCancerModel>.Failure("");
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
                 return Result<LungCancerModel>.Failure("");
             }
         }
@@ -94,17 +102,22 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 request.Content = JsonContent.Create(model);
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 var response = await _httpClient.SendAsync(request);
+
                 if (response.IsSuccessStatusCode)
                 {
                     return Result.Success();
                 }
                 else
                 {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
                     return Result.Failure("");
+
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
                 return Result.Failure("");
             }
         }
@@ -115,12 +128,20 @@ namespace WebApp.LungCancerPrediction.ApiClients
             {
                 var url = $"LungCancer/Delete?id={id}";
                 var response = await _httpClient.DeleteAsync(url);
-                return response.IsSuccessStatusCode
-                    ? Result<bool>.Success(true)
-                    : Result<bool>.Failure("");
+                if (response.IsSuccessStatusCode)
+                {
+                    return Result<bool>.Success(true);
+                }
+                else
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
+                    return Result<bool>.Failure("");
+                }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
                 return Result<bool>.Failure("");
             }
         }

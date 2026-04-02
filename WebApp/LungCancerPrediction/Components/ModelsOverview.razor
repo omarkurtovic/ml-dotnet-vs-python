@@ -46,7 +46,7 @@
                                 </MudChip>
                             </CellTemplate>
                         </PropertyColumn>
-                        <PropertyColumn Property="x => x.ValidationAccuracy" Title="Preciznost" Sortable="true" Format="P" />
+                        <PropertyColumn Property="x => x.EpochData.MaxBy(e => e.Epoch)!.ValidationAccuracy" Title="Preciznost" Sortable="true" Format="P" />
                         <TemplateColumn Title="" Sortable="false" Filterable="false">
                             <CellTemplate>
                                 <div style="display: flex; justify-content: space-around;">
