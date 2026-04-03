@@ -13,7 +13,7 @@
 
 <PageTitle>Poređenje Modela</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
 
         <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
@@ -49,16 +49,17 @@
                 </MudSelect>
 
 
-                @foreach(var metric in _selectedMetrics)
-                {
-                    <MudChart ChartType="ChartType.Line"
-                              ChartSeries="@GetLineSeries(metric)" ChartLabels="@GetChartXLabels()"
-                              ChartOptions="@GetChartOptions(metric)" Width="100%" Height="350px" />
-                }
             }
-
-
         </MudItem>
+
+        @foreach (var metric in _selectedMetrics)
+        {
+            <MudItem xs="12">
+                <MudChart ChartType="ChartType.Line"
+                          ChartSeries="@GetLineSeries(metric)" ChartLabels="@GetChartXLabels()"
+                          ChartOptions="@GetChartOptions(metric)" Width="100%" />
+            </MudItem>
+        }
     </MudPaper>
 </MudContainer>
 
@@ -133,7 +134,8 @@
                 var value = epochData.GetType().GetProperty(metric)?.GetValue(epochData);
                 if (value is double doubleValue)
                 {
-                    doubleValue = Math.Round(doubleValue, 2);
+                    if (metric == nameof(LungCancerModelEpochData.TrainingLoss))
+                        doubleValue = Math.Log10(Math.Max(doubleValue, 1e-7));
                     points.Add(doubleValue);
                 }
                 else
@@ -164,7 +166,7 @@
         return new LineChartOptions()
         {
             XAxisTitle = "Epoh",
-            YAxisTitle = _metrics[metric],
+            YAxisTitle = _metrics[metric]
         };
     }
 }
