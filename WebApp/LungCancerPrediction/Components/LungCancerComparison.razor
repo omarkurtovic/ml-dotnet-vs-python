@@ -1,12 +1,15 @@
 ﻿@page "/lungCancer/comparison"
+@using ApexCharts
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using SharedCL.LungCancerPrediction.Models
 @using SharedCL.Shared.Enums
+@using System.Text
 @using WebApp.LungCancerPrediction.ApiClients
 @using WebApp.Shared.Components
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject CSharpLungCancerApiClient LungCancerApi
+@inject IApexChartService ApexChartService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer
@@ -18,14 +21,14 @@
 
         <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
             <MudIconButton Style="position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
-                           Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer" />
+                           Variant="Variant.Filled" Color="MudBlazor.Color.Primary" Href="/lungCancer" />
             <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Poređenje Modela</MudText>
         </MudItem>
         <MudItem xs="12">
 
             @if (_isLoading)
             {
-                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+                <MudProgressLinear Indeterminate="true" Color="MudBlazor.Color.Primary" Class="mb-4" />
             }
             else if (_models.Count == 0)
             {
@@ -33,7 +36,7 @@
             }
             else
             {
-                <MudSelect T="LungCancerModel" Label="Modeli" MultiSelection="true"@bind-SelectedValues="_selectedModels">
+                <MudSelect  T="LungCancerModel" Label="Modeli" MultiSelection="true" @bind-SelectedValues="_selectedModels">
                     @foreach (var model in _models)
                     {
                         <MudSelectItem T="LungCancerModel" Value="@model">@model.Name</MudSelectItem>
@@ -41,7 +44,8 @@
                 </MudSelect>
 
 
-                <MudSelect T="string" Label="Metrike" MultiSelection="true" @bind-SelectedValues="_selectedMetrics">
+                <MudSelect MultiSelectionTextFunc="@(new Func<IReadOnlyList<string>, string>(GetMultiSelectionMetricText))" T="string" Label="Metrike"
+                    MultiSelection="true" @bind-SelectedValues="_selectedMetrics">
                     @foreach (var metric in _metrics)
                     {
                         <MudSelectItem T="string" Value="@metric.Key">@metric.Value</MudSelectItem>
@@ -55,16 +59,38 @@
         @foreach (var metric in _selectedMetrics)
         {
             <MudItem xs="12">
-                <MudChart ChartType="ChartType.Line"
-                          ChartSeries="@GetLineSeries(metric)" ChartLabels="@GetChartXLabels()"
-                          ChartOptions="@GetChartOptions(metric)" Width="100%" />
+                <ApexChart TItem="LungCancerModelEpochData"
+                           Title="metric">
+
+                    @foreach(var model in _selectedModels)
+                    {
+                        <ApexPointSeries TItem="LungCancerModelEpochData"
+                                         Items="model.EpochData"
+                                         Name="Gross Value"
+                                         SeriesType="SeriesType.Line"
+                                         XValue="@(ed => ed.Epoch)" 
+                                         YValue="@(ed => GetValue(metric, ed))" />
+                    }
+
+                </ApexChart>
             </MudItem>
         }
     </MudPaper>
 </MudContainer>
 
 @code {
-
+    private decimal GetValue(string metric, LungCancerModelEpochData epochData)
+    {
+        var value = epochData.GetType().GetProperty(metric)!.GetValue(epochData); 
+        if (value is double doubleValue)
+        {
+            return (decimal)doubleValue;
+        }
+        else
+        {
+            return 0;
+        }
+    }
     private bool _isLoading = true;
 
     private List<LungCancerModel> _models = [];
@@ -85,6 +111,18 @@
         var result = await LungCancerApi.GetModelsAsync();
         _models = result.IsSuccess ? result.Data! : [];
         _isLoading = false;
+    }
+    
+
+    private string GetMultiSelectionModelText(IReadOnlyList<string> selectedValues)
+    {
+        var values = new List<string>();
+        var translations = GetMetricTranslations();
+        foreach (var value in selectedValues)
+        {
+            values.Add(translations[value]);
+        }
+        return string.Join(", ", values);
     }
 
     public static Dictionary<string, string> GetMetricTranslations()
@@ -116,6 +154,17 @@
         { nameof(LungCancerModelEpochData.WeightedRecall), "Ponderisani odziv" },
         { nameof(LungCancerModelEpochData.WeightedF1Score), "Ponderisani F1 skor" }
     };
+    }
+
+    private string GetMultiSelectionMetricText(IReadOnlyList<string> selectedValues)
+    {
+        var values = new List<string>();
+        var translations = GetMetricTranslations();
+        foreach(var value in selectedValues)
+        {
+            values.Add(translations[value]);
+        }
+        return string.Join(", ", values);
     }
 
     private List<ChartSeries<double>> GetLineSeries(string metric)

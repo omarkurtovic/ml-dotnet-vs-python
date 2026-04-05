@@ -1,3 +1,4 @@
+using ApexCharts;
 using Microsoft.AspNetCore.HttpOverrides;
 using MudBlazor.Services;
 using WebApp.Components;
@@ -12,7 +13,7 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
-
+builder.Services.AddApexCharts();
 
 #pragma warning disable EXTEXP0001
 builder.Services.AddHttpClient<CSharpSentimentAnalysisApiClient>(client =>
