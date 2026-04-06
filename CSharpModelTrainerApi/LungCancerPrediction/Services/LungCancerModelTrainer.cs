@@ -35,7 +35,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 
-            var trainingData = new LungCancerTrainDataset(dataDirectory); 
+            var trainingData = new LungCancerTrainDataset(trainInfo.WithFlips, dataDirectory); 
             var classWeights = torch.tensor(trainingData.GetClassWeights()).to(defaultDevice);
 
             var testData = new LungCancerTestDataset(dataDirectory);
@@ -55,7 +55,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 var trainingLoss = Train(trainLoader, model, loss, optimizer);
                 var epochData = Test(testLoader, model, loss);
                 epochData.TrainingLoss = trainingLoss;
-
+                epochData.Epoch = epoch;
                 modelDB.EpochData.Add(epochData);
             }
 

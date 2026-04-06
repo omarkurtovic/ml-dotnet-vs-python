@@ -10,7 +10,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
         private readonly List<Tensor> _images = [];
         private readonly List<long> _labels = [];
 
-        public LungCancerTrainDataset(string dataDirectory)
+        public LungCancerTrainDataset(bool withFlips, string dataDirectory)
         {
             var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
 
@@ -26,11 +26,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
                     _images.Add(tensor);
                     _labels.Add(i);
 
-                    _images.Add(tensor.flip([2]).clone());
-                    _labels.Add(i);
+                    if (withFlips)
+                    {
+                        _images.Add(tensor.flip([2]).clone());
+                        _labels.Add(i);
 
-                    _images.Add(tensor.flip([1]).clone());
-                    _labels.Add(i);
+                        _images.Add(tensor.flip([1]).clone());
+                        _labels.Add(i);
+                    }
                 }
             }
         }

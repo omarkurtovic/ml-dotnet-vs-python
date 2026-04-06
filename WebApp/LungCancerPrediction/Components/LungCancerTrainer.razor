@@ -29,6 +29,8 @@
                         <MudTextField @bind-Value="trainingParams.ModelName" Required="true"
                                       RequiredError="Naziv modela je obavezan!" Variant="Variant.Outlined" Label="Naziv modela" Class="mb-4" />
                         <MudNumericField @bind-Value="trainingParams.Epochs" Required="true" RequiredError="Broj epoha je obavezan!" Variant="Variant.Outlined" Label="Broj epoha" Class="mb-4" Min="1" />
+                        <MudCheckBox @bind-Value="trainingParams.WithFlips" Label="Rotiraj slike" Class="mb-4" />
+
                         <MudSelect T="ModelLanguage" @bind-Value="trainingParams.ModelLanguage" Label="Jezik modela"
                                    Variant="Variant.Outlined" Required="true" RequiredError="Model Mašinskog Učenja je obavezan!" Class="mb-4" Clearable>
                             @foreach (var item in Enum.GetValues<ModelLanguage>())

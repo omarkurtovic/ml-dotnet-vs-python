@@ -58,18 +58,18 @@
 
         @foreach (var metric in _selectedMetrics)
         {
-            <MudItem xs="12">
+            <MudItem xs="12" Class="mt-6">
                 <ApexChart TItem="LungCancerModelEpochData"
-                           Title="metric">
+                           Title="@((GetMetricTranslations())[metric])">
 
                     @foreach(var model in _selectedModels)
                     {
                         <ApexPointSeries TItem="LungCancerModelEpochData"
                                          Items="model.EpochData"
-                                         Name="Gross Value"
+                                         Name="@model.Name"
                                          SeriesType="SeriesType.Line"
                                          XValue="@(ed => ed.Epoch)" 
-                                         YValue="@(ed => GetValue(metric, ed))" />
+                                         YValue="@(ed => GetValue(metric, ed))"   />
                     }
 
                 </ApexChart>
@@ -112,7 +112,7 @@
         _models = result.IsSuccess ? result.Data! : [];
         _isLoading = false;
     }
-    
+
 
     private string GetMultiSelectionModelText(IReadOnlyList<string> selectedValues)
     {
@@ -167,56 +167,15 @@
         return string.Join(", ", values);
     }
 
-    private List<ChartSeries<double>> GetLineSeries(string metric)
+
+
+    private ApexChartOptions<LungCancerModelEpochData> options = new()
     {
-        if (_selectedModels.Count == 0 || _selectedMetrics.Count == 0)
+        Xaxis = new XAxis
         {
-            return new List<ChartSeries<double>>();
+            Type = XAxisType.Numeric,
+            TickAmount = 5
         }
-        var series = new List<ChartSeries<double>>();
-
-        foreach(var model in _selectedModels)
-        {
-            List<double> points = new List<double>();
-            foreach(var epochData in model.EpochData)
-            {
-                var value = epochData.GetType().GetProperty(metric)?.GetValue(epochData);
-                if (value is double doubleValue)
-                {
-                    if (metric == nameof(LungCancerModelEpochData.TrainingLoss))
-                        doubleValue = Math.Log10(Math.Max(doubleValue, 1e-7));
-                    points.Add(doubleValue);
-                }
-                else
-                {
-                    points.Add(0);
-                }
-            }
-            series.Add(new ChartSeries<double>() { Name = model.Name, Data = points.ToArray() });
-        }
-
-        return series;
-
-    }
-
-
-    private string[] GetChartXLabels()
-    {
-        if (_selectedModels.Count == 0 || _selectedMetrics.Count == 0)
-        {
-            return [];
-        }
-        int maxEpochs = _selectedModels.Max(model => model.EpochData.Count);
-        return Enumerable.Range(1, maxEpochs).Select(i => i.ToString()).ToArray();
-    }
-
-    private LineChartOptions GetChartOptions(string metric)
-    {
-        return new LineChartOptions()
-        {
-            XAxisTitle = "Epoh",
-            YAxisTitle = _metrics[metric]
-        };
-    }
+    };
 }
 
