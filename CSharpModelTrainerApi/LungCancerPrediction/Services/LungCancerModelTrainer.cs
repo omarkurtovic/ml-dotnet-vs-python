@@ -127,8 +127,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
                     var winningIndices = predictions.argmax(1);
 
-                    long[] predArray = winningIndices.cpu().data<long>().ToArray();
-                    long[] labelArray = correctIndicies.cpu().data<long>().ToArray();
+                    long[] predArray = [.. winningIndices.cpu().data<long>()];
+                    long[] labelArray = [.. correctIndicies.cpu().data<long>()];
 
                     for(int i = 0; i < predArray.Length; ++i)
                     {

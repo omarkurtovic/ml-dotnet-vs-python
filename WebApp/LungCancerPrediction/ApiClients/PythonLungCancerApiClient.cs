@@ -32,11 +32,14 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 }
                 else
                 {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
                     return Result<LungCancerModel>.Failure("");
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
                 return Result<LungCancerModel>.Failure("");
             }
         }

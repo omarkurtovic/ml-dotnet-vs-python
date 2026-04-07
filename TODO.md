@@ -8,3 +8,4 @@ https://docs.whuanle.cn/zh/cs_pytorch
 
 
 we need to also save on which cpu/gpu the model was actually trained so the comparisons make sense
+need to limit the number of epochs picked by user
