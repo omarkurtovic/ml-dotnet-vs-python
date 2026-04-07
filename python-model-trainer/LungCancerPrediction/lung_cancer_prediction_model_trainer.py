@@ -1,6 +1,7 @@
 
 # https://www.kaggle.com/code/adityamahimkar/lung-cancer-prediction-on-image-data/notebook
 
+from curses import beep
 import numpy as np 
 import matplotlib.pyplot as plt
 import cv2
@@ -18,6 +19,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from enum import IntEnum
 from pydantic import BaseModel
+import time
 
 router = APIRouter()
 
@@ -28,77 +30,47 @@ class ModelLanguage(IntEnum):
     CSharp = 0
     Python = 1
 
+class LungCancerModelEpochData(BaseModel):
+    epoch: int
+    trainingLoss: float
+    trainingAccuracy: float
+    validationAccuracy: float
+    validationLoss: float
+    beningPrecision: float
+    beningRecall: float
+    beningF1Score: float
+    malignantPrecision: float
+    malignantRecall: float
+    malignantF1Score: float
+    normalPrecision: float  
+    normalRecall: float
+    normalF1Score: float
+    macroPrecision: float
+    macroRecall: float
+    macroF1Score: float
+    weightedPrecision: float
+    weightedRecall: float
+    weightedF1Score: float
 
-class TrainData(BaseModel):
+class LungCancerModel(BaseModel):
     modelName: str
     modelLanguage: ModelLanguage
-    epochs: int
+    epochData: list[LungCancerModelEpochData] = []
+    trainingTimeInSeconds: int
 
+
+class LungCancerTrainingParams(BaseModel):
+    modelName: str
+    ModelLanguage: ModelLanguage
+    epochs: int
+    withFlips: bool
 
 
 @router.post("/Python/LungCancer/Train")
-def train(train_data: TrainData):
+def train(train_data: LungCancerTrainingParams):
     
     categories = ['Bengin cases', 'Malignant cases', 'Normal cases']
-    # just showing the different image sizes in the dataset
-    # size_data = {}
-    # for i in categories:
-    #     path = os.path.join(directory, i)
-    #     class_num = categories.index(i)
-    #     temp_dict = {}
-    #     for file in os.listdir(path):
-    #         filepath = os.path.join(path, file)
-    #         height, width, channels = imageio.imread(filepath).shape
-    #         if str(height) + ' x ' + str(width) in temp_dict:
-    #             temp_dict[str(height) + ' x ' + str(width)] += 1 
-    #         else:
-    #             temp_dict[str(height) + ' x ' + str(width)] = 1
     
-    #     size_data[i] = temp_dict
-        
-    # print(size_data)
-
-    # showing a sample image from each category
-    # for i in categories:
-    #     path = os.path.join(directory, i)
-    #     class_num = categories.index(i)
-    #     for file in os.listdir(path):
-    #         filepath = os.path.join(path, file)
-    #         print(i)
-    #         img = cv2.imread(filepath, 0)
-    #         plt.imshow(img)
-    #         plt.show()
-    #         break
-
-
-    # showing some images from all categories after resizing and blurring
-    # img_size = 256
-    # for i in categories:
-    #     cnt, samples = 0, 3
-    #     fig, ax = plt.subplots(samples, 3, figsize=(15, 15))
-    #     fig.suptitle(i)
-    
-    #     path = os.path.join(directory, i)
-    #     class_num = categories.index(i)
-    #     for curr_cnt, file in enumerate(os.listdir(path)):
-    #         filepath = os.path.join(path, file)
-    #         img = cv2.imread(filepath, 0)
-        
-    #         img0 = cv2.resize(img, (img_size, img_size))
-        
-    #         img1 = cv2.GaussianBlur(img0, (5, 5), 0)
-        
-    #         ax[cnt, 0].imshow(img)
-    #         ax[cnt, 1].imshow(img0)
-    #         ax[cnt, 2].imshow(img1)
-    #         cnt += 1
-    #         if cnt == samples:
-    #             break
-        
-    # plt.show()
-
-
-
     data = []
     img_size = 256
 
@@ -141,9 +113,11 @@ def train(train_data: TrainData):
         1: X_train.shape[0]/(3*Counter(y_train)[1]),
         2: X_train.shape[0]/(3*Counter(y_train)[2]),
     }
+    
+    train_datagen = ImageDataGenerator()
+    if(train_data.withFlips):
+        train_datagen = ImageDataGenerator(horizontal_flip=True, vertical_flip=True) 
 
-
-    train_datagen = ImageDataGenerator(horizontal_flip=True, vertical_flip=True) 
     val_datagen = ImageDataGenerator()
 
     train_generator = train_datagen.flow(X_train, y_train, batch_size=8) 
@@ -169,8 +143,26 @@ def train(train_data: TrainData):
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 
+    start_time = time.pref_counter()
     history = model.fit(train_generator, epochs=train_data.epochs, validation_data=val_generator, class_weight=new_weights)
+    end_time = time.pref_counter()
 
+
+    dbModel = LungCancerModel(
+        name=train_data.modelName,
+        language=ModelLanguage.Python,
+        epochData=[],
+        trainingTimeInSeconds=end_time - start_time
+    )
+
+    for epoch in range(train_data.epochs):
+        epoch_data = LungCancerModelEpochData(
+        epoch=epoch,
+        trainingLoss=history.history['loss'][epoch],
+        trainingAccuracy=history.history['accuracy'][epoch],
+        validationAccuracy=history.history['val_accuracy'][epoch],
+        validationLoss=history.history['val_loss'][epoch])
+        dbModel.epochData.append(epoch_data)
 
     y_pred = model.predict(X_valid, verbose=1)
 
@@ -178,7 +170,24 @@ def train(train_data: TrainData):
 
     report = classification_report(y_valid, y_pred_bool, output_dict=True)
 
-    print(confusion_matrix(y_true=y_valid, y_pred=y_pred_bool))
+    dbModel.epochData[-1].beningPrecision = report["0"]['precision']
+    dbModel.epochData[-1].beningRecall = report["0"]['recall']
+    dbModel.epochData[-1].beningF1Score = report["0"]['f1-score']
+    dbModel.epochData[-1].malignantPrecision = report["1"]['precision']
+    dbModel.epochData[-1].malignantRecall = report["1"]['recall']
+    dbModel.epochData[-1].malignantF1Score = report["1"]['f1-score']
+    dbModel.epochData[-1].normalPrecision = report["2"]['precision']
+    dbModel.epochData[-1].normalRecall = report["2"]['recall']
+    dbModel.epochData[-1].normalF1Score = report["2"]['f1-score']
+    dbModel.epochData[-1].macroPrecision = report["macro avg"]['precision']
+    dbModel.epochData[-1].macroRecall = report["macro avg"]['recall']
+    dbModel.epochData[-1].macroF1Score = report["macro avg"]['f1-score']
+    dbModel.epochData[-1].weightedPrecision = report["weighted avg"]['precision']
+    dbModel.epochData[-1].weightedRecall = report["weighted avg"]['recall']
+    dbModel.epochData[-1].weightedF1Score = report["weighted avg"]['f1-score']  
+
+
+
 
     # Save Model
     import tensorflow as tf
@@ -192,26 +201,5 @@ def train(train_data: TrainData):
     onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature, opset=13)
     onnx.save(onnx_model, model_dir / f"{train_data.modelName}.onnx")
 
-    return {
-        "name":               train_data.modelName,
-        "language":           ModelLanguage.Python,
-        "trainingAccuracy":   history.history['accuracy'][-1],
-        "validationAccuracy": history.history['val_accuracy'][-1],
-        "validationLoss":     history.history['val_loss'][-1],
-        "benignPrecision":    report["0"]['precision'],
-        "benignRecall":       report["0"]['recall'],
-        "benignF1Score":      report["0"]['f1-score'],
-        "malignantPrecision": report["1"]['precision'],
-        "malignantRecall":    report["1"]['recall'],
-        "malignantF1Score":   report["1"]['f1-score'],
-        "normalPrecision":    report["2"]['precision'],
-        "normalRecall":       report["2"]['recall'],
-        "normalF1Score":      report["2"]['f1-score'],
-        "macroPrecision":     report["macro avg"]['precision'],
-        "macroRecall":        report["macro avg"]['recall'],
-        "macroF1Score":       report["macro avg"]['f1-score'],
-        "weightedPrecision":  report["weighted avg"]['precision'],
-        "weightedRecall":     report["weighted avg"]['recall'],
-        "weightedF1Score":    report["weighted avg"]['f1-score']
-    }
+    return dbModel
 

@@ -8,6 +8,7 @@ namespace SharedCL.LungCancerPrediction.Models
         public string Name { get; set; } = null!;
         public ModelLanguage Language { get; set; }
         public IList<LungCancerModelEpochData> EpochData { get; set; } = null!;
+        public int TrainingTimeInSeconds { get; set; }
 
         public bool Equals(LungCancerModel? other)
         {

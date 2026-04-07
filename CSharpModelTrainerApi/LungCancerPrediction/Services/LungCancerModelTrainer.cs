@@ -10,6 +10,7 @@ using SharedCL.Shared.Models;
 using SkiaSharp;
 using TorchSharp;
 using TorchSharp.Modules;
+using System.Timers;
 using static TorchSharp.TensorExtensionMethods;
 using static TorchSharp.torch;
 using static TorchSharp.torch.distributions;
@@ -17,6 +18,7 @@ using static TorchSharp.torch.nn;
 using static TorchSharp.torch.nn.functional;
 using static TorchSharp.torch.utils;
 using static TorchSharp.torch.utils.data;
+using System.Diagnostics;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
@@ -50,6 +52,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var epochs = trainInfo.Epochs;
 
 
+            Stopwatch stopWatch = Stopwatch.StartNew();
+
             foreach (var epoch in Enumerable.Range(0, epochs))
             {
                 var trainingLoss = Train(trainLoader, model, loss, optimizer);
@@ -59,8 +63,11 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 modelDB.EpochData.Add(epochData);
             }
 
+            stopWatch.Stop();
+            modelDB.TrainingTimeInSeconds = (int)stopWatch.Elapsed.TotalSeconds;
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
+
 
             return Result<LungCancerModel>.Success(modelDB);
         }

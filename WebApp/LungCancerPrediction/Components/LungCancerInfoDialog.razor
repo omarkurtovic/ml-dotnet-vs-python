@@ -14,8 +14,11 @@
     <DialogContent>
         @if (Model != null)
         {
-        <MudText Class="mb-3">Jezik: @Model.Language</MudText>
             <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1">Jezik: @Model.Language</MudText>
+                    <MudText Typo="Typo.subtitle1" Class="mb-3">Vrijeme Treniranja: @(Model.TrainingTimeInSeconds) sekundi</MudText>
+                </MudItem>
                 <MudItem xs="12">
                     <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Trening / Validacija</b></MudText>
                     <MudSimpleTable Hover="true" Dense="true">
