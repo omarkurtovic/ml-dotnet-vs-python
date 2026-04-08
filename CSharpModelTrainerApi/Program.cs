@@ -29,6 +29,7 @@ builder.Services.AddScoped<LungCancerModelRepository>();
 builder.Services.AddSingleton<LungCancerPredictionService>();
 
 builder.Services.AddSingleton<PathResolver>();
+builder.Services.AddSingleton<HardwareInfoService>();
 
 var app = builder.Build();
 

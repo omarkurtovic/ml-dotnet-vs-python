@@ -17,15 +17,18 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         private LungCancerPredictionService LungCancerPredictionService { get; set; }
         private LungCancerModelRepository LungCancerModelRepository { get; set; }
         private PathResolver PathResolver { get; set; }
+        private HardwareInfoService HardwareInfoService { get; set; }
         public LungCancerController(LungCancerModelTrainer modelTrainer,
             LungCancerModelRepository lungCancerModelRepository,
             LungCancerPredictionService lungCancerPredictionService,
-            PathResolver pathResolver)
+            PathResolver pathResolver,
+            HardwareInfoService hardwareInfoService)
         {
             ModelTrainer = modelTrainer;
             LungCancerModelRepository = lungCancerModelRepository;
             LungCancerPredictionService = lungCancerPredictionService;
             PathResolver = pathResolver;
+            HardwareInfoService = hardwareInfoService;
         }
 
         [HttpGet]
@@ -69,19 +72,12 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         [Route("Train")]
         public IActionResult Train([FromBody] LungCancerTrainingParams trainParams)
         {
-            if (trainParams.ModelLanguage == ModelLanguage.CSharp)
+            var modelRes = ModelTrainer.TrainModel(trainParams, HardwareInfoService);
+            if (!modelRes.IsSuccess)
             {
-                var modelRes = ModelTrainer.TrainModel(trainParams);
-                if (!modelRes.IsSuccess)
-                {
-                    return BadRequest();
-                }
-                return Ok(modelRes.Data);
+                return BadRequest(modelRes.Message);
             }
-            else
-            {
-                return BadRequest();
-            }
+            return Ok(modelRes.Data);
         }
 
         [HttpPost]

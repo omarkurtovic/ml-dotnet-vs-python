@@ -1,4 +1,4 @@
-
+﻿
 # https://www.kaggle.com/code/adityamahimkar/lung-cancer-prediction-on-image-data/notebook
 
 from curses import beep
@@ -68,6 +68,14 @@ class LungCancerTrainingParams(BaseModel):
 
 @router.post("/Python/LungCancer/Train")
 def train(train_data: LungCancerTrainingParams):
+    if(train_data.modelName == ""):
+        raise HTTPException(status_code=400, detail="Naziv modela ne smije biti prazan")
+    
+    if(train_data.ModelLanguage != ModelLanguage.Python):
+        raise HTTPException(status_code=400, detail="Jezik modela mora biti Python")
+
+    if(train_data.epochs < 1 or train_data.epochs > 10):
+        raise HTTPException(status_code=400, detail="Broj epoha mora biti između 1 i 10")
     
     categories = ['Bengin cases', 'Malignant cases', 'Normal cases']
     

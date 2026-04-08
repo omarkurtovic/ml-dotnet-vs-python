@@ -28,7 +28,8 @@
                     <MudPaper Class="pa-4 mb-4" Elevation="0">
                         <MudTextField @bind-Value="trainingParams.ModelName" Required="true"
                                       RequiredError="Naziv modela je obavezan!" Variant="Variant.Outlined" Label="Naziv modela" Class="mb-4" />
-                        <MudNumericField @bind-Value="trainingParams.Epochs" Required="true" RequiredError="Broj epoha je obavezan!" Variant="Variant.Outlined" Label="Broj epoha" Class="mb-4" Min="1" />
+                        <MudNumericField @bind-Value="trainingParams.Epochs" Required="true" RequiredError="Broj epoha je obavezan!" 
+                                Variant="Variant.Outlined" Label="Broj epoha" Class="mb-4" Min="1" Max="10" />
                         <MudCheckBox @bind-Value="trainingParams.WithFlips" Label="Rotiraj slike" Class="mb-4" />
 
                         <MudSelect T="ModelLanguage" @bind-Value="trainingParams.ModelLanguage" Label="Jezik modela"

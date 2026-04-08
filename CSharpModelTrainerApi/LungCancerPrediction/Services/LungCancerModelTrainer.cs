@@ -19,13 +19,28 @@ using static TorchSharp.torch.nn.functional;
 using static TorchSharp.torch.utils;
 using static TorchSharp.torch.utils.data;
 using System.Diagnostics;
+using System;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class LungCancerModelTrainer(PathResolver pathResolver)
     {
-        public  Result<LungCancerModel> TrainModel(LungCancerTrainingParams trainInfo)
+        public  Result<LungCancerModel> TrainModel(LungCancerTrainingParams trainInfo, HardwareInfoService hardwareInfoService)
         {
+            if(string.IsNullOrEmpty(trainInfo.ModelName))
+            {
+                return Result<LungCancerModel>.Failure("Ime modela ne smije biti prazno");
+            }
+            if(trainInfo.ModelLanguage != ModelLanguage.CSharp)
+            {
+                return Result<LungCancerModel>.Failure("Podržan je samo C# jezik");
+            }
+            if (trainInfo.Epochs < 1 || trainInfo.Epochs > 10)
+            {
+                return Result<LungCancerModel>.Failure("Broj epoha mora biti između 1 i 10");
+            }
+
+
             var modelDB = new LungCancerModel();
             modelDB.Name = trainInfo.ModelName;
             modelDB.Language = trainInfo.ModelLanguage;
@@ -34,6 +49,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
             torch.set_default_device(defaultDevice);
+            if(defaultDevice.type == DeviceType.CPU)
+            {
+                modelDB.HardwareInfo = hardwareInfoService.GetCpuInfo();
+            }
+            else
+            {
+                modelDB.HardwareInfo = hardwareInfoService.GetGpuInfo();
+            }
 
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 
