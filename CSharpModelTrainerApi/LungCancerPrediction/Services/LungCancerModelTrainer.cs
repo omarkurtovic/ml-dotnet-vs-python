@@ -49,14 +49,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
             torch.set_default_device(defaultDevice);
-            if(defaultDevice.type == DeviceType.CPU)
-            {
-                modelDB.HardwareInfo = hardwareInfoService.GetCpuInfo();
-            }
-            else
-            {
-                modelDB.HardwareInfo = hardwareInfoService.GetGpuInfo();
-            }
+
+            modelDB.HardwareInfo = hardwareInfoService.GetHardwareInfo();
 
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 

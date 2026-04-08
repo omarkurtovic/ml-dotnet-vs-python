@@ -1,11 +1,26 @@
 ﻿using Hardware.Info;
+using TorchSharp;
+using static TorchSharp.torch;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class HardwareInfoService
     {
         private readonly IHardwareInfo hardwareInfo = new HardwareInfo();
-        public string GetCpuInfo()
+
+        public string GetHardwareInfo()
+        {
+            Device defaultDevice = TrainingHelper.GetOptimalDevice();
+            if (defaultDevice.type == DeviceType.CPU)
+            {
+                return GetCpuInfo();
+            }
+            else
+            {
+                return GetGpuInfo();
+            }
+        }
+        private string GetCpuInfo()
         {
             hardwareInfo.RefreshCPUList();
             var cpu = hardwareInfo.CpuList.FirstOrDefault();
@@ -17,7 +32,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return $"{cpuName} ({physicalCores} Korova / {logicalCores} Threadova)";
         }
 
-        public string GetGpuInfo()
+        private string GetGpuInfo()
         {
             hardwareInfo.RefreshVideoControllerList();
             var gpu = hardwareInfo.VideoControllerList.FirstOrDefault();

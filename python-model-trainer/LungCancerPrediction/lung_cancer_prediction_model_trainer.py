@@ -17,53 +17,15 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras.src.legacy.preprocessing.image import ImageDataGenerator
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
-from enum import IntEnum
-from pydantic import BaseModel
 import time
+from hardware_utils import get_optimal_hardware_info
+from models import ModelLanguage, LungCancerModel, LungCancerModelEpochData, LungCancerTrainingParams
 
 router = APIRouter()
 
 repo_root = Path("..")
 directory = repo_root.joinpath('data/lung-cancer-prediction')
 
-class ModelLanguage(IntEnum):
-    CSharp = 0
-    Python = 1
-
-class LungCancerModelEpochData(BaseModel):
-    epoch: int
-    trainingLoss: float
-    trainingAccuracy: float
-    validationAccuracy: float
-    validationLoss: float
-    beningPrecision: float
-    beningRecall: float
-    beningF1Score: float
-    malignantPrecision: float
-    malignantRecall: float
-    malignantF1Score: float
-    normalPrecision: float  
-    normalRecall: float
-    normalF1Score: float
-    macroPrecision: float
-    macroRecall: float
-    macroF1Score: float
-    weightedPrecision: float
-    weightedRecall: float
-    weightedF1Score: float
-
-class LungCancerModel(BaseModel):
-    modelName: str
-    modelLanguage: ModelLanguage
-    epochData: list[LungCancerModelEpochData] = []
-    trainingTimeInSeconds: int
-
-
-class LungCancerTrainingParams(BaseModel):
-    modelName: str
-    ModelLanguage: ModelLanguage
-    epochs: int
-    withFlips: bool
 
 
 @router.post("/Python/LungCancer/Train")
@@ -160,7 +122,8 @@ def train(train_data: LungCancerTrainingParams):
         name=train_data.modelName,
         language=ModelLanguage.Python,
         epochData=[],
-        trainingTimeInSeconds=end_time - start_time
+        trainingTimeInSeconds=end_time - start_time,
+        hardwareInfo = get_optimal_hardware_info()
     )
 
     for epoch in range(train_data.epochs):
