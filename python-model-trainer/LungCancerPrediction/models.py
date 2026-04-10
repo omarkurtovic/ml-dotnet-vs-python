@@ -8,36 +8,36 @@ class ModelLanguage(IntEnum):
 
 class LungCancerModelEpochData(BaseModel):
     epoch: int
-    trainingLoss: float
-    trainingAccuracy: float
-    validationAccuracy: float
-    validationLoss: float
-    beningPrecision: float
-    beningRecall: float
-    beningF1Score: float
-    malignantPrecision: float
-    malignantRecall: float
-    malignantF1Score: float
-    normalPrecision: float  
-    normalRecall: float
-    normalF1Score: float
-    macroPrecision: float
-    macroRecall: float
-    macroF1Score: float
-    weightedPrecision: float
-    weightedRecall: float
-    weightedF1Score: float
+    trainingLoss: float = None
+    trainingAccuracy: float = None
+    validationAccuracy: float = None
+    validationLoss: float = None
+    beningPrecision: float = None
+    beningRecall: float = None
+    beningF1Score: float = None
+    malignantPrecision: float = None
+    malignantRecall: float = None
+    malignantF1Score: float = None
+    normalPrecision: float = None
+    normalRecall: float = None
+    normalF1Score: float = None
+    macroPrecision: float = None
+    macroRecall: float = None
+    macroF1Score: float = None
+    weightedPrecision: float = None
+    weightedRecall: float = None
+    weightedF1Score: float = None
 
 class LungCancerModel(BaseModel):
-    modelName: str
+    name: str
     modelLanguage: ModelLanguage
     epochData: list[LungCancerModelEpochData] = []
     trainingTimeInSeconds: int
+    hardwareInfo: str
 
 
 class LungCancerTrainingParams(BaseModel):
     modelName: str
-    ModelLanguage: ModelLanguage
+    modelLanguage: ModelLanguage
     epochs: int
     withFlips: bool
-    hardwareInfo: str

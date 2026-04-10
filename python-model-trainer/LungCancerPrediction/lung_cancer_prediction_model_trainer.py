@@ -1,16 +1,13 @@
 ﻿
 # https://www.kaggle.com/code/adityamahimkar/lung-cancer-prediction-on-image-data/notebook
 
-from curses import beep
 import numpy as np 
-import matplotlib.pyplot as plt
 import cv2
 import random
 import os
-import imageio
 from collections import Counter
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D
@@ -18,8 +15,8 @@ from keras.src.legacy.preprocessing.image import ImageDataGenerator
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
 import time
-from hardware_utils import get_optimal_hardware_info
-from models import ModelLanguage, LungCancerModel, LungCancerModelEpochData, LungCancerTrainingParams
+from .models import ModelLanguage, LungCancerModel, LungCancerModelEpochData, LungCancerTrainingParams
+from .hardware_utils import get_optimal_hardware_info
 
 router = APIRouter()
 
@@ -33,7 +30,7 @@ def train(train_data: LungCancerTrainingParams):
     if(train_data.modelName == ""):
         raise HTTPException(status_code=400, detail="Naziv modela ne smije biti prazan")
     
-    if(train_data.ModelLanguage != ModelLanguage.Python):
+    if(train_data.modelLanguage != ModelLanguage.Python):
         raise HTTPException(status_code=400, detail="Jezik modela mora biti Python")
 
     if(train_data.epochs < 1 or train_data.epochs > 10):
@@ -113,16 +110,16 @@ def train(train_data: LungCancerTrainingParams):
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 
-    start_time = time.pref_counter()
+    start_time = time.perf_counter()
     history = model.fit(train_generator, epochs=train_data.epochs, validation_data=val_generator, class_weight=new_weights)
-    end_time = time.pref_counter()
+    end_time = time.perf_counter()
 
 
     dbModel = LungCancerModel(
         name=train_data.modelName,
-        language=ModelLanguage.Python,
+        modelLanguage=ModelLanguage.Python,
         epochData=[],
-        trainingTimeInSeconds=end_time - start_time,
+        trainingTimeInSeconds=int(end_time - start_time),
         hardwareInfo = get_optimal_hardware_info()
     )
 
