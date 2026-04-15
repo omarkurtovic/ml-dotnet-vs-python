@@ -117,7 +117,7 @@ def train(train_data: LungCancerTrainingParams):
 
     dbModel = LungCancerModel(
         name=train_data.modelName,
-        modelLanguage=ModelLanguage.Python,
+        language=ModelLanguage.Python,
         epochData=[],
         trainingTimeInSeconds=int(end_time - start_time),
         hardwareInfo = get_optimal_hardware_info()

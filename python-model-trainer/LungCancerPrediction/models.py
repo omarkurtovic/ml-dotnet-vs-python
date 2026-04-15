@@ -30,7 +30,7 @@ class LungCancerModelEpochData(BaseModel):
 
 class LungCancerModel(BaseModel):
     name: str
-    modelLanguage: ModelLanguage
+    language: ModelLanguage
     epochData: list[LungCancerModelEpochData] = []
     trainingTimeInSeconds: int
     hardwareInfo: str
