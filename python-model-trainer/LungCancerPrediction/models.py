@@ -12,9 +12,9 @@ class LungCancerModelEpochData(BaseModel):
     trainingAccuracy: float = None
     validationAccuracy: float = None
     validationLoss: float = None
-    beningPrecision: float = None
-    beningRecall: float = None
-    beningF1Score: float = None
+    benignPrecision: float = None
+    benignRecall: float = None
+    benignF1Score: float = None
     malignantPrecision: float = None
     malignantRecall: float = None
     malignantF1Score: float = None

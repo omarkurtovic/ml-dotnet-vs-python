@@ -138,9 +138,9 @@ def train(train_data: LungCancerTrainingParams):
 
     report = classification_report(y_valid, y_pred_bool, output_dict=True)
 
-    dbModel.epochData[-1].beningPrecision = report["0"]['precision']
-    dbModel.epochData[-1].beningRecall = report["0"]['recall']
-    dbModel.epochData[-1].beningF1Score = report["0"]['f1-score']
+    dbModel.epochData[-1].benignPrecision = report["0"]['precision']
+    dbModel.epochData[-1].benignRecall = report["0"]['recall']
+    dbModel.epochData[-1].benignF1Score = report["0"]['f1-score']
     dbModel.epochData[-1].malignantPrecision = report["1"]['precision']
     dbModel.epochData[-1].malignantRecall = report["1"]['recall']
     dbModel.epochData[-1].malignantF1Score = report["1"]['f1-score']

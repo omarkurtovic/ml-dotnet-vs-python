@@ -13,7 +13,7 @@
 
 <PageTitle>Pregled Modela</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16">
     <MudPaper Class="pa-6 mt-6" Elevation="15">
 
         <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
@@ -46,7 +46,9 @@
                                 </MudChip>
                             </CellTemplate>
                         </PropertyColumn>
-                        <PropertyColumn Property="x => x.EpochData.MaxBy(e => e.Epoch)!.ValidationAccuracy" Title="Preciznost" Sortable="true" Format="P" />
+                        <PropertyColumn Property="x => x.EpochData.Last().MacroRecall" Title="Odziv" Format="P2" Sortable="true"></PropertyColumn>
+                        <PropertyColumn Property="x => x.EpochData.Last().MacroPrecision" Title="Preciznost" Format="P2" Sortable="true"></PropertyColumn>
+                        <PropertyColumn Property="x => x.EpochData.Last().MacroPrecision" Title="F1" Format="P2" Sortable="true"></PropertyColumn>
                         <TemplateColumn Title="" Sortable="false" Filterable="false">
                             <CellTemplate>
                                 <div style="display: flex; justify-content: space-around;">

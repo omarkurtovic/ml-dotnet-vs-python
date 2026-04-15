@@ -16,5 +16,3 @@ python not done
 
 We have to figure out how to get all the parameters during python training between the epochs
 so epoch 1 for it to have things like bening precision, malignatno f1 score etc
-
-

@@ -18,6 +18,7 @@
                 <MudItem xs="12">
                     <MudText Typo="Typo.subtitle1">Jezik: @Model.Language</MudText>
                     <MudText Typo="Typo.subtitle1">Vrijeme Treniranja: @(Model.TrainingTimeInSeconds) sekundi</MudText>
+                    <MudText Typo="Typo.subtitle1">Broj Epoha: @(Model.EpochData.Count)</MudText>
                     <MudText Typo="Typo.subtitle1" Class="mb-3">Tranirano na: @Model.HardwareInfo</MudText>
                 </MudItem>
                 <MudItem xs="12">
@@ -25,6 +26,7 @@
                     <MudSimpleTable Hover="true" Dense="true">
                         <tbody>
                             <tr><td>Preciznost (Trening)</td><td>@(LastEpochData.TrainingAccuracy == null ? "" : Math.Round(LastEpochData.TrainingAccuracy.Value * 100, 2))%</td></tr>
+                            <tr><td>Gubitak (Trening)</td><td>@(LastEpochData.TrainingLoss == null ? "" : Math.Round(LastEpochData.TrainingLoss.Value, 4).ToString())</td></tr>
                             <tr><td>Preciznost (Validacija)</td><td>@(LastEpochData.ValidationAccuracy == null ? "" : Math.Round(LastEpochData.ValidationAccuracy.Value * 100, 2))%</td></tr>
                             <tr><td>Gubitak (Validacija)</td><td>@(LastEpochData.ValidationLoss == null ? "" : Math.Round(LastEpochData.ValidationLoss.Value, 4).ToString())</td></tr>
                         </tbody>
@@ -35,9 +37,9 @@
                     <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Benigno</b></MudText>
                     <MudSimpleTable Hover="true" Dense="true">
                         <tbody>
+                            <tr><td>Odziv</td><td>@(LastEpochData.BenignRecall == null ? "" : Math.Round(LastEpochData.BenignRecall.Value * 100, 2))%</td></tr>
                             <tr><td>Preciznost</td><td>@(LastEpochData.BenignPrecision == null ? "" : Math.Round(LastEpochData.BenignPrecision.Value * 100, 2))%</td></tr>
-                            <tr><td>Recall</td><td>@(LastEpochData.BenignRecall == null ? "" : Math.Round(LastEpochData.BenignRecall.Value * 100, 2))%</td></tr>
-                            <tr><td>F1 Score</td><td>@(LastEpochData.BenignF1Score == null ? "" : Math.Round(LastEpochData.BenignF1Score.Value * 100, 2))%</td></tr>
+                            <tr><td>F1</td><td>@(LastEpochData.BenignF1Score == null ? "" : Math.Round(LastEpochData.BenignF1Score.Value * 100, 2))%</td></tr>
                         </tbody>
                     </MudSimpleTable>
                 </MudItem>
@@ -46,9 +48,9 @@
                     <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Maligno</b></MudText>
                     <MudSimpleTable Hover="true" Dense="true">
                         <tbody>
+                            <tr><td>Odziv</td><td>@(LastEpochData.MalignantRecall == null ? "" : Math.Round(LastEpochData.MalignantRecall.Value * 100, 2))%</td></tr>
                             <tr><td>Preciznost</td><td>@(LastEpochData.MalignantPrecision == null ? "" : Math.Round(LastEpochData.MalignantPrecision.Value * 100, 2))%</td></tr>
-                            <tr><td>Recall</td><td>@(LastEpochData.MalignantRecall == null ? "" : Math.Round(LastEpochData.MalignantRecall.Value * 100, 2))%</td></tr>
-                            <tr><td>F1 Score</td><td>@(LastEpochData.MalignantF1Score == null ? "" : Math.Round(LastEpochData.MalignantF1Score.Value * 100, 2))%</td></tr>
+                            <tr><td>F1</td><td>@(LastEpochData.MalignantF1Score == null ? "" : Math.Round(LastEpochData.MalignantF1Score.Value * 100, 2))%</td></tr>
                         </tbody>
                     </MudSimpleTable>
                 </MudItem>
@@ -57,9 +59,9 @@
                     <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Normalno</b></MudText>
                     <MudSimpleTable Hover="true" Dense="true">
                         <tbody>
+                            <tr><td>Odziv</td><td>@(LastEpochData.NormalRecall == null ? "" : Math.Round(LastEpochData.NormalRecall.Value * 100, 2))%</td></tr>
                             <tr><td>Preciznost</td><td>@(LastEpochData.NormalPrecision == null ? "" : Math.Round(LastEpochData.NormalPrecision.Value * 100, 2))%</td></tr>
-                            <tr><td>Recall</td><td>@(LastEpochData.NormalRecall == null ? "" : Math.Round(LastEpochData.NormalRecall.Value * 100, 2))%</td></tr>
-                            <tr><td>F1 Score</td><td>@(LastEpochData.NormalF1Score == null ? "" : Math.Round(LastEpochData.NormalF1Score.Value * 100, 2))%</td></tr>
+                            <tr><td>F1</td><td>@(LastEpochData.NormalF1Score == null ? "" : Math.Round(LastEpochData.NormalF1Score.Value * 100, 2))%</td></tr>
                         </tbody>
                     </MudSimpleTable>
                 </MudItem>
@@ -68,9 +70,9 @@
                     <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Makro Prosjek</b></MudText>
                     <MudSimpleTable Hover="true" Dense="true">
                         <tbody>
+                            <tr><td>Odziv</td><td>@(LastEpochData.MacroRecall == null ? "" : Math.Round(LastEpochData.MacroRecall.Value * 100, 2))%</td></tr>
                             <tr><td>Preciznost</td><td>@(LastEpochData.MacroPrecision == null ? "" : Math.Round(LastEpochData.MacroPrecision.Value * 100, 2))%</td></tr>
-                            <tr><td>Recall</td><td>@(LastEpochData.MacroRecall == null ? "" : Math.Round(LastEpochData.MacroRecall.Value * 100, 2))%</td></tr>
-                            <tr><td>F1 Score</td><td>@(LastEpochData.MacroF1Score == null ? "" : Math.Round(LastEpochData.MacroF1Score.Value * 100, 2))%</td></tr>
+                            <tr><td>F1</td><td>@(LastEpochData.MacroF1Score == null ? "" : Math.Round(LastEpochData.MacroF1Score.Value * 100, 2))%</td></tr>
                         </tbody>
                     </MudSimpleTable>
                 </MudItem>
