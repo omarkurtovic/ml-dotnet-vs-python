@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.37027.9 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11723.231 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{518C65D9-FC27-4F92-B9D1-D2DD93CBFB57}"
 	ProjectSection(SolutionItems) = preProject
@@ -21,6 +21,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ml-dotnet-vs-python.ServiceDefaults", "ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj", "{2BDBD618-E27D-B88C-B65B-269C340668BC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpModelTrainerApi", "CSharpModelTrainerApi\CSharpModelTrainerApi.csproj", "{5AC5EA44-A926-A861-55D5-052BD577489B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OmarDesignSystem", "..\..\OmarDesignSystem\OmarDesignSystem\OmarDesignSystem.csproj", "{F9F8C4C7-B1B5-2D3B-9AB6-99EBAE8D48AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +52,10 @@ Global
 		{5AC5EA44-A926-A861-55D5-052BD577489B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AC5EA44-A926-A861-55D5-052BD577489B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AC5EA44-A926-A861-55D5-052BD577489B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9F8C4C7-B1B5-2D3B-9AB6-99EBAE8D48AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9F8C4C7-B1B5-2D3B-9AB6-99EBAE8D48AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9F8C4C7-B1B5-2D3B-9AB6-99EBAE8D48AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9F8C4C7-B1B5-2D3B-9AB6-99EBAE8D48AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

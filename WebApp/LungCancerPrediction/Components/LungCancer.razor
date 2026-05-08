@@ -1,93 +1,118 @@
 ﻿@page "/lungCancer"
 @using MudBlazor
+@using OmarDesignSystem
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
-    <MudPaper Class="pa-6 mt-6" Elevation="15">
-        <MudGrid>
-            <MudItem xs="12" Style="display: flex; justify-content: center; margin-bottom: 20px;">
-                <MudText Typo="Typo.h3">Analiza Raka Pluća</MudText>
-            </MudItem>
-            <MudItem xs="3">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer/trainer" FullWidth
-                           StartIcon="@Icons.Material.Filled.ModelTraining">
-                    Traniraj Model
-                </MudButton>
-            </MudItem>
-            <MudItem xs="3">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer/inference" FullWidth
-                           StartIcon="@Icons.Material.Filled.PlayArrow">
-                    Pokreni analizu
-                </MudButton>
-            </MudItem>
-            <MudItem xs="3">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer/models" FullWidth
-                           StartIcon="@Icons.Material.Filled.List">
-                    Pregled Modela
-                </MudButton>
-            </MudItem>
-            <MudItem xs="3">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/lungCancer/comparison" FullWidth
-                           StartIcon="@Icons.Material.Filled.StackedLineChart">
-                    Uporedi Modele
-                </MudButton>
-            </MudItem>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16 mt-8">
+    
+    <MudStack AlignItems="AlignItems.Center" Class="mb-12">
+        <MainHeading>Analiza Raka Pluća</MainHeading>
+        <BodyText Style="max-width: 700px;">
+            Ova platforma služi za treniranje, analizu i direktnu usporedbu modela mašinskog učenja razvijenih u C# i Python programskim jezicima koristeći IQOTHNCCD CT dijagnostiku.
+        </BodyText>
+    </MudStack>
 
-            <MudItem xs="12">
-                <MudExpansionPanels>
-                    <MudExpansionPanel Text="Opis">
-                        <MudText>
-                            Ova komponenta služi za direktnu usporedbu modela mašinskog učenja razvijenih u C# i Python programskim jezicima.
-                            Dostupne opcije su detaljnije opisane u nastavku.
-                        </MudText>
-                    </MudExpansionPanel>
+    <MudGrid Spacing="4" Class="mb-8">
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Large">
+                            <MudIcon Icon="@Icons.Material.Filled.ModelTraining" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <SectionHeading>Treniraj Model</SectionHeading>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <BodyText>
+                        Konfigurišite i pokrenite proces treniranja novog modela. Podesite broj epoha, augmentaciju slika (rotaciju) i odaberite željeni backend sistem (C# ili Python).
+                    </BodyText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="/lungCancer/trainer" Variant="Variant.Filled" Color="Color.Primary" Class="mb-2">
+                        Započni Treniranje
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
 
-                    <MudExpansionPanel Text="Treniranje">
-                        <MudText>Prilikom treniranja modela, korisniku je na raspolaganju nekoliko opcija:</MudText>
-                        <ul style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 0.5rem; margin-top: 1rem;">
-                            <li><MudText><strong>Naziv modela:</strong> Korisnik proizvoljno unosi ime pod kojim će model biti sačuvan.</MudText></li>
-                            <li><MudText><strong>Broj epoha:</strong> Predstavlja broj prolazaka kroz cjelokupan trening set podataka tokom procesa treniranja.</MudText></li>
-                            <li><MudText><strong>Rotacija slika:</strong> Ukoliko je opcija uključena, za svaku sliku iz trening seta generisat će se još tri dodatne. Time se količina ulaznih podataka značajno povećava, što će produžiti vrijeme treniranja.</MudText></li>
-                            <li><MudText><strong>Programski jezik:</strong> Korisnik može birati između C# i Pythona. Ovisno o odabiru, treniranje će se izvršavati na različitim backend sistemima, ali će rezultati biti prikazani na identičan način.</MudText></li>
-                        </ul>
-                        <MudText Style="margin-top: 1rem;">Nakon što je treniranje završeno, bit će prikazan prozor s najbitnijim podacima modela.</MudText>
-                        <MudText>Ukoliko je korisnik zadovoljan prikazanim parametrima, model može biti sačuvan.</MudText>
-                    </MudExpansionPanel>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Large">
+                            <MudIcon Icon="@Icons.Material.Filled.PlayArrow" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <SectionHeading>Pokreni Analizu</SectionHeading>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <BodyText>
+                        Izvršite evaluaciju istreniranih modela na nezavisnim CT snimcima pluća. Model će klasifikovati tkivo kao normalno, benigno ili maligno.
+                    </BodyText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="/lungCancer/inference" Variant="Variant.Filled" Color="Color.Primary" Class="mb-2">
+                        Nova Analiza
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 
-                    <MudExpansionPanel Text="Podaci">
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            <div>
-                                <MudText>
-                                    Za treniranje modela koristi se <strong>IQOTHNCCD Lung Cancer Dataset</strong>. Ovaj skup podataka sadrži CT snimke pluća s oznakama prisutnosti ili odsutnosti raka. Široko je zastupljen u istraživanjima medicinske dijagnostike i omogućava modelu prepoznavanje različitih obrazaca povezanih s ovom bolešću.
-                                </MudText>
-                                <MudText><strong>Izvor podataka za treniranje:</strong> <MudLink Href="https://www.kaggle.com/datasets/dishantrathi20/ct-scan-images-for-lung-cancer" Target="_blank">Trening podaci (Kaggle)</MudLink></MudText>
-                            </div>
-                        </div>
-                    </MudExpansionPanel>
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="1">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary">
+                            <MudIcon Icon="@Icons.Material.Filled.List" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <SectionHeading>Pregled Modela</SectionHeading>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <BodyText>
+                        Pregledajte historiju svih do sada treniranih modela, analizirajte njihove finalne parametre ili obrišite one koji više nisu potrebni.
+                    </BodyText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="/lungCancer/models" Variant="Variant.Outlined" Color="Color.Primary" Class="mb-2">
+                        Otvori Pregled
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
 
-                    <MudExpansionPanel Text="Analiza">
-                        <MudText>Sljedeći korak nakon treniranja modela je njihova analiza.</MudText>
-                        <MudText>
-                            Za provjeru ispravnosti (evaluaciju) modela mogu se koristiti različiti nezavisni skupovi podataka, a brojni primjeri dostupni su na platformi Kaggle.
-                        </MudText>
-                        <MudText><strong>Primjer podataka za testiranje:</strong> <MudLink Href="https://www.kaggle.com/datasets/adityamahimkar/iqothnccd-lung-cancer-dataset" Target="_blank">Podaci za analizu (Kaggle)</MudLink></MudText>
-                        <MudText Style="margin-top: 1rem;">Na stranici za analizu korisniku je omogućeno da odabere sliku i model koji želi testirati.</MudText>
-                        <MudText>Nakon analize, model će dati svoju predikciju, odnosno prepoznati da li je tkivo na slici normalno, ili se radi o benignom, odnosno malignom karcinomu.</MudText>
-                    </MudExpansionPanel>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="1">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary">
+                            <MudIcon Icon="@Icons.Material.Filled.StackedLineChart" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <SectionHeading>Uporedi Modele</SectionHeading>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <BodyText>
+                        Direktno usporedite performanse različitih modela kroz epohe (Loss, Accuracy). Odaberite proizvoljan broj modela za generisanje grafikona.
+                    </BodyText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="/lungCancer/comparison" Variant="Variant.Outlined" Color="Color.Primary" Class="mb-2">
+                        Uporedi Performanse
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 
-                    <MudExpansionPanel Text="Pregled Modela">
-                        <MudText>Na stranici za pregled izlistani su svi modeli koji su do sada trenirani.</MudText>
-                        <MudText>Ovdje je moguće ponovo pregledati parametre modela ili obrisati one koji više nisu potrebni.</MudText>
-                    </MudExpansionPanel>
-
-                    <MudExpansionPanel Text="Uporedba Modela">
-                        <MudText>Ova stranica pruža mogućnost direktne usporedbe određenih parametara različitih modela.</MudText>
-                        <MudText>Korisnik može birati proizvoljan broj modela, kao i proizvoljan broj parametara koje želi analizirati.</MudText>
-                        <MudText>Za svaki odabrani parametar generisat će se grafikon koji prikazuje kako se taj parametar mijenjao kroz epohe za svaki od odabranih modela.</MudText>
-                    </MudExpansionPanel>
-                </MudExpansionPanels>
-            </MudItem>
-        </MudGrid>
-    </MudPaper>
 </MudContainer>
-
-
