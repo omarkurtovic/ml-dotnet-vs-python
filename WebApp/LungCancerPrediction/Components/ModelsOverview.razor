@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using OmarDesignSystem
+@using SharedCL.LungCancerPrediction.Dtos
 @using SharedCL.LungCancerPrediction.Models
 @using SharedCL.Shared.Enums
 @using SharedCL.Shared.Models
@@ -14,118 +15,173 @@
 @rendermode InteractiveServer
 
 <PageTitle>Pregled Modela</PageTitle>
-<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16 mt-8">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    
+    <MudGrid>
+        <MudItem xs="12">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-6">
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/lungCancer" Color="Color.Default" />
+                <MainHeading Class="mb-0">Pregled Modela</MainHeading>
+            </MudStack>
+        </MudItem>
 
-    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-6">
-        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/lungCancer" Color="Color.Default" />
-        <SubHeading Class="mb-0">Pregled Modela</SubHeading>
-    </MudStack>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="SearchString"
+                          Placeholder="Pretraži modele..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium"
+                          Variant="Variant.Outlined"
+                          Immediate="true" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudDataGrid @ref="@DataGrid" T="LCDto" Hover Filterable="false" Striped ServerData="ServerReload" FixedHeader FixedFooter>
+                <NoRecordsContent>
+                    @if (!string.IsNullOrWhiteSpace(SearchString))
+                    {
+                        <NoRecords Title="Modeli nisu pronađeni"
+                                   Message="Promjenite filtere za prikaz modela" Filtered />
+                    }
+                    else
+                    {
+                        <NoRecords Title="Modeli nisu pronađeni"
+                                   Message="Trenirajte prvi model da možete početi raditi analizu" />
+                    }
+                </NoRecordsContent>
+                <Columns>
+                    <PropertyColumn Property="x => x.Name" Title="Naziv" Sortable="true" />
+                    <PropertyColumn Property="x => x.Language" Title="Jezik" Sortable="true" />
+                    <PropertyColumn Property="x => x.MacroRecall" Title="Odziv" Format="P2" Sortable="true" />
+                    <PropertyColumn Property="x => x.MacroPrecision" Title="Preciznost" Format="P2" Sortable="true" />
+                    <PropertyColumn Property="x => x.MacroF1Score" Title="F1" Format="P2" Sortable="true" />
+                    <TemplateColumn Title="" Sortable="false" Filterable="false">
+                        <CellTemplate>
+                            <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                     AnchorOrigin="Origin.BottomRight"
+                                     TransformOrigin="Origin.TopRight"
+                                     Size="Size.Small"
+                                     Dense="true">
+                                <MudMenuItem OnClick="@(() => ShowModelDetails(context.Item))" Icon="@Icons.Material.Filled.Info">
+                                    Detalji
+                                </MudMenuItem>
+                                <MudMenuItem OnClick="@(() => ConfirmDelete(context.Item))" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">
+                                    Obriši
+                                </MudMenuItem>
+                            </MudMenu>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="LCDto" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudItem>
+    </MudGrid>
 
-    <MudDataGrid T="LungCancerModel" Items="_models"
-                    SortMode="SortMode.Multiple" Filterable="false"
-                    Hover="true" Striped="true" Elevation="1">
-        <NoRecordsContent>
-            <NoRecords Title="Modeli nisu pronađeni"
-                    Message="Trenirajte prvi model da možete početi raditi analizu">
-            </NoRecords>
-        </NoRecordsContent>
-        <Columns>
-            <PropertyColumn Property="x => x.Name" Title="Naziv" Sortable="true" />
-            <PropertyColumn Property="x => x.Language" Title="Jezik" Sortable="true">
-                <CellTemplate>
-                    <MudChip T="string" Size="Size.Small"
-                                Color="@(context.Item.Language == ModelLanguage.CSharp ? Color.Primary : Color.Secondary)">
-                        @context.Item.Language.ToString()
-                    </MudChip>
-                </CellTemplate>
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.EpochData.Last().MacroRecall" Title="Odziv" Format="P2" Sortable="true" />
-            <PropertyColumn Property="x => x.EpochData.Last().MacroPrecision" Title="Preciznost" Format="P2" Sortable="true" />
-                
-            <PropertyColumn Property="x => x.EpochData.Last().MacroF1Score" Title="F1" Format="P2" Sortable="true" />
-                
-            <TemplateColumn Title="" Sortable="false" Filterable="false">
-                <CellTemplate>
-                    <div style="display: flex; justify-content: flex-end;">
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" 
-                                    AnchorOrigin="Origin.BottomRight" 
-                                    TransformOrigin="Origin.TopRight" 
-                                    Size="Size.Small" 
-                                    Dense="true">
-                            <MudMenuItem OnClick="@(() => ShowModelDetails(context.Item))" Icon="@Icons.Material.Filled.Info">
-                                Detalji
-                            </MudMenuItem>
-                            <MudMenuItem OnClick="@(() => ConfirmDelete(context.Item))" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">
-                                Obriši
-                            </MudMenuItem>
-                        </MudMenu>
-                    </div>
-                </CellTemplate>
-            </TemplateColumn>
-        </Columns>
-        <PagerContent>
-            <MudDataGridPager T="LungCancerModel" />
-        </PagerContent>
-    </MudDataGrid>
+    
 </MudContainer>
 
 @code {
+    private MudDataGrid<LCDto> DataGrid = null!;
 
-    private List<LungCancerModel> _models = [];
+    private List<LCDto> _models = [];
 
-    protected override async Task OnInitializedAsync()
+    private int NumberOfModels = -1;
+
+    private SortDefinition<LCDto>? CurrentSort;
+
+    private string _search = string.Empty;
+
+    private string SearchString
     {
-        await LoadModels();
-    }
-
-    private async Task LoadModels()
-    {
-        var result = await LungCancerApi.GetModelsAsync();
-        _models = result.IsSuccess ? result.Data! : [];
-    }
-
-    private async Task ShowModelDetails(LungCancerModel model)
-    {
-        var parameters = new DialogParameters<LungCancerInfoDialog>
+        get
         {
-            { x => x.Model, model }
-        };
-
-        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
-        await DialogService.ShowAsync<LungCancerInfoDialog>("Detalji Modela", parameters, options);
-    }
-
-    private async Task ConfirmDelete(LungCancerModel model)
-    {
-        var parameters = new DialogParameters<ConfirmDeleteDialog>
-        {
-            { x => x.Message, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"?" },
-            { x => x.OnDelete, async () =>
-                {
-                    Result apiResult = await LungCancerApi.DeleteModelAsync(model.Id);
-                    if (!apiResult.IsSuccess)
-                    {
-                        Snackbar.Add($"Greška pri brisanju modela \"{model.Name}\".", Severity.Error);
-                    }
-                
-                    return apiResult.IsSuccess;
-                }
-            }
-        };
-
-        var dialog = await DialogService.ShowAsync<ConfirmDeleteDialog>("Confirm", parameters);
-        var dialogResult = await dialog.Result;
-
-        if (!dialogResult!.Canceled)
-        {
-            bool isSuccess = (bool)dialogResult.Data!;
-
-            if (isSuccess)
-            {
-                Snackbar.Add($"Model \"{model.Name}\" je uspješno obrisan.", Severity.Success);
-                await LoadModels();
-            }
+            return _search;
         }
+        set
+        {
+            _search = value;
+            DataGrid.ReloadServerData();
+        }
+    }
+
+    private async Task<GridData<LCDto>> ServerReload(GridState<LCDto> state, CancellationToken token)
+    {
+        var options = new LCModelsGridOptionsDto();
+        options.Search = SearchString;
+        var sortDefintion = state.SortDefinitions.FirstOrDefault();
+        if (sortDefintion != null)
+        {
+            options.SortBy = sortDefintion.SortBy;
+            options.SortDescending = sortDefintion.Descending;
+            CurrentSort = sortDefintion;
+        }
+        options.PageSize = state.PageSize;
+        options.CurrentPage = state.Page;
+        var result = await LungCancerApi.GetModelsAsync(options);
+
+        if (result.IsSuccess && result.Data is not null)
+        {
+            return new GridData<LCDto>()
+            {
+                Items = result.Data.Models,
+                TotalItems = result.Data.TotalItems
+            };
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Error fetching models!", Severity.Error);
+        }
+
+        return new GridData<LCDto>()
+        {
+            Items = new List<LCDto>(),
+            TotalItems = 0
+        };
+    }
+
+    private async Task ShowModelDetails(LCDto model)
+    {
+        // var parameters = new DialogParameters<LungCancerInfoDialog>
+        // {
+        //     { x => x.Model, model }
+        // };
+
+        // var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
+        // await DialogService.ShowAsync<LungCancerInfoDialog>("Detalji Modela", parameters, options);
+    }
+
+    private async Task ConfirmDelete(LCDto model)
+    {
+        // var parameters = new DialogParameters<ConfirmDeleteDialog>
+        // {
+        //     { x => x.Message, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"?" },
+        //     { x => x.OnDelete, async () =>
+        //         {
+        //             Result apiResult = await LungCancerApi.DeleteModelAsync(model.Id);
+        //             if (!apiResult.IsSuccess)
+        //             {
+        //                 Snackbar.Add($"Greška pri brisanju modela \"{model.Name}\".", Severity.Error);
+        //             }
+                
+        //             return apiResult.IsSuccess;
+        //         }
+        //     }
+        // };
+
+        // var dialog = await DialogService.ShowAsync<ConfirmDeleteDialog>("Confirm", parameters);
+        // var dialogResult = await dialog.Result;
+
+        // if (!dialogResult!.Canceled)
+        // {
+        //     bool isSuccess = (bool)dialogResult.Data!;
+
+        //     if (isSuccess)
+        //     {
+        //         Snackbar.Add($"Model \"{model.Name}\" je uspješno obrisan.", Severity.Success);
+        //         await LoadModels();
+        //     }
+        // }
     }
 }
 

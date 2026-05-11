@@ -2,6 +2,7 @@
 using CSharpModelTrainerApi.SentimentAnalysis.Services;
 using CSharpModelTrainerApi.Shared;
 using Microsoft.AspNetCore.Mvc;
+using SharedCL.LungCancerPrediction.Dtos;
 using SharedCL.LungCancerPrediction.Models;
 using SharedCL.SentimentAnalysis.Models;
 using SharedCL.Shared.Enums;
@@ -31,11 +32,11 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             HardwareInfoService = hardwareInfoService;
         }
 
-        [HttpGet]
-        [Route("GetModels")]
-        public async Task<IActionResult> GetModels()
+        [HttpPost]
+        [Route("search")]
+        public async Task<IActionResult> GetModels([FromBody] LCModelsGridOptionsDto options)
         {
-            var result = await LungCancerModelRepository.GetAll();
+            var result = await LungCancerModelRepository.GetModelsPageData(options);
             if (!result.IsSuccess)
             {
                 return BadRequest();

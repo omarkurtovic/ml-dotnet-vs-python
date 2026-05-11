@@ -108,8 +108,8 @@
     private async Task LoadModels()
     {
         _isLoading = true;
-        var result = await LungCancerApi.GetModelsAsync();
-        _models = result.IsSuccess ? result.Data! : [];
+        // var result = await LungCancerApi.GetModelsAsync();
+        // _models = result.IsSuccess ? result.Data! : [];
         _isLoading = false;
     }
 

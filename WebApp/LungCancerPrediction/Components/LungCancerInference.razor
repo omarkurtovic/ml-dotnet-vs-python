@@ -99,16 +99,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await CSharpLungCancerApi.GetModelsAsync();
-        if (result.IsSuccess)
-        {
-            Models = result.Data!;
-        }
-        else
-        {
-            Snackbar.Add("Greška prilikom učitavanja modela!", Severity.Error);
-        }
-        await base.OnInitializedAsync();
+        // var result = await CSharpLungCancerApi.GetModelsAsync();
+        // if (result.IsSuccess)
+        // {
+        //     Models = result.Data!;
+        // }
+        // else
+        // {
+        //     Snackbar.Add("Greška prilikom učitavanja modela!", Severity.Error);
+        // }
+        // await base.OnInitializedAsync();
     }
 
     private async Task Predict()

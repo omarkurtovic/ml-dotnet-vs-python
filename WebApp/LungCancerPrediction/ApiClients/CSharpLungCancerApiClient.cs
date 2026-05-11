@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
+using SharedCL.LungCancerPrediction.Dtos;
 using SharedCL.LungCancerPrediction.Models;
 using SharedCL.Shared.Models;
 using System.Net.Http.Headers;
@@ -10,29 +11,28 @@ namespace WebApp.LungCancerPrediction.ApiClients
     {
         private readonly HttpClient _httpClient = httpClient;
 
-        public async Task<Result<List<LungCancerModel>>> GetModelsAsync()
+        public async Task<Result<LCModelsPageDataDto>> GetModelsAsync(LCModelsGridOptionsDto options)
         {
             try
             {
-                string url = $"LungCancer/GetModels";
-                var request = new HttpRequestMessage(HttpMethod.Get, url);
-                var response = await _httpClient.SendAsync(request);
+                var response = await _httpClient.PostAsJsonAsync("LungCancer/search", options);
                 if (response.IsSuccessStatusCode)
                 {
-                    var models = await response.Content.ReadFromJsonAsync<List<LungCancerModel>>();
-                    return Result<List<LungCancerModel>>.Success(models!);
+                    var models = await response.Content.ReadFromJsonAsync<LCModelsPageDataDto>() ?? new();
+                    return Result<LCModelsPageDataDto>.Success(models);
                 }
-                else
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    var errorDetails = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<List<LungCancerModel>>.Failure("");
+                    return Result<LCModelsPageDataDto>.Failure("Unauthorized access.", FailureReason.Unauthorized);
                 }
+
+                Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
+                return Result<LCModelsPageDataDto>.Failure("Failed to fetch models    .");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<List<LungCancerModel>>.Failure("");
+                Console.WriteLine(ex.Message);
+                return Result<LCModelsPageDataDto>.Failure("An error occurred while fetching models.");
             }
         }
 
