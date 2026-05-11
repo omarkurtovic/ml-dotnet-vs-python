@@ -15,7 +15,7 @@ namespace WebApp.LungCancerPrediction.ApiClients
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("LungCancer/search", options);
+                var response = await _httpClient.PostAsJsonAsync("LungCancer/Search", options);
                 if (response.IsSuccessStatusCode)
                 {
                     var models = await response.Content.ReadFromJsonAsync<LCModelsPageDataDto>() ?? new();
@@ -33,6 +33,30 @@ namespace WebApp.LungCancerPrediction.ApiClients
             {
                 Console.WriteLine(ex.Message);
                 return Result<LCModelsPageDataDto>.Failure("An error occurred while fetching models.");
+            }
+        }
+
+        public async Task<Result<LCMoreInfoDto>> GetModelDetailsAsync(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"LungCancer/GetById?id={id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var model = await response.Content.ReadFromJsonAsync<LCMoreInfoDto>();
+                    return Result<LCMoreInfoDto>.Success(model!);
+                }
+                else
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
+                    return Result<LCMoreInfoDto>.Failure("");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
+                return Result<LCMoreInfoDto>.Failure("");
             }
         }
 

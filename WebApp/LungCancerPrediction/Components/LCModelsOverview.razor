@@ -77,33 +77,42 @@
             </MudDataGrid>
         </MudItem>
     </MudGrid>
-
-    
 </MudContainer>
+
+<MudDrawer @bind-Open="@IsSideDrawerOpen"
+           Fixed="true"
+           Anchor="Anchor.End"
+           Variant="@DrawerVariant.Temporary"
+           Width="min(100vw, 600px)"
+           Elevation="2">
+    <div class="px-6 mt-6">
+        <LCInfo Close="CloseDrawer" ModelId="ModelIdForDetails"></LCInfo>
+    </div>
+</MudDrawer>
 
 @code {
     private MudDataGrid<LCDto> DataGrid = null!;
 
-    private List<LCDto> _models = [];
-
-    private int NumberOfModels = -1;
-
-    private SortDefinition<LCDto>? CurrentSort;
-
-    private string _search = string.Empty;
+    private string search = string.Empty;
 
     private string SearchString
     {
         get
         {
-            return _search;
+            return search;
         }
         set
         {
-            _search = value;
+            search = value;
             DataGrid.ReloadServerData();
         }
     }
+
+    private bool IsSideDrawerOpen = false;
+
+    private void CloseDrawer() => IsSideDrawerOpen = false;
+
+    private int ModelIdForDetails = 0;
 
     private async Task<GridData<LCDto>> ServerReload(GridState<LCDto> state, CancellationToken token)
     {
@@ -114,7 +123,6 @@
         {
             options.SortBy = sortDefintion.SortBy;
             options.SortDescending = sortDefintion.Descending;
-            CurrentSort = sortDefintion;
         }
         options.PageSize = state.PageSize;
         options.CurrentPage = state.Page;
@@ -142,46 +150,41 @@
 
     private async Task ShowModelDetails(LCDto model)
     {
-        // var parameters = new DialogParameters<LungCancerInfoDialog>
-        // {
-        //     { x => x.Model, model }
-        // };
-
-        // var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
-        // await DialogService.ShowAsync<LungCancerInfoDialog>("Detalji Modela", parameters, options);
+        ModelIdForDetails = model.Id;
+        IsSideDrawerOpen = true;
     }
 
     private async Task ConfirmDelete(LCDto model)
     {
-        // var parameters = new DialogParameters<ConfirmDeleteDialog>
-        // {
-        //     { x => x.Message, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"?" },
-        //     { x => x.OnDelete, async () =>
-        //         {
-        //             Result apiResult = await LungCancerApi.DeleteModelAsync(model.Id);
-        //             if (!apiResult.IsSuccess)
-        //             {
-        //                 Snackbar.Add($"Greška pri brisanju modela \"{model.Name}\".", Severity.Error);
-        //             }
-                
-        //             return apiResult.IsSuccess;
-        //         }
-        //     }
-        // };
+        var parameters = new DialogParameters<ConfirmDeleteDialog>
+        {
+            { x => x.Message, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"?" },
+            { x => x.OnDelete, async () =>
+                {
+                    Result apiResult = await LungCancerApi.DeleteModelAsync(model.Id);
+                    if (!apiResult.IsSuccess)
+                    {
+                        Snackbar.Add($"Greška pri brisanju modela \"{model.Name}\".", Severity.Error);
+                    }
 
-        // var dialog = await DialogService.ShowAsync<ConfirmDeleteDialog>("Confirm", parameters);
-        // var dialogResult = await dialog.Result;
+                    return apiResult.IsSuccess;
+                }
+            }
+        };
 
-        // if (!dialogResult!.Canceled)
-        // {
-        //     bool isSuccess = (bool)dialogResult.Data!;
+        var dialog = await DialogService.ShowAsync<ConfirmDeleteDialog>("Confirm", parameters);
+        var dialogResult = await dialog.Result;
 
-        //     if (isSuccess)
-        //     {
-        //         Snackbar.Add($"Model \"{model.Name}\" je uspješno obrisan.", Severity.Success);
-        //         await LoadModels();
-        //     }
-        // }
+        if (!dialogResult!.Canceled)
+        {
+            bool isSuccess = (bool)dialogResult.Data!;
+
+            if (isSuccess)
+            {
+                Snackbar.Add($"Model \"{model.Name}\" je uspješno obrisan.", Severity.Success);
+                await DataGrid.ReloadServerData();
+            }
+        }
     }
 }
 

@@ -129,13 +129,13 @@
 
     private async Task ShowModelDetails()
     {
-        var parameters = new DialogParameters<LungCancerInfoDialog>
-        {
-            { x => x.Model, model },
-            { x => x.ShowSaveOption, true }
-        };
+        // var parameters = new DialogParameters<LCInfo>
+        // {
+        //     { x => x.Model, model },
+        //     { x => x.ShowSaveOption, true }
+        // };
 
-        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
-        await DialogService.ShowAsync<LungCancerInfoDialog>("Detalji Modela", parameters, options);
+        // var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
+        // await DialogService.ShowAsync<LCInfo>("Detalji Modela", parameters, options);
     }
 }

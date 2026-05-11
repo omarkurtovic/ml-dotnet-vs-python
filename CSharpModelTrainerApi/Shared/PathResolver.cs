@@ -87,6 +87,23 @@ namespace CSharpModelTrainerApi.Shared
             }
         }
 
+        public string GetModelPath(string modelName, ModelLanguage modelLanguage)
+        {
+            var repoRoot = GetRepoRoot();
+            if (modelLanguage == ModelLanguage.CSharp)
+            {
+                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", $"{modelName}.dat");
+            }
+            else if (modelLanguage == ModelLanguage.Python)
+            {
+                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "python", $"{modelName}.onnx");
+            }
+            else
+            {
+                return "";
+            }
+        }
+
         public string GetSentimentDataPath()
         {
             var repoRoot = GetRepoRoot();

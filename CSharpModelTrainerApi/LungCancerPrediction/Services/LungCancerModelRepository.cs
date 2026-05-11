@@ -80,15 +80,44 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             });
         }
 
-        public async Task<Result<LungCancerModel>> GetById(int id)
+        public async Task<Result<LCMoreInfoDto>> GetById(int id)
         {
             var model = await _context.LungCancerModels.Include(m => m.EpochData).FirstAsync();
             if (model == null)
             {
-                return Result<LungCancerModel>.Failure("Model not found");
+                return Result<LCMoreInfoDto>.Failure("Model not found");
             }
-            return Result<LungCancerModel>.Success(model);
+            var dto = new LCMoreInfoDto
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Language = (ModelLanguageDto)model.Language,
+                MacroPrecision = model.EpochData.Last().MacroPrecision,
+                MacroRecall = model.EpochData.Last().MacroRecall,
+                MacroF1Score = model.EpochData.Last().MacroF1Score,
+                TrainingTimeInSeconds = model.TrainingTimeInSeconds,
+                HardwareInfo = model.HardwareInfo,
+                NumberOfEpochs = model.EpochData.Count,
+                TrainingLoss = model.EpochData.Last().TrainingLoss,
+                TrainingAccuracy = model.EpochData.Last().TrainingAccuracy,
+                ValidationAccuracy = model.EpochData.Last().ValidationAccuracy,
+                ValidationLoss = model.EpochData.Last().ValidationLoss,
+                BenignPrecision = model.EpochData.Last().BenignPrecision,
+                BenignRecall = model.EpochData.Last().BenignRecall,
+                BenignF1Score = model.EpochData.Last().BenignF1Score,
+                MalignantPrecision = model.EpochData.Last().MalignantPrecision,
+                MalignantRecall = model.EpochData.Last().MalignantRecall,
+                MalignantF1Score = model.EpochData.Last().MalignantF1Score,
+                NormalPrecision = model.EpochData.Last().NormalPrecision,
+                NormalRecall = model.EpochData.Last().NormalRecall,
+                NormalF1Score = model.EpochData.Last().NormalF1Score,
+                WeightedPrecision = model.EpochData.Last().WeightedPrecision,
+                WeightedRecall = model.EpochData.Last().WeightedRecall,
+                WeightedF1Score = model.EpochData.Last().WeightedF1Score
+            };
+            return Result<LCMoreInfoDto>.Success(dto);
         }
+
 
         public async Task<Result> Delete(int id)
         {

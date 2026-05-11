@@ -33,7 +33,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         }
 
         [HttpPost]
-        [Route("search")]
+        [Route("Search")]
         public async Task<IActionResult> GetModels([FromBody] LCModelsGridOptionsDto options)
         {
             var result = await LungCancerModelRepository.GetModelsPageData(options);
@@ -45,6 +45,23 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             {
                 return Ok(result.Data);
             }
+        }
+
+        [HttpGet]
+        [Route("GetById")]
+        public async Task<IActionResult> GetById([FromQuery] int id)
+        {
+            var modelResult = await LungCancerModelRepository.GetById(id);
+            if (!modelResult.IsSuccess)
+            {
+                return BadRequest();
+            }
+            var model = modelResult.Data;
+            if (model == null)
+            {
+                return NotFound();
+            }
+            return Ok(model);
         }
 
         [HttpPost]
@@ -64,8 +81,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             }
 
 
-            var prediction = await LungCancerPredictionService.Predict(model, file);
-            return Ok(prediction);
+            //var prediction = await LungCancerPredictionService.Predict(model, file);
+            //return Ok(prediction);
+            return Ok();
         }
 
 
@@ -114,7 +132,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return BadRequest();
             }
 
-            var modelPath = PathResolver.GetModelPath(model);
+            var modelPath = PathResolver.GetModelPath(model.Name, (ModelLanguage)model.Language);
             if (!System.IO.File.Exists(modelPath))
                 return Ok();
 
