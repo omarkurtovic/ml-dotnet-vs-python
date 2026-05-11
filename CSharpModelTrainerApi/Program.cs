@@ -20,7 +20,7 @@ builder.Services.AddOpenApi();
 ConfigureDatabase(builder.Services, builder.Environment);
 
 
-builder.Services.AddSingleton<SentimentAnalysisModelTrainer>();
+builder.Services.AddSingleton<SAModelTrainer>();
 builder.Services.AddScoped<SentimentAnalysisRepository>();
 builder.Services.AddSingleton<SentimentAnalysisPredictionServices>();
 

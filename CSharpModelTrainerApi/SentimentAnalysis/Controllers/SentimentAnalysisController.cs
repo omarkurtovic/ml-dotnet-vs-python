@@ -9,12 +9,12 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
     [Route("[controller]")]
     public class SentimentAnalysisController : ControllerBase
     {
-        private SentimentAnalysisModelTrainer ModelTrainer { get; set; }
+        private SAModelTrainer ModelTrainer { get; set; }
         private SentimentAnalysisPredictionServices SentimentAnalysisPredictionServices { get; set; }
         private SentimentAnalysisRepository SentimentAnalysisRepository { get; set; }
         private PathResolver PathResolver { get; set; }
 
-        public SentimentAnalysisController(SentimentAnalysisModelTrainer modelTrainer, 
+        public SentimentAnalysisController(SAModelTrainer modelTrainer, 
             SentimentAnalysisRepository sentimentAnalysisRepository,
             SentimentAnalysisPredictionServices sentimentAnalysisPredictionServices,
             PathResolver pathResolver)

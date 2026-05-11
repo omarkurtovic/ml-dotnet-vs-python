@@ -1,4 +1,5 @@
 ﻿using CSharpModelTrainerApi.Database;
+using CSharpModelTrainerApi.SentimentAnalysis.Enums;
 using CSharpModelTrainerApi.Services;
 using Microsoft.ML;
 using Microsoft.ML.Trainers.FastTree;
@@ -7,33 +8,33 @@ using System.Data;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
-    public class SentimentAnalysisModelTrainer(PathResolver pathResolver)
+    public class SAModelTrainer(PathResolver pathResolver)
     {
-        public async Task<Result<SentimentAnalysisModel>> TrainModel(SATrainingParamsDto trainData)
+        public async Task<Result<SAModelDto>> TrainModel(SATrainingParamsDto trainData)
         {
             MLContext mlContext = new();
             var dataPath = pathResolver.GetSentimentDataPath();
 
             if (!File.Exists(dataPath))
             {
-                return Result<SentimentAnalysisModel>.Failure("Podaci za treniranje nisu pronađeni!");
+                return Result<SAModelDto>.Failure("Podaci za treniranje nisu pronađeni!");
             }
 
-            IDataView data = mlContext.Data.LoadFromTextFile<SentimentData>(dataPath, hasHeader: true, separatorChar: ',', allowQuoting: true);
+            IDataView data = mlContext.Data.LoadFromTextFile<SADataDto>(dataPath, hasHeader: true, separatorChar: ',', allowQuoting: true);
 
             var split = mlContext.Data.TrainTestSplit(data, testFraction: 0.2, seed: 1);
 
             var trainSetDV = mlContext.Data.LoadFromEnumerable(
-                mlContext.Data.CreateEnumerable<SentimentData>(split.TrainSet, reuseRowObject: false));
+                mlContext.Data.CreateEnumerable<SADataDto>(split.TrainSet, reuseRowObject: false));
             var testSetDV = mlContext.Data.LoadFromEnumerable(
-                mlContext.Data.CreateEnumerable<SentimentData>(split.TestSet, reuseRowObject: false));
+                mlContext.Data.CreateEnumerable<SADataDto>(split.TestSet, reuseRowObject: false));
 
             var sentimentCleaner = new SentimentCleanerMapping();
             var featurize = mlContext.Transforms
                 .CustomMapping(sentimentCleaner.GetMapping(), contractName: "SentimentCleaner")
                 .Append(mlContext.Transforms.Text.FeaturizeText(
                     outputColumnName: "Features",
-                    inputColumnName: nameof(SentimentData.Review)));
+                    inputColumnName: nameof(SADataDto.Review)));
 
             IEstimator<ITransformer> trainer = trainData.Algorithm switch
             {

@@ -1,7 +1,9 @@
 ﻿using CSharpModelTrainerApi.Database;
+using CSharpModelTrainerApi.Enums;
+using CSharpModelTrainerApi.LungCancerPrediction.Models;
 using Microsoft.EntityFrameworkCore;
 using SharedCL;
-using SharedCL.LungCancerPrediction.Models;
+using SharedCL.LungCancerPrediction.Dtos;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
@@ -13,9 +15,40 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         {
             _context = context;
         }
-        public async Task<Result> Save(LungCancerModel model)
+        public async Task<Result> Save(LCWithEpochs model)
         {
-            _context.LungCancerModels.Add(model);
+            var dbModel = new LCModel
+            {
+                Name = model.Name,
+                Language = (ModelLanguage)model.Language,
+                TrainingTimeInSeconds = model.TrainingTimeInSeconds,
+                HardwareInfo = model.HardwareInfo,
+                EpochData = model.Epochs.Select(epoch => new LCEpochData
+                {
+                    Epoch = epoch.Epoch,
+                    TrainingLoss = epoch.TrainingLoss,
+                    TrainingAccuracy = epoch.TrainingAccuracy,
+                    ValidationLoss = epoch.ValidationLoss,
+                    ValidationAccuracy = epoch.ValidationAccuracy,
+                    BenignPrecision = epoch.BenignPrecision,
+                    BenignRecall = epoch.BenignRecall,
+                    BenignF1Score = epoch.BenignF1Score,
+                    MalignantPrecision = epoch.MalignantPrecision,
+                    MalignantRecall = epoch.MalignantRecall,
+                    MalignantF1Score = epoch.MalignantF1Score,
+                    NormalPrecision = epoch.NormalPrecision,
+                    NormalRecall = epoch.NormalRecall,
+                    NormalF1Score = epoch.NormalF1Score,
+                    MacroPrecision = epoch.MacroPrecision,
+                    MacroRecall = epoch.MacroRecall,
+                    MacroF1Score = epoch.MacroF1Score,
+                    WeightedPrecision = epoch.WeightedPrecision,
+                    WeightedRecall = epoch.WeightedRecall,
+                    WeightedF1Score = epoch.WeightedF1Score
+                }).ToList()
+            };
+
+            _context.LungCancerModels.Add(dbModel);
             await _context.SaveChangesAsync();
             return Result.Success();
         }

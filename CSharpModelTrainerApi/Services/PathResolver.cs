@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using CSharpModelTrainerApi.SentimentAnalysis.Models;
 using Microsoft.ML;
 using SharedCL;
 using SharedCL.LungCancerPrediction.Models;
@@ -34,7 +35,7 @@ namespace CSharpModelTrainerApi.Services
             }
         }
 
-        public string GetModelPath(SADto model)
+        public string GetModelPath(SAModel model)
         {
             var repoRoot = GetRepoRoot();
             if (model.Language == ModelLanguage.CSharp)

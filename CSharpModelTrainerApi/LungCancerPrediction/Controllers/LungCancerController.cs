@@ -4,6 +4,7 @@ using CSharpModelTrainerApi.SentimentAnalysis.Services;
 using CSharpModelTrainerApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using SharedCL;
+using SharedCL.LungCancerPrediction.Dtos;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 {
@@ -106,7 +107,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 
         [HttpPost]
         [Route("Save")]
-        public async Task<IActionResult> Save([FromBody] LungCancerModel model)
+        public async Task<IActionResult> Save([FromBody] LCWithEpochs model)
         {
             var saveResult = await LungCancerModelRepository.Save(model);
             if (!saveResult.IsSuccess)

@@ -1,12 +1,15 @@
-﻿
-namespace SharedCL
+﻿using CSharpModelTrainerApi.Enums;
+using CSharpModelTrainerApi.SentimentAnalysis.Enums;
+using SharedCL;
+
+namespace CSharpModelTrainerApi.SentimentAnalysis.Models
 {
-    public class SADto
+    public class SAModel
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
-        public ModelLanguageDto Language { get; set; }
-        public TrainerAlgorithmDto TrainerAlgorithm { get; set; }
+        public ModelLanguage Language { get; set; }
+        public TrainerAlgorithm TrainerAlgorithm { get; set; }
         public double? TrainingAccuracy { get; set; }
         public double? TrainingF1Score { get; set; }
         public double? TrainingAreaUnderRocCurve { get; set; }
