@@ -15,7 +15,7 @@ using Tensor = TorchSharp.torch.Tensor;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LungCancerPredictionService(PathResolver pathResolver)
+    public class LCPredictionService(PathResolver pathResolver)
     {
         public async Task<LungCancerPredictionModel> Predict(LungCancerModel model, IFormFile file)
         {

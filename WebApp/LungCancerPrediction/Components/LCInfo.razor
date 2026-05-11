@@ -94,13 +94,6 @@
                 </tr>
             </tbody>
         </MudSimpleTable>
-
-        @if (ShowSaveOption)
-        {
-            <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-6">
-                <MudButton OnClick="@Save" Color="Color.Primary" Variant="Variant.Filled">Sačuvaj Model</MudButton>
-            </MudStack>
-        }
     </MudStack>
 }
 
@@ -108,18 +101,20 @@
 
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
 
-    [Parameter] public int ModelId { get; set; } = 0;
-
-    [Parameter] public bool ShowSaveOption { get; set; } = false;
-
     [Parameter] public EventCallback Close { get; set; }
 
     public LCMoreInfoDto? Model { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    public async Task ShowModelDetails(int id)
     {
-        var result = await LungCancerApi.GetModelDetailsAsync(ModelId);
-        if(result.IsSuccess)
+        if (id == 0)
+        {
+            await Close.InvokeAsync();
+            return;
+        }
+
+        var result = await LungCancerApi.GetModelDetailsAsync(id);
+        if (result.IsSuccess)
         {
             Model = result.Data;
         }
@@ -128,20 +123,8 @@
             Snackbar.Add("Greška prilikom učitavanja modela!", Severity.Error);
             await Close.InvokeAsync();
         }
-        await base.OnInitializedAsync();
-    }
 
-    private async Task Save()
-    {
-        // var result = await LungCancerApi.SaveModelAsync(Model);
-        // if (result.IsSuccess)
-        // {
-        //     Snackbar.Add("Model sačuvan!", Severity.Success);
-        // }
-        // else
-        // {
-        //     Snackbar.Add("Greška prilikom sačuvanja modela!", Severity.Error);
-        // }
+        StateHasChanged();
     }
 
     private string FormatPercent(double? value)

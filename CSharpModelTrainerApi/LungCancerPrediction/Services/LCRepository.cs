@@ -6,11 +6,11 @@ using SharedCL.Shared.Models;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LungCancerModelRepository
+    public class LCRepository
     {
         private readonly AppDbContext _context;
 
-        public LungCancerModelRepository(AppDbContext context)
+        public LCRepository(AppDbContext context)
         {
             _context = context;
         }
@@ -80,9 +80,29 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             });
         }
 
-        public async Task<Result<LCMoreInfoDto>> GetById(int id)
+        public async Task<Result<LCDto>> GetById(int id)
         {
-            var model = await _context.LungCancerModels.Include(m => m.EpochData).FirstAsync();
+            var model = await _context.LungCancerModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstAsync();
+            if (model == null)
+            {
+                return Result<LCDto>.Failure("Model not found");
+            }
+            var dto = new LCDto
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Language = (ModelLanguageDto)model.Language,
+                MacroPrecision = model.EpochData.Last().MacroPrecision,
+                MacroRecall = model.EpochData.Last().MacroRecall,
+                MacroF1Score = model.EpochData.Last().MacroF1Score,
+            };
+            return Result<LCDto>.Success(dto);
+        }
+
+
+        public async Task<Result<LCMoreInfoDto>> GetDetailsById(int id)
+        {
+            var model = await _context.LungCancerModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstAsync();
             if (model == null)
             {
                 return Result<LCMoreInfoDto>.Failure("Model not found");

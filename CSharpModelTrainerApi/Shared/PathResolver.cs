@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.ML;
+using SharedCL.LungCancerPrediction.Dtos;
 using SharedCL.LungCancerPrediction.Models;
 using SharedCL.SentimentAnalysis.Models;
 using SharedCL.Shared.Enums;
@@ -53,16 +54,16 @@ namespace CSharpModelTrainerApi.Shared
         }
 
 
-        public string GetModelPath(LungCancerTrainingParams trainParams)
+        public string GetModelPath(LCTrainingParamsDto trainParams)
         {
             var repoRoot = GetRepoRoot();
-            if (trainParams.ModelLanguage == ModelLanguage.CSharp)
+            if (trainParams.Language == ModelLanguageDto.CSharp)
             {
-                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", $"{trainParams.ModelName}.dat");
+                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", $"{trainParams.Name}.dat");
             }
-            else if (trainParams.ModelLanguage == ModelLanguage.Python)
+            else if (trainParams.Language == ModelLanguageDto.Python)
             {
-                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "python", $"{trainParams.ModelName}.onnx");
+                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "python", $"{trainParams.Name}.onnx");
             }
             else
             {

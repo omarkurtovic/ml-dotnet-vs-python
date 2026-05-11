@@ -20,18 +20,19 @@ using static TorchSharp.torch.utils;
 using static TorchSharp.torch.utils.data;
 using System.Diagnostics;
 using System;
+using SharedCL.LungCancerPrediction.Dtos;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LungCancerModelTrainer(PathResolver pathResolver)
+    public class LCTrainer(PathResolver pathResolver)
     {
-        public  Result<LungCancerModel> TrainModel(LungCancerTrainingParams trainInfo, HardwareInfoService hardwareInfoService)
+        public  Result<LungCancerModel> TrainModel(LCTrainingParamsDto trainInfo, HardwareInfoService hardwareInfoService)
         {
-            if(string.IsNullOrEmpty(trainInfo.ModelName))
+            if(string.IsNullOrEmpty(trainInfo.Name))
             {
                 return Result<LungCancerModel>.Failure("Ime modela ne smije biti prazno");
             }
-            if(trainInfo.ModelLanguage != ModelLanguage.CSharp)
+            if(trainInfo.Language != ModelLanguageDto.CSharp)
             {
                 return Result<LungCancerModel>.Failure("Podržan je samo C# jezik");
             }
@@ -42,8 +43,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
 
             var modelDB = new LungCancerModel();
-            modelDB.Name = trainInfo.ModelName;
-            modelDB.Language = trainInfo.ModelLanguage;
+            modelDB.Name = trainInfo.Name;
+            modelDB.Language = (ModelLanguage)trainInfo.Language;
             modelDB.EpochData = new List<LungCancerModelEpochData>();
 
 
@@ -54,7 +55,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 
-            var trainingData = new LungCancerTrainDataset(trainInfo.WithFlips, dataDirectory); 
+            var trainingData = new LungCancerTrainDataset(trainInfo.WithFlips, dataDirectory, 50); 
             var classWeights = torch.tensor(trainingData.GetClassWeights()).to(defaultDevice);
 
             var testData = new LungCancerTestDataset(dataDirectory);

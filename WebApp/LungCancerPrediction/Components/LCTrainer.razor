@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using OmarDesignSystem
+@using SharedCL.LungCancerPrediction.Dtos
 @using SharedCL.LungCancerPrediction.Models
 @using SharedCL.Shared.Enums
 @using SharedCL.Shared.Models
@@ -25,23 +26,23 @@
 
     <MudCard Elevation="1">
         <MudCardContent Class="pa-6">
-            <MudForm @ref="_form">
+            <MudForm @ref="Form">
                 <MudStack Spacing="4">
-                    <MudTextField @bind-Value="trainingParams.ModelName" 
+                    <MudTextField @bind-Value="TrainingParams.Name" 
                                   Required="true"
                                   RequiredError="Naziv modela je obavezan!" 
                                   Variant="Variant.Outlined" 
                                   Label="Naziv modela" />
                                   
-                    <MudNumericField @bind-Value="trainingParams.Epochs" 
+                    <MudNumericField @bind-Value="TrainingParams.Epochs" 
                                      Required="true" 
                                      RequiredError="Broj epoha je obavezan!" 
                                      Variant="Variant.Outlined" 
                                      Label="Broj epoha" 
                                      Min="1" Max="10" />
 
-                    <MudSelect T="ModelLanguage" 
-                               @bind-Value="trainingParams.ModelLanguage" 
+                    <MudSelect T="ModelLanguageDto" 
+                               @bind-Value="TrainingParams.Language" 
                                Label="Jezik modela"
                                Variant="Variant.Outlined" 
                                Required="true" 
@@ -52,7 +53,7 @@
                             <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
                         }
                     </MudSelect>
-                    <MudCheckBox @bind-Value="trainingParams.WithFlips" 
+                    <MudCheckBox @bind-Value="TrainingParams.WithFlips" 
                                  Label="Rotiraj slike (Augmentacija)" 
                                  Color="Color.Primary" />
                 </MudStack>
@@ -60,8 +61,7 @@
         </MudCardContent>
         <MudCardActions Class="pa-6 pt-0">
             <MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.End" Style="width: 100%;">
-                
-                @if (model != null)
+                @if (Model != null)
                 {
                     <MudButton OnClick="ShowModelDetails" Color="@Color.Default" Variant="@Variant.Outlined">
                         Prikaži Rezultate
@@ -78,22 +78,38 @@
     </MudCard>
 </MudContainer>
 
+<MudDrawer @bind-Open="@IsSideDrawerOpen"
+           Fixed="true"
+           Anchor="Anchor.End"
+           Variant="@DrawerVariant.Temporary"
+           Width="min(100vw, 600px)"
+           Elevation="2">
+    <div class="px-6 mt-6">
+        <LCInfo @ref="LCInfo" Close="CloseDrawer"></LCInfo>
+    </div>
+</MudDrawer>
 
 @code {
 
-    private MudForm _form = null!;
-    private LungCancerTrainingParams trainingParams;
+    private MudForm Form = null!;
 
-    private LungCancerModel? model;
+    private LCTrainingParamsDto TrainingParams = new();
 
+    private LCDto Model { get; set; } = null!;
+
+    private bool IsSideDrawerOpen = false;
+
+    private void CloseDrawer() => IsSideDrawerOpen = false;
+
+    private LCInfo LCInfo = null!;
 
     protected override void OnInitialized()
     {
-        trainingParams = new LungCancerTrainingParams()
+        TrainingParams = new LCTrainingParamsDto()
         {
-            ModelName = $"RakPlucaModel_{DateTime.Now:yyyyMMdd_HHmmss}",
+            Name = $"RakPlucaModel_{DateTime.Now:yyyyMMdd_HHmmss}",
             Epochs = 5,
-            ModelLanguage = ModelLanguage.CSharp
+            Language = ModelLanguageDto.CSharp
         };
 
         base.OnInitialized();
@@ -101,25 +117,25 @@
 
     private async Task TrainModel()
     {
-        await _form.ValidateAsync();
-        if (!_form.IsValid)
+        await Form.ValidateAsync();
+        if (!Form.IsValid)
             return;
 
-        Result<LungCancerModel> result;
-        if (trainingParams.ModelLanguage == ModelLanguage.CSharp)
+        Result<LCDto> result;
+        if (TrainingParams.Language == ModelLanguageDto.CSharp)
         {
-            result = await CSharpLungCancerApi.TrainModelAsync(trainingParams);
+            result = await CSharpLungCancerApi.TrainModelAsync(TrainingParams);
         }
         else
         {
-            result = await PythonLungCancerApi.TrainModelAsync(trainingParams);
+            result = await PythonLungCancerApi.TrainModelAsync(TrainingParams);
         }
 
         if (result.IsSuccess)
         {
-            model = result.Data!;
-            await ShowModelDetails();
             Snackbar.Add("Model je uspešno treniran!", Severity.Success);
+            Model = result.Data!;
+            await ShowModelDetails();
         }
         else
         {
@@ -129,13 +145,7 @@
 
     private async Task ShowModelDetails()
     {
-        // var parameters = new DialogParameters<LCInfo>
-        // {
-        //     { x => x.Model, model },
-        //     { x => x.ShowSaveOption, true }
-        // };
-
-        // var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
-        // await DialogService.ShowAsync<LCInfo>("Detalji Modela", parameters, options);
+        await LCInfo.ShowModelDetails(Model.Id);
+        IsSideDrawerOpen = true;
     }
 }

@@ -10,7 +10,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
         private readonly List<Tensor> _images = [];
         private readonly List<long> _labels = [];
 
-        public LungCancerTrainDataset(bool withFlips, string dataDirectory)
+        public LungCancerTrainDataset(bool withFlips, string dataDirectory, int? maxImagesPerCategory = null)
         {
             var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
 
@@ -19,6 +19,11 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
                 var path = Path.Join(dataDirectory, categories[i]);
                 var files = Directory.GetFiles(path);
                 int categoryImageCount = (int)(files.Length * 0.75);
+
+                if (maxImagesPerCategory.HasValue)
+                {
+                    categoryImageCount = Math.Min(categoryImageCount, maxImagesPerCategory.Value);
+                }
 
                 for (int j = 0; j < categoryImageCount; ++j)
                 {

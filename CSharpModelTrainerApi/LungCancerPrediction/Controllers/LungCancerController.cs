@@ -12,25 +12,17 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 
     [ApiController]
     [Route("[controller]")]
-    public class LungCancerController : ControllerBase
+    public class LungCancerController(LCTrainer modelTrainer,
+        LCRepository lungCancerModelRepository,
+        LCPredictionService lungCancerPredictionService,
+        PathResolver pathResolver,
+        HardwareInfoService hardwareInfoService) : ControllerBase
     {
-        private LungCancerModelTrainer ModelTrainer { get; set; }
-        private LungCancerPredictionService LungCancerPredictionService { get; set; }
-        private LungCancerModelRepository LungCancerModelRepository { get; set; }
-        private PathResolver PathResolver { get; set; }
-        private HardwareInfoService HardwareInfoService { get; set; }
-        public LungCancerController(LungCancerModelTrainer modelTrainer,
-            LungCancerModelRepository lungCancerModelRepository,
-            LungCancerPredictionService lungCancerPredictionService,
-            PathResolver pathResolver,
-            HardwareInfoService hardwareInfoService)
-        {
-            ModelTrainer = modelTrainer;
-            LungCancerModelRepository = lungCancerModelRepository;
-            LungCancerPredictionService = lungCancerPredictionService;
-            PathResolver = pathResolver;
-            HardwareInfoService = hardwareInfoService;
-        }
+        private LCTrainer ModelTrainer { get; set; } = modelTrainer;
+        private LCPredictionService LungCancerPredictionService { get; set; } = lungCancerPredictionService;
+        private LCRepository LungCancerModelRepository { get; set; } = lungCancerModelRepository;
+        private PathResolver PathResolver { get; set; } = pathResolver;
+        private HardwareInfoService HardwareInfoService { get; set; } = hardwareInfoService;
 
         [HttpPost]
         [Route("Search")]
@@ -48,10 +40,10 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         }
 
         [HttpGet]
-        [Route("GetById")]
-        public async Task<IActionResult> GetById([FromQuery] int id)
+        [Route("GetDetailsById")]
+        public async Task<IActionResult> GetDetailsById([FromQuery] int id)
         {
-            var modelResult = await LungCancerModelRepository.GetById(id);
+            var modelResult = await LungCancerModelRepository.GetDetailsById(id);
             if (!modelResult.IsSuccess)
             {
                 return BadRequest();
@@ -68,7 +60,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         [Route("Predict")]
         public async Task<IActionResult> Predict([FromQuery] int id, [FromForm] IFormFile file)
         {
-            var modelResult = await LungCancerModelRepository.GetById(id);
+            var modelResult = await LungCancerModelRepository.GetDetailsById(id);
             if (!modelResult.IsSuccess)
             {
                 return BadRequest();
@@ -89,14 +81,15 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 
         [HttpPost]
         [Route("Train")]
-        public IActionResult Train([FromBody] LungCancerTrainingParams trainParams)
+        public async Task<IActionResult> Train([FromBody] LCTrainingParamsDto trainParams)
         {
             var modelRes = ModelTrainer.TrainModel(trainParams, HardwareInfoService);
             if (!modelRes.IsSuccess)
             {
                 return BadRequest(modelRes.Message);
             }
-            return Ok(modelRes.Data);
+            await LungCancerModelRepository.Save(modelRes.Data!);
+            return Ok(LungCancerModelRepository.GetById(modelRes.Data!.Id).Result.Data);
         }
 
         [HttpPost]
@@ -114,7 +107,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         [Route("Delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
         {
-            var modelResult = await LungCancerModelRepository.GetById(id);
+            var modelResult = await LungCancerModelRepository.GetDetailsById(id);
             if (!modelResult.IsSuccess)
             {
                 return BadRequest();

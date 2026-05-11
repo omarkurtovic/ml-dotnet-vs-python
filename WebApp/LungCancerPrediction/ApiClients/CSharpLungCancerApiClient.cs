@@ -40,7 +40,7 @@ namespace WebApp.LungCancerPrediction.ApiClients
         {
             try
             {
-                var response = await _httpClient.GetAsync($"LungCancer/GetById?id={id}");
+                var response = await _httpClient.GetAsync($"LungCancer/GetDetailsById?id={id}");
                 if (response.IsSuccessStatusCode)
                 {
                     var model = await response.Content.ReadFromJsonAsync<LCMoreInfoDto>();
@@ -90,31 +90,33 @@ namespace WebApp.LungCancerPrediction.ApiClients
             }
         }
 
-        public async Task<Result<LungCancerModel>> TrainModelAsync(LungCancerTrainingParams trainingParams)
+        public async Task<Result<LCDto>> TrainModelAsync(LCTrainingParamsDto trainingParams)
         {
             try
             {
                 string url = $"LungCancer/Train";
-                var request = new HttpRequestMessage(HttpMethod.Post, url);
-                request.Content = JsonContent.Create(trainingParams);
+                var request = new HttpRequestMessage(HttpMethod.Post, url)
+                {
+                    Content = JsonContent.Create(trainingParams)
+                };
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    var performance = await response.Content.ReadFromJsonAsync<LungCancerModel>();
-                    return Result<LungCancerModel>.Success(performance!);
+                    var performance = await response.Content.ReadFromJsonAsync<LCDto>();
+                    return Result<LCDto>.Success(performance!);
                 }
                 else
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<LungCancerModel>.Failure("");
+                    return Result<LCDto>.Failure("");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<LungCancerModel>.Failure("");
+                return Result<LCDto>.Failure("");
             }
         }
         public async Task<Result> SaveModelAsync(LungCancerModel model)

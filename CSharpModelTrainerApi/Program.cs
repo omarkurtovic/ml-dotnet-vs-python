@@ -24,9 +24,9 @@ builder.Services.AddSingleton<SentimentAnalysisModelTrainer>();
 builder.Services.AddScoped<SentimentAnalysisRepository>();
 builder.Services.AddSingleton<SentimentAnalysisPredictionServices>();
 
-builder.Services.AddSingleton<LungCancerModelTrainer>();
-builder.Services.AddScoped<LungCancerModelRepository>();
-builder.Services.AddSingleton<LungCancerPredictionService>();
+builder.Services.AddSingleton<LCTrainer>();
+builder.Services.AddScoped<LCRepository>();
+builder.Services.AddSingleton<LCPredictionService>();
 
 builder.Services.AddSingleton<PathResolver>();
 builder.Services.AddSingleton<HardwareInfoService>();

@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SharedCL.LungCancerPrediction.Models
+namespace SharedCL.LungCancerPrediction.Dtos
 {
-    public class LungCancerTrainingParams
+    public class LCTrainingParamsDto
     {
-        public string ModelName { get; set; } = null!;
-        public ModelLanguage ModelLanguage { get; set; }
+        public string Name { get; set; } = null!;
+        public ModelLanguageDto Language { get; set; }
         public int Epochs { get; set; }
         public bool WithFlips { get; set; } = true;
     }

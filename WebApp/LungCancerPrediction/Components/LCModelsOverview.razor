@@ -86,7 +86,7 @@
            Width="min(100vw, 600px)"
            Elevation="2">
     <div class="px-6 mt-6">
-        <LCInfo Close="CloseDrawer" ModelId="ModelIdForDetails"></LCInfo>
+        <LCInfo @ref="LCInfo" Close="CloseDrawer"></LCInfo>
     </div>
 </MudDrawer>
 
@@ -112,7 +112,7 @@
 
     private void CloseDrawer() => IsSideDrawerOpen = false;
 
-    private int ModelIdForDetails = 0;
+    private LCInfo LCInfo = null!;
 
     private async Task<GridData<LCDto>> ServerReload(GridState<LCDto> state, CancellationToken token)
     {
@@ -150,7 +150,7 @@
 
     private async Task ShowModelDetails(LCDto model)
     {
-        ModelIdForDetails = model.Id;
+        await LCInfo.ShowModelDetails(model.Id);
         IsSideDrawerOpen = true;
     }
 
