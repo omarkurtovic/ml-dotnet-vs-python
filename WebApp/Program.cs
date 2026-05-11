@@ -31,7 +31,7 @@ builder.Services.AddHttpClient<PythonSentimentAnalysisApiClient>(client =>
     client.Timeout = TimeSpan.FromMinutes(30);
 }).RemoveAllResilienceHandlers();
 
-builder.Services.AddHttpClient<CSharpLungCancerApiClient>(client =>
+builder.Services.AddHttpClient<CSharpLCApiClient>(client =>
 {
     // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
     // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
@@ -40,7 +40,7 @@ builder.Services.AddHttpClient<CSharpLungCancerApiClient>(client =>
 }).RemoveAllResilienceHandlers();
 
 
-builder.Services.AddHttpClient<PythonLungCancerApiClient>(client =>
+builder.Services.AddHttpClient<PythonLCApiClient>(client =>
 {
     client.BaseAddress = new("https+http://pythonapi");
     client.Timeout = TimeSpan.FromMinutes(30);

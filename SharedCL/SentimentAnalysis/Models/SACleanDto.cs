@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SharedCL.SentimentAnalysis.Models
+namespace SharedCL
 {
-    public class SentimentClean
+    public class SACleanDto
     {
         public bool SentimentValue { get; set; }
     }

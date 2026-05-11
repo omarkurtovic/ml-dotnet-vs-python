@@ -1,6 +1,7 @@
-﻿using SharedCL.Shared.Enums;
+﻿using CSharpModelTrainerApi.Enums;
+using SharedCL;
 
-namespace SharedCL.LungCancerPrediction.Models
+namespace CSharpModelTrainerApi.LungCancerPrediction.Models
 {
     public class LungCancerModel : IEquatable<LungCancerModel>
     {

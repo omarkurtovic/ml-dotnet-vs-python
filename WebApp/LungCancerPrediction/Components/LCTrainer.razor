@@ -2,15 +2,13 @@
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using OmarDesignSystem
-@using SharedCL.LungCancerPrediction.Dtos
-@using SharedCL.LungCancerPrediction.Models
+@using SharedCL
 @using SharedCL.Shared.Enums
 @using SharedCL.Shared.Models
 @using WebApp.LungCancerPrediction.ApiClients
-@using WebApp.SharedKernel
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
-@inject CSharpLungCancerApiClient CSharpLungCancerApi
-@inject PythonLungCancerApiClient PythonLungCancerApi
+@inject CSharpLCApiClient CSharpLungCancerApi
+@inject PythonLCApiClient PythonLungCancerApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer

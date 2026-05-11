@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using SharedCL.LungCancerPrediction.Dtos;
 using SharedCL.LungCancerPrediction.Models;
-using SharedCL.Shared.Models;
+using SharedCL.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace WebApp.LungCancerPrediction.ApiClients
 {
-    public class CSharpLungCancerApiClient(HttpClient httpClient)
+    public class CSharpLCApiClient(HttpClient httpClient)
     {
         private readonly HttpClient _httpClient = httpClient;
 
@@ -36,6 +36,31 @@ namespace WebApp.LungCancerPrediction.ApiClients
             }
         }
 
+        public async Task<Result<List<LCDto>>> GetModelsAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("LungCancer/Models");
+                if (response.IsSuccessStatusCode)
+                {
+                    var models = await response.Content.ReadFromJsonAsync<List<LCDto>>() ?? new();
+                    return Result<List<LCDto>>.Success(models);
+                }
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return Result<List<LCDto>>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                }
+
+                Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
+                return Result<List<LCDto>>.Failure("Failed to fetch models    .");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Result<List<LCDto>>.Failure("An error occurred while fetching models.");
+            }
+        }
+
         public async Task<Result<LCMoreInfoDto>> GetModelDetailsAsync(int id)
         {
             try
@@ -60,7 +85,7 @@ namespace WebApp.LungCancerPrediction.ApiClients
             }
         }
 
-        public async Task<Result<LungCancerPredictionModel>> PredictAsync(int id, IBrowserFile file)
+        public async Task<Result<LCPredictionDto>> PredictAsync(int id, IBrowserFile file)
         {
             try
             {
@@ -73,20 +98,20 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    var prediction = await response.Content.ReadFromJsonAsync<LungCancerPredictionModel>();
-                    return Result<LungCancerPredictionModel>.Success(prediction!);
+                    var prediction = await response.Content.ReadFromJsonAsync<LCPredictionDto>();
+                    return Result<LCPredictionDto>.Success(prediction!);
                 }
                 else
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<LungCancerPredictionModel>.Failure("");
+                    return Result<LCPredictionDto>.Failure("");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<LungCancerPredictionModel>.Failure("");
+                return Result<LCPredictionDto>.Failure("");
             }
         }
 

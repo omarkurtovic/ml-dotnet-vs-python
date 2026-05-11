@@ -1,6 +1,6 @@
-namespace SharedCL.SentimentAnalysis.Enums
+namespace SharedCL
 {
-    public enum TrainerAlgorithm
+    public enum TrainerAlgorithmDto
     {
         SdcaLogisticRegression,
         LbfgsLogisticRegression,

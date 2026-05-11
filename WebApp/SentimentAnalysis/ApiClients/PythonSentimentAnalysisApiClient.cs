@@ -1,5 +1,5 @@
-﻿using SharedCL.SentimentAnalysis.Models;
-using SharedCL.Shared.Models;
+﻿using SharedCL.Models;
+using SharedCL.SentimentAnalysis.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
 

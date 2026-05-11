@@ -1,15 +1,11 @@
 ﻿using Microsoft.ML.Transforms;
-using SharedCL.SentimentAnalysis.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace SharedCL.SentimentAnalysis.Mappings
+namespace SharedCL
 {
     [CustomMappingFactoryAttribute("SentimentCleaner")]
-    public class SentimentCleanerMapping : CustomMappingFactory<SentimentData, SentimentClean>
+    public class SentimentCleanerMapping : CustomMappingFactory<SADataDto, SACleanDto>
     {
-        public override Action<SentimentData, SentimentClean> GetMapping()
+        public override Action<SADataDto, SACleanDto> GetMapping()
         {
             return (input, output) =>
             {

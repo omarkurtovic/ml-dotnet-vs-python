@@ -4,9 +4,8 @@ using System.Text;
 
 namespace SharedCL.LungCancerPrediction.Dtos
 {
-    public enum ModelLanguageDto
+    public class LCWithEpochs : LCDto
     {
-        CSharp,
-        Python
+        public List<LCEpochDataDto> Epochs { get; set; } = [];
     }
 }

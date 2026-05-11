@@ -1,8 +1,7 @@
 ﻿using CSharpModelTrainerApi.Database;
 using Microsoft.EntityFrameworkCore;
-using SharedCL.LungCancerPrediction.Dtos;
+using SharedCL;
 using SharedCL.LungCancerPrediction.Models;
-using SharedCL.Shared.Models;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
@@ -78,6 +77,16 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 Models = models,
                 TotalItems = totalItems
             });
+        }
+
+        public async Task<Result<List<LCDto>>> GetModels()
+        {
+            return Result<List<LCDto>>.Success([.. _context.LungCancerModels.Select(model => new LCDto()
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Language = (ModelLanguageDto)model.Language,
+            })]);
         }
 
         public async Task<Result<LCDto>> GetById(int id)

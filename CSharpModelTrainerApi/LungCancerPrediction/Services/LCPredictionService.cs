@@ -1,10 +1,10 @@
 ﻿using CSharpModelTrainerApi.LungCancerPrediction.Datasets;
 using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
-using CSharpModelTrainerApi.Shared;
+using CSharpModelTrainerApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
-using SharedCL.LungCancerPrediction.Models;
+using SharedCL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using TorchSharp;
@@ -17,17 +17,17 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class LCPredictionService(PathResolver pathResolver)
     {
-        public async Task<LungCancerPredictionModel> Predict(LungCancerModel model, IFormFile file)
+        public async Task<LCPredictionDto> Predict(LCDto dto, IFormFile file)
         {
-            if (model.Language == SharedCL.Shared.Enums.ModelLanguage.CSharp)
-                return await PredictWithTorchSharp(model, file);
-            else if (model.Language == SharedCL.Shared.Enums.ModelLanguage.Python)
-                return await PredictWithOnnx(model, file);
+            if (dto.Language == ModelLanguageDto.CSharp)
+                return await PredictWithTorchSharp(dto, file);
+            else if (dto.Language == ModelLanguageDto.Python)
+                return await PredictWithOnnx(dto, file);
             else
                 throw new ArgumentException("Invalid model language");
         }
 
-        private async Task<LungCancerPredictionModel> PredictWithTorchSharp(LungCancerModel dbModel, IFormFile file)
+        private async Task<LCPredictionDto> PredictWithTorchSharp(LCDto dto, IFormFile file)
         {
             if (file == null) return null!;
 
@@ -35,7 +35,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             torch.set_default_device(defaultDevice);
 
             var model = new LungCancerNN().to(defaultDevice);
-            var modelPath = pathResolver.GetModelPath(dbModel);
+            var modelPath = pathResolver.GetModelPath(dto);
 
             model.load(modelPath);
             model.eval();
@@ -48,7 +48,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 var output = model.call(image);
                 var prediction = output.softmax(dim: 1);
 
-                return new LungCancerPredictionModel
+                return new LCPredictionDto
                 {
                     BenignScore = prediction[0, 0].item<float>(),
                     MalignantScore = prediction[0, 1].item<float>(),
@@ -60,7 +60,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             
         }
 
-        private async Task<LungCancerPredictionModel> PredictWithOnnx(LungCancerModel dbModel, IFormFile file)
+        private async Task<LCPredictionDto> PredictWithOnnx(LCDto dbModel, IFormFile file)
         {
             if (file == null) return null!;
 
@@ -84,7 +84,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             using var results = session.Run(inputs);
             var scores = results[0].AsEnumerable<float>().ToArray();
 
-            return new LungCancerPredictionModel
+            return new LCPredictionDto
             {
                 BenignScore = scores[0],
                 MalignantScore = scores[1],

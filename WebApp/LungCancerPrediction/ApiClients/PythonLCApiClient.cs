@@ -1,14 +1,12 @@
-﻿using SharedCL.LungCancerPrediction.Dtos;
-using SharedCL.LungCancerPrediction.Models;
-using SharedCL.SentimentAnalysis.Models;
-using SharedCL.Shared.Models;
+﻿using SharedCL;
+using SharedCL.Models;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace WebApp.LungCancerPrediction.ApiClients
 {
-    public class PythonLungCancerApiClient(HttpClient httpClient)
+    public class PythonLCApiClient(HttpClient httpClient)
     {
         private readonly HttpClient _httpClient = httpClient;
 

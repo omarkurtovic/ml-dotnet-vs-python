@@ -1,6 +1,6 @@
-﻿using SharedCL.SentimentAnalysis.Models;
+﻿using SharedCL.Models;
+using SharedCL.SentimentAnalysis.Models;
 using SharedCL.Shared.Enums;
-using SharedCL.Shared.Models;
 using System.Net.Http.Headers;
 
 namespace WebApp.SentimentAnalysis.ApiClients

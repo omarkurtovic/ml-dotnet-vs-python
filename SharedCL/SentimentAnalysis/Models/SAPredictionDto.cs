@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SharedCL.SentimentAnalysis.Models
+namespace SharedCL
 {
-    public class SentimentPrediction
+    public class SAPredictionDto
     {
         [ColumnName("PredictedLabel")]
         public bool IsPositive { get; set; }

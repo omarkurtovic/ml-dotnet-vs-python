@@ -1,6 +1,6 @@
-﻿namespace SharedCL.LungCancerPrediction.Models
+﻿namespace SharedCL
 {
-    public class LungCancerPredictionModel
+    public class LCPredictionDto
     {
         public float BenignScore { get; set; }
         public float MalignantScore { get; set; }

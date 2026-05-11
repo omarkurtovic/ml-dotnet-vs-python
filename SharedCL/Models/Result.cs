@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SharedCL.Shared.Models
+namespace SharedCL
 {
     public class Result
     {

@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewEngines;
-using CSharpModelTrainerApi.Shared;
 using Microsoft.ML;
 using SharedCL.SentimentAnalysis.Mappings;
 using SharedCL.SentimentAnalysis.Models;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SharedCL.Shared.Models;
+using CSharpModelTrainerApi.Services;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {

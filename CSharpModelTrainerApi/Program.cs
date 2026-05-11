@@ -1,9 +1,9 @@
 using CSharpModelTrainerApi.Database;
 using CSharpModelTrainerApi.LungCancerPrediction.Services;
-using CSharpModelTrainerApi.Shared;
 using CSharpModelTrainerApi.SentimentAnalysis.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
+using CSharpModelTrainerApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

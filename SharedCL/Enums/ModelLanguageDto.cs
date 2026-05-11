@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SharedCL.Shared.Enums
+namespace SharedCL
 {
-    public enum ModelLanguage
+    public enum ModelLanguageDto
     {
         CSharp,
         Python

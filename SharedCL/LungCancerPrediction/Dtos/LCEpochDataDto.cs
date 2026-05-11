@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json.Serialization;
 
-namespace SharedCL.LungCancerPrediction.Models
+namespace SharedCL.LungCancerPrediction.Dtos
 {
-    public class LungCancerModelEpochData
+    public class LCEpochDataDto
     {
-        public int Id { get; set; }
-        public int LungCancerModelId { get; set; }
-        [JsonIgnore]
-        public LungCancerModel? LungCancerModel { get; set; } = null!;
         public int Epoch { get; set; }
 
         public double? TrainingLoss { get; set; }

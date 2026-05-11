@@ -1,12 +1,10 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.ML;
-using SharedCL.LungCancerPrediction.Dtos;
+using SharedCL;
 using SharedCL.LungCancerPrediction.Models;
-using SharedCL.SentimentAnalysis.Models;
-using SharedCL.Shared.Enums;
 using System.Data;
 
-namespace CSharpModelTrainerApi.Shared
+namespace CSharpModelTrainerApi.Services
 {
     public class PathResolver
     {
@@ -19,16 +17,16 @@ namespace CSharpModelTrainerApi.Shared
         }
 
 
-        public string GetModelPath(SentimentAnalysisTrainingParams trainParams)
+        public string GetModelPath(SATrainingParamsDto trainParams)
         {
             var repoRoot = GetRepoRoot();
-            if (trainParams.ModelLanguage == ModelLanguage.CSharp)
+            if (trainParams.Language == ModelLanguage.CSharp)
             {
-                return Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", $"{trainParams.ModelName}.zip");
+                return Path.Combine(repoRoot, "models", "sentiment-analysis", "csharp", $"{trainParams.Name}.zip");
             }
-            else if (trainParams.ModelLanguage == ModelLanguage.Python)
+            else if (trainParams.Language == ModelLanguage.Python)
             {
-                return Path.Combine(repoRoot, "models", "sentiment-analysis", "python", $"{trainParams.ModelName}.onnx");
+                return Path.Combine(repoRoot, "models", "sentiment-analysis", "python", $"{trainParams.Name}.onnx");
             }
             else
             {
@@ -36,7 +34,7 @@ namespace CSharpModelTrainerApi.Shared
             }
         }
 
-        public string GetModelPath(SentimentAnalysisModel model)
+        public string GetModelPath(SADto model)
         {
             var repoRoot = GetRepoRoot();
             if (model.Language == ModelLanguage.CSharp)
@@ -79,6 +77,23 @@ namespace CSharpModelTrainerApi.Shared
                 return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", $"{model.Name}.dat");
             }
             else if (model.Language == ModelLanguage.Python)
+            {
+                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "python", $"{model.Name}.onnx");
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        public string GetModelPath(LCDto model)
+        {
+            var repoRoot = GetRepoRoot();
+            if (model.Language == ModelLanguageDto.CSharp)
+            {
+                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "csharp", $"{model.Name}.dat");
+            }
+            else if (model.Language == ModelLanguageDto.Python)
             {
                 return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "python", $"{model.Name}.onnx");
             }

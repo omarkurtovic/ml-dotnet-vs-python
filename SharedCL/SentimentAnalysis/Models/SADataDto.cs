@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SharedCL.SentimentAnalysis.Models
+namespace SharedCL
 {
-    public class SentimentData
+    public class SADataDto
     {
         [LoadColumn(0)]
         public string Review { get; set; } = null!;

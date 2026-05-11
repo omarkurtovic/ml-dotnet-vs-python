@@ -1,19 +1,15 @@
 ﻿using CSharpModelTrainerApi.Database;
-using CSharpModelTrainerApi.Shared;
+using CSharpModelTrainerApi.Services;
 using Microsoft.ML;
 using Microsoft.ML.Trainers.FastTree;
-using SharedCL.SentimentAnalysis.Enums;
-using SharedCL.SentimentAnalysis.Mappings;
-using SharedCL.SentimentAnalysis.Models;
-using SharedCL.Shared.Enums;
-using SharedCL.Shared.Models;
+using SharedCL;
 using System.Data;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
     public class SentimentAnalysisModelTrainer(PathResolver pathResolver)
     {
-        public async Task<Result<SentimentAnalysisModel>> TrainModel(SentimentAnalysisTrainingParams trainData)
+        public async Task<Result<SentimentAnalysisModel>> TrainModel(SATrainingParamsDto trainData)
         {
             MLContext mlContext = new();
             var dataPath = pathResolver.GetSentimentDataPath();

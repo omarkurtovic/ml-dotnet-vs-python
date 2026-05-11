@@ -1,12 +1,6 @@
 ﻿using CSharpModelTrainerApi.LungCancerPrediction.Datasets;
 using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
-using CSharpModelTrainerApi.Shared;
 using Microsoft.ML;
-using SharedCL.LungCancerPrediction.Models;
-using SharedCL.SentimentAnalysis.Enums;
-using SharedCL.SentimentAnalysis.Mappings;
-using SharedCL.Shared.Enums;
-using SharedCL.Shared.Models;
 using SkiaSharp;
 using TorchSharp;
 using TorchSharp.Modules;
@@ -20,7 +14,10 @@ using static TorchSharp.torch.utils;
 using static TorchSharp.torch.utils.data;
 using System.Diagnostics;
 using System;
-using SharedCL.LungCancerPrediction.Dtos;
+using SharedCL;
+using CSharpModelTrainerApi.Services;
+using CSharpModelTrainerApi.Enums;
+using SharedCL.LungCancerPrediction.Models;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {

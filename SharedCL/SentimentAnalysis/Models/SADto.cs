@@ -1,14 +1,12 @@
-﻿using SharedCL.SentimentAnalysis.Enums;
-using SharedCL.Shared.Enums;
-
-namespace SharedCL.SentimentAnalysis.Models
+﻿
+namespace SharedCL
 {
-    public class SentimentAnalysisModel
+    public class SADto
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
-        public ModelLanguage Language { get; set; }
-        public TrainerAlgorithm TrainerAlgorithm { get; set; }
+        public ModelLanguageDto Language { get; set; }
+        public TrainerAlgorithmDto TrainerAlgorithm { get; set; }
         public double? TrainingAccuracy { get; set; }
         public double? TrainingF1Score { get; set; }
         public double? TrainingAreaUnderRocCurve { get; set; }

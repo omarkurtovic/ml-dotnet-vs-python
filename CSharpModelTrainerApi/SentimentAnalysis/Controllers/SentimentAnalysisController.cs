@@ -1,9 +1,7 @@
 ﻿using CSharpModelTrainerApi.SentimentAnalysis.Services;
-using CSharpModelTrainerApi.Shared;
+using CSharpModelTrainerApi.Services;
 using Microsoft.AspNetCore.Mvc;
-using SharedCL.SentimentAnalysis.Models;
-using SharedCL.Shared.Enums;
-using SharedCL.Shared.Models;
+using SharedCL;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
 {
@@ -66,9 +64,9 @@ namespace CSharpModelTrainerApi.SentimentAnalysis.Controllers
 
         [HttpPost]
         [Route("Train")]
-        public async Task<IActionResult> Train([FromBody] SentimentAnalysisTrainingParams trainData)
+        public async Task<IActionResult> Train([FromBody] SATrainingParamsDto trainData)
         {
-            if (trainData.ModelLanguage == ModelLanguage.CSharp)
+            if (trainData.Language == ModelLanguageDto.CSharp)
             {
                 var modelRes = await ModelTrainer.TrainModel(trainData);
                 if (!modelRes.IsSuccess)

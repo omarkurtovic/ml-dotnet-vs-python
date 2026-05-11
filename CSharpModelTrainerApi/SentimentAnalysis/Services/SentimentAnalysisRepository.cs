@@ -1,7 +1,7 @@
 ﻿using CSharpModelTrainerApi.Database;
 using Microsoft.EntityFrameworkCore;
+using SharedCL.Models;
 using SharedCL.SentimentAnalysis.Models;
-using SharedCL.Shared.Models;
 
 namespace CSharpModelTrainerApi.SentimentAnalysis.Services
 {
