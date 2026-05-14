@@ -1,4 +1,4 @@
-﻿@page "/lungCancer/inference"
+﻿@page "/inference"
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using System.Globalization
@@ -15,74 +15,74 @@
 <PageTitle>Rak pluća </PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mb-16 mt-8">
-    
-    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-6">
-        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/lungCancer" Color="Color.Default" />
-        <SubHeading>Analiza Slike</SubHeading>
-    </MudStack>
-
-    <MudCard Elevation="1">
-        <MudCardContent Class="pa-6">
-            <MudForm @ref="_form">
-                <MudStack Spacing="4">
+    <MudGrid Spacing="2">
+        <MudItem xs="12">
+            <PageTop Title="Analiza Slike"></PageTop>
+        </MudItem>
+        <MudItem xs="12">
+            <MudCard Elevation="1">
+                <MudCardContent Class="pa-6">
+                    <MudForm @ref="_form">
+                        <MudStack Spacing="4">
                     
-                    <MudPaper Outlined="true" Elevation="0" Class="pa-4" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: transparent;">
-                        <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                            <MudPaper Outlined="true" Elevation="0" Class="pa-4" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: transparent;">
+                                <MudStack AlignItems="AlignItems.Center" Spacing="3">
                             
-                            @if (!string.IsNullOrWhiteSpace(_base64))
+                                    @if (!string.IsNullOrWhiteSpace(_base64))
+                                    {
+                                        <MudImage Src="@_base64" Alt="CT Scan Preview" Height="180" Elevation="2" Class="rounded-lg" ObjectFit="ObjectFit.Cover" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" Style="opacity: 0.5;" />
+                                        <BodyText>Odaberite CT snimak pluća</BodyText>
+                                    }
+
+                                    <MudFileUpload T="IBrowserFile" @bind-Files="_file" @bind-Files:after="UploadImage"
+                                                   Required="true" RequiredError="Slika je obavezna!"
+                                                   Accept=".png,.jpg,.jpeg">
+                                        <CustomContent>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       OnClick="@context.OpenFilePickerAsync"
+                                                       StartIcon="@Icons.Material.Filled.CloudUpload">
+                                                @(_file == null ? "Pretraži fajlove" : "Promijeni sliku")
+                                            </MudButton>
+                                        </CustomContent>
+                                    </MudFileUpload>
+                                </MudStack>
+                            </MudPaper>
+
+                            <MudSelect T="LCBasicDto" Label="Model za analizu" @bind-Value="SelectedModel"
+                                       Required="true" RequiredError="Model je obavezan!" Clearable="true" Variant="Variant.Outlined">
+                                @foreach (var item in Models)
+                                {
+                                    <MudSelectItem Value="@item">@item.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            @if (Prediction != null)
                             {
-                                <MudImage Src="@_base64" Alt="CT Scan Preview" Height="180" Elevation="2" Class="rounded-lg" ObjectFit="ObjectFit.Cover" />
+                                <MudAlert Variant="Variant.Filled" Dense="true" Severity="@GetPredictionSeverity(Prediction.PredictedLabel)" Class="mt-2">
+                                    <b>Rezultat: @Prediction.PredictedLabel</b>
+                                </MudAlert>
                             }
-                            else
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" Style="opacity: 0.5;" />
-                                <BodyText>Odaberite CT snimak pluća</BodyText>
-                            }
-
-                            <MudFileUpload T="IBrowserFile" @bind-Files="_file" @bind-Files:after="UploadImage"
-                                           Required="true" RequiredError="Slika je obavezna!"
-                                           Accept=".png,.jpg,.jpeg">
-                                <CustomContent>
-                                    <MudButton Variant="Variant.Outlined"
-                                               Color="Color.Primary"
-                                               OnClick="@context.OpenFilePickerAsync"
-                                               StartIcon="@Icons.Material.Filled.CloudUpload">
-                                        @(_file == null ? "Pretraži fajlove" : "Promijeni sliku")
-                                    </MudButton>
-                                </CustomContent>
-                            </MudFileUpload>
-                        </MudStack>
-                    </MudPaper>
-
-                    <MudSelect T="LCDto" Label="Model za analizu" @bind-Value="SelectedModel"
-                               Required="true" RequiredError="Model je obavezan!" Clearable="true" Variant="Variant.Outlined">
-                        @foreach (var item in Models)
-                        {
-                            <MudSelectItem Value="@item">@item.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-
-                    @if (Prediction != null)
-                    {
-                        <MudAlert Variant="Variant.Filled" Dense="true" Severity="@GetPredictionSeverity(Prediction.PredictedLabel)" Class="mt-2">
-                            <b>Rezultat: @Prediction.PredictedLabel</b>
-                        </MudAlert>
-                    }
                     
-                </MudStack>
-            </MudForm>
-        </MudCardContent>
+                        </MudStack>
+                    </MudForm>
+                </MudCardContent>
 
-        <MudCardActions Class="pa-6 pt-0" Style="justify-content: flex-end;">
-            <LoadingButton Color="@Color.Primary" 
-                           Variant="@Variant.Filled" 
-                           OnClick="Predict" 
-                           LoadingText="Analiziranje...">
-                Analiziraj Sliku
-            </LoadingButton>
-        </MudCardActions>
-    </MudCard>
-
+                <MudCardActions Class="pa-6 pt-0" Style="justify-content: center;">
+                    <LoadingButton Color="@Color.Primary"
+                                   Variant="@Variant.Filled"
+                                   OnClick="Predict"
+                                   LoadingText="Analiziranje...">
+                        Analiziraj Sliku
+                    </LoadingButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
 
@@ -92,14 +92,14 @@
     private IBrowserFile? _file = null;
     private string _base64 = string.Empty;
 
-    private List<LCDto> Models { get; set; } = new List<LCDto>();
-    private LCDto SelectedModel = null!;
+    private List<LCBasicDto> Models { get; set; } = new List<LCBasicDto>();
+    private LCBasicDto SelectedModel = null!;
 
-    private PredictionDto? Prediction = null;
+    private LCPredictionDto? Prediction = null;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await CSharpLCApi.GetModelsAsync();
+        var result = await CSharpLCApi.GetModelsBasicAsync();
         if (result.IsSuccess)
         {
             Models = result.Data!;
@@ -158,7 +158,7 @@
 
     private Severity GetPredictionSeverity(string prediction)
     {
-        if(prediction == "Benign")
+        if (prediction == "Benign")
         {
             return Severity.Success;
         }

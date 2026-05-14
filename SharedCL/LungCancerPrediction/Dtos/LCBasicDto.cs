@@ -1,11 +1,10 @@
-﻿using SharedCL.LC;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace SharedCL
 {
-    public class LCBasic
+    public class LCBasicDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;

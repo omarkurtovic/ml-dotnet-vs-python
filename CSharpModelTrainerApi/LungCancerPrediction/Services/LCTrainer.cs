@@ -100,7 +100,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 
-
             return Result<LCDto>.Success(modelDB);
         }
 

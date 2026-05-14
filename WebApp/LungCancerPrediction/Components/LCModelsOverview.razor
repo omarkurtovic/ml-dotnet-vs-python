@@ -1,4 +1,4 @@
-﻿@page "/lungCancer/models"
+﻿@page "/models"
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using OmarDesignSystem
@@ -11,16 +11,11 @@
 @rendermode InteractiveServer
 
 <PageTitle>Pregled Modela</PageTitle>
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
-    
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <MudGrid>
         <MudItem xs="12">
-            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-6">
-                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/lungCancer" Color="Color.Default" />
-                <MainHeading Class="mb-0">Pregled Modela</MainHeading>
-            </MudStack>
+            <PageTop Title="Pregled Modela"></PageTop>
         </MudItem>
-
         <MudItem xs="12">
             <MudTextField @bind-Value="SearchString"
                           Placeholder="Pretraži modele..."
@@ -31,7 +26,7 @@
                           Immediate="true" />
         </MudItem>
         <MudItem xs="12">
-            <MudDataGrid @ref="@DataGrid" T="LCDto" Hover Filterable="false" Striped ServerData="ServerReload" FixedHeader FixedFooter>
+            <MudDataGrid @ref="@DataGrid" T="LCBasicDto" Hover Filterable="false" Striped ServerData="ServerReload" FixedHeader FixedFooter>
                 <NoRecordsContent>
                     @if (!string.IsNullOrWhiteSpace(SearchString))
                     {
@@ -68,7 +63,7 @@
                     </TemplateColumn>
                 </Columns>
                 <PagerContent>
-                    <MudDataGridPager T="LCDto" />
+                    <MudDataGridPager T="LCBasicDto" />
                 </PagerContent>
             </MudDataGrid>
         </MudItem>
@@ -87,7 +82,7 @@
 </MudDrawer>
 
 @code {
-    private MudDataGrid<LCDto> DataGrid = null!;
+    private MudDataGrid<LCBasicDto> DataGrid = null!;
 
     private string search = string.Empty;
 
@@ -110,9 +105,9 @@
 
     private LCInfo LCInfo = null!;
 
-    private async Task<GridData<LCDto>> ServerReload(GridState<LCDto> state, CancellationToken token)
+    private async Task<GridData<LCBasicDto>> ServerReload(GridState<LCBasicDto> state, CancellationToken token)
     {
-        var options = new GridOptionsDto();
+        var options = new LCGridOptionsDto();
         options.Search = SearchString;
         var sortDefintion = state.SortDefinitions.FirstOrDefault();
         if (sortDefintion != null)
@@ -122,11 +117,11 @@
         }
         options.PageSize = state.PageSize;
         options.CurrentPage = state.Page;
-        var result = await CSharpLCApi.GetModelsAsync(options);
+        var result = await CSharpLCApi.GetModelsSearchAsync(options);
 
         if (result.IsSuccess && result.Data is not null)
         {
-            return new GridData<LCDto>()
+            return new GridData<LCBasicDto>()
             {
                 Items = result.Data.Models,
                 TotalItems = result.Data.TotalItems
@@ -137,20 +132,20 @@
             Snackbar.Add(result.Message ?? "Error fetching models!", Severity.Error);
         }
 
-        return new GridData<LCDto>()
+        return new GridData<LCBasicDto>()
         {
-            Items = new List<LCDto>(),
+            Items = new List<LCBasicDto>(),
             TotalItems = 0
         };
     }
 
-    private async Task ShowModelDetails(LCDto model)
+    private async Task ShowModelDetails(LCBasicDto model)
     {
         await LCInfo.ShowModelDetails(model.Id);
         IsSideDrawerOpen = true;
     }
 
-    private async Task ConfirmDelete(LCDto model)
+    private async Task ConfirmDelete(LCBasicDto model)
     {
         var parameters = new DialogParameters<ConfirmDeleteDialog>
         {

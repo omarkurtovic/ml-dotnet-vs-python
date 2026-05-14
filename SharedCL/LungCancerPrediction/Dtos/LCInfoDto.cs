@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SharedCL
 {
-    public class LCInfo
+    public class LCInfoDto
     {
         public string Name { get; set; } = null!;
         public ModelLanguageDto Language { get; set; }

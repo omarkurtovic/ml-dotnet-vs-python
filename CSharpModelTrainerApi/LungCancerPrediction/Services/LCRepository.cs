@@ -49,9 +49,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 })]
             })]);
         }
-        public async Task<Result<List<LCBasic>>> GetModelsBasic()
+        public async Task<Result<List<LCBasicDto>>> GetModelsBasic()
         {
-            return Result<List<LCBasic>>.Success([.. _context.LCModels.Select(model => new LCBasic()
+            return Result<List<LCBasicDto>>.Success([.. _context.LCModels.Select(model => new LCBasicDto()
             {
                 Id = model.Id,
                 Name = model.Name,
@@ -74,19 +74,19 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             {
                 switch (options.SortBy)
                 {
-                    case nameof(LCBasic.Name):
+                    case nameof(LCBasicDto.Name):
                         query = options.SortDescending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name);
                         break;
-                    case nameof(LCBasic.Language):
+                    case nameof(LCBasicDto.Language):
                         query = options.SortDescending ? query.OrderByDescending(t => t.Language) : query.OrderBy(t => t.Language);
                         break;
-                    case nameof(LCBasic.MacroPrecision):
+                    case nameof(LCBasicDto.MacroPrecision):
                         query = options.SortDescending ? query.OrderByDescending(t => t.EpochData.Last().MacroPrecision) : query.OrderBy(t => t.EpochData.Last().MacroPrecision);
                         break;
-                    case nameof(LCBasic.MacroRecall):
+                    case nameof(LCBasicDto.MacroRecall):
                         query = options.SortDescending ? query.OrderByDescending(t => t.EpochData.Last().MacroRecall) : query.OrderBy(t => t.EpochData.Last().MacroRecall);
                         break;
-                    case nameof(LCBasic.MacroF1Score):
+                    case nameof(LCBasicDto.MacroF1Score):
                         query = options.SortDescending ? query.OrderByDescending(t => t.EpochData.Last().MacroF1Score) : query.OrderBy(t => t.EpochData.Last().MacroF1Score);
                         break;
                     default:
@@ -103,7 +103,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             int totalItems = await query.CountAsync();
             query = query.Skip(options.CurrentPage * options.PageSize).Take(options.PageSize);
 
-            var models = (await query.ToListAsync()).Select(model => new LCBasic()
+            var models = (await query.ToListAsync()).Select(model => new LCBasicDto()
             {
                 Id = model.Id,
                 Name = model.Name,
@@ -161,15 +161,15 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             });
         }
 
-        public async Task<Result<LCBasic>> GetModelBasic(int id)
+        public async Task<Result<LCBasicDto>> GetModelBasic(int id)
         {
             var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstAsync();
             if(model == null)
             {
-                return Result<LCBasic>.Failure("Model not found");
+                return Result<LCBasicDto>.Failure("Model not found");
             }
 
-            return Result<LCBasic>.Success(new LCBasic
+            return Result<LCBasicDto>.Success(new LCBasicDto
             {
                 Id = model.Id,
                 Name = model.Name,
@@ -180,14 +180,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             });
         }
 
-        public async Task<Result<LCInfo>> GetModelInfo(int id)
+        public async Task<Result<LCInfoDto>> GetModelInfo(int id)
         {
             var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstAsync();
             if(model == null)
             {
-                return Result<LCInfo>.Failure("Model not found");
+                return Result<LCInfoDto>.Failure("Model not found");
             }
-            return Result<LCInfo>.Success(new LCInfo
+            return Result<LCInfoDto>.Success(new LCInfoDto
             {
                 Name = model.Name,
                 Language = (ModelLanguageDto)model.Language,
@@ -217,7 +217,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
 
 
-        public async Task<Result> Save(LCDto model)
+        public async Task<Result<int>> Save(LCDto model)
         {
             var dbModel = new LCModel
             {
@@ -252,7 +252,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             _context.LCModels.Add(dbModel);
             await _context.SaveChangesAsync();
-            return Result.Success();
+            return Result<int>.Success(dbModel.Id);
         }
 
         public async Task<Result> Delete(int id)

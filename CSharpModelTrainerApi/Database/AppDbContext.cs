@@ -1,5 +1,4 @@
 ﻿using CSharpModelTrainerApi.LungCancerPrediction.Models;
-using CSharpModelTrainerApi.SentimentAnalysis.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CSharpModelTrainerApi.Database
@@ -9,7 +8,6 @@ namespace CSharpModelTrainerApi.Database
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-        public virtual DbSet<SAModel> SentimentAnalysisModels { get; set; }
         public virtual DbSet<LCModel> LCModels { get; set; }
         public virtual DbSet<LCEpochData> LCEpochData { get; set; }
 

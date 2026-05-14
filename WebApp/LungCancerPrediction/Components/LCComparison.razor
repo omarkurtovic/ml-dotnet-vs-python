@@ -1,7 +1,8 @@
-﻿@page "/lungCancer/comparison"
+﻿@page "/comparison"
 @using ApexCharts
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
+@using OmarDesignSystem
 @using SharedCL
 @using System.Text
 @using WebApp.LungCancerPrediction.ApiClients
@@ -14,70 +15,92 @@
 
 <PageTitle>Poređenje Modela</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="">
-    <MudPaper Class="pa-6 mt-6" Elevation="15">
-
-        <MudItem xs="12" Style="position: relative; display: flex; align-items: center; min-height: 48px; margin-bottom: 30px;">
-            <MudIconButton Style="position: absolute; left: 0;" Icon="@Icons.Material.Filled.ArrowBack"
-                           Variant="Variant.Filled" Color="MudBlazor.Color.Primary" Href="/lungCancer" />
-            <MudText Style="width: 100%; text-align: center;" Typo="Typo.h5">Poređenje Modela</MudText>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16 mt-8">
+    <MudGrid Spacing="2">
+        <MudItem xs="12">
+            <PageTop Title="Uporedi Modele"></PageTop>
         </MudItem>
         <MudItem xs="12">
-
-            @if (_isLoading)
+            @if (_models == null || _models.Count == 0)
             {
-                <MudProgressLinear Indeterminate="true" Color="MudBlazor.Color.Primary" Class="mb-4" />
-            }
-            else if (_models.Count == 0)
-            {
-                <MudAlert Severity="Severity.Info">Nema dostupnih modela.</MudAlert>
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+                    Nema dostupnih modela za poređenje.
+                </MudAlert>
             }
             else
             {
-                <MudSelect  T="LungCancerModel" Label="Modeli" MultiSelection="true" @bind-SelectedValues="SelectedModels">
-                    @foreach (var model in _models)
-                    {
-                        <MudSelectItem T="LungCancerModel" Value="@model">@model.Name</MudSelectItem>
-                    }
-                </MudSelect>
+                <MudCard Elevation="1" Class="mb-8" Style="border-radius: 16px;">
+                    <MudCardContent>
+                        <MudGrid Spacing="4">
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="LCDto" Label="Odaberite Modele"
+                                           MultiSelection="true"
+                                           @bind-SelectedValues="SelectedModels"
+                                           Variant="Variant.Outlined"
+                                           Clearable="true">
+                                    @foreach (var model in _models)
+                                    {
+                                        <MudSelectItem T="LCDto" Value="@model">@model.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
 
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="string" Label="Odaberite Metrike"
+                                           MultiSelection="true"
+                                           @bind-SelectedValues="SelectedMetrics"
+                                           MultiSelectionTextFunc="@(new Func<IReadOnlyList<string>, string>(GetMultiSelectionMetricText))"
+                                           Variant="Variant.Outlined"
+                                           Clearable="true">
+                                    @foreach (var metric in Metrics)
+                                    {
+                                        <MudSelectItem T="string" Value="@metric.Key">@metric.Value</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
 
-                <MudSelect MultiSelectionTextFunc="@(new Func<IReadOnlyList<string>, string>(GetMultiSelectionMetricText))" T="string" Label="Metrike"
-                    MultiSelection="true" @bind-SelectedValues="SelectedMetrics">
-                    @foreach (var metric in Metrics)
-                    {
-                        <MudSelectItem T="string" Value="@metric.Key">@metric.Value</MudSelectItem>
-                    }
-                </MudSelect>
-
-
+                @if (SelectedModels != null && SelectedModels.Any() && SelectedMetrics != null && SelectedMetrics.Any())
+                {
+                    <MudCard Elevation="1" Style="border-radius: 16px;">
+                        <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="MudBlazor.Color.Default">
+                            @foreach (var metric in SelectedMetrics)
+                            {
+                                <MudTabPanel Text="@(GetMetricTranslations()[metric])">
+                                    <ApexChart TItem="LCEpochDataDto" Title="@((GetMetricTranslations())[metric])" Height="400">
+                                        @foreach (var model in SelectedModels)
+                                        {
+                                            <ApexPointSeries TItem="LCEpochDataDto"
+                                                             Items="model.EpochData"
+                                                             Name="@model.Name"
+                                                             SeriesType="SeriesType.Line"
+                                                             XValue="@(ed => ed.Epoch)"
+                                                             YValue="@(ed => GetValue(metric, ed))" />
+                                        }
+                                    </ApexChart>
+                                </MudTabPanel>
+                            }
+                        </MudTabs>
+                    </MudCard>
+                }
+                else if (SelectedModels != null && SelectedModels.Any())
+                {
+                    <MudAlert Severity="Severity.Normal" Variant="Variant.Filled" Style="background-color: var(--mud-palette-background-grey);">
+                        Odaberite barem jednu metriku za prikaz grafikona.
+                    </MudAlert>
+                }
             }
         </MudItem>
+    </MudGrid>
 
-        @foreach (var metric in SelectedMetrics)
-        {
-            <MudItem xs="12" Class="mt-6">
-                <ApexChart TItem="LungCancerModelEpochData"
-                           Title="@((GetMetricTranslations())[metric])">
+    
 
-                    @foreach(var model in SelectedModels)
-                    {
-                        <ApexPointSeries TItem="LungCancerModelEpochData"
-                                         Items="model.EpochData"
-                                         Name="@model.Name"
-                                         SeriesType="SeriesType.Line"
-                                         XValue="@(ed => ed.Epoch)" 
-                                         YValue="@(ed => GetValue(metric, ed))"   />
-                    }
-
-                </ApexChart>
-            </MudItem>
-        }
-    </MudPaper>
 </MudContainer>
 
 @code {
-    private decimal GetValue(string metric, LungCancerModelEpochData epochData)
+    private decimal GetValue(string metric, LCEpochDataDto epochData)
     {
         var value = epochData.GetType().GetProperty(metric)!.GetValue(epochData); 
         if (value is double doubleValue)
@@ -90,11 +113,9 @@
         }
     }
 
-    private bool _isLoading = true;
+    private List<LCDto> _models = [];
 
-    private List<LungCancerModel> _models = [];
-
-    private IReadOnlyCollection<LungCancerModel> SelectedModels = [];
+    private IReadOnlyCollection<LCDto> SelectedModels = [];
 
     private Dictionary<string, string> Metrics = [];
 
@@ -108,10 +129,8 @@
 
     private async Task LoadModels()
     {
-        _isLoading = true;
         var result = await CSharpLCApi.GetModelsAsync();
         _models = result.IsSuccess ? result.Data! : [];
-        _isLoading = false;
     }
 
 
@@ -130,35 +149,45 @@
     {
         return new Dictionary<string, string>
     {
-        { nameof(LungCancerModelEpochData.MacroPrecision), "Makro preciznost" },
-        { nameof(LungCancerModelEpochData.MacroRecall), "Makro odziv" },
-        { nameof(LungCancerModelEpochData.MacroF1Score), "Makro F1" },
+        { nameof(LCEpochDataDto.MacroPrecision), "Makro preciznost" },
+        { nameof(LCEpochDataDto.MacroRecall), "Makro odziv" },
+        { nameof(LCEpochDataDto.MacroF1Score), "Makro F1" },
 
-        { nameof(LungCancerModelEpochData.TrainingLoss), "Gubitak pri treniranju" },
-        { nameof(LungCancerModelEpochData.TrainingAccuracy), "Preciznost pri treniranju" },
-        { nameof(LungCancerModelEpochData.ValidationLoss), "Gubitak pri validaciji" },
-        { nameof(LungCancerModelEpochData.ValidationAccuracy), "Preciznost pri validaciji" },
+        { nameof(LCEpochDataDto.TrainingLoss), "Gubitak pri treniranju" },
+        { nameof(LCEpochDataDto.TrainingAccuracy), "Preciznost pri treniranju" },
+        { nameof(LCEpochDataDto.ValidationLoss), "Gubitak pri validaciji" },
+        { nameof(LCEpochDataDto.ValidationAccuracy), "Preciznost pri validaciji" },
 
-        { nameof(LungCancerModelEpochData.BenignPrecision), "Preciznost (Benigno)" },
-        { nameof(LungCancerModelEpochData.BenignRecall), "Odziv (Benigno)" },
-        { nameof(LungCancerModelEpochData.BenignF1Score), "F1 (Benigno)" },
+        { nameof(LCEpochDataDto.BenignPrecision), "Preciznost (Benigno)" },
+        { nameof(LCEpochDataDto.BenignRecall), "Odziv (Benigno)" },
+        { nameof(LCEpochDataDto.BenignF1Score), "F1 (Benigno)" },
 
-        { nameof(LungCancerModelEpochData.MalignantPrecision), "Preciznost (Maligno)" },
-        { nameof(LungCancerModelEpochData.MalignantRecall), "Odziv (Maligno)" },
-        { nameof(LungCancerModelEpochData.MalignantF1Score), "F1 (Maligno)" },
+        { nameof(LCEpochDataDto.MalignantPrecision), "Preciznost (Maligno)" },
+        { nameof(LCEpochDataDto.MalignantRecall), "Odziv (Maligno)" },
+        { nameof(LCEpochDataDto.MalignantF1Score), "F1 (Maligno)" },
 
-        { nameof(LungCancerModelEpochData.NormalPrecision), "Preciznost (Normalno)" },
-        { nameof(LungCancerModelEpochData.NormalRecall), "Odziv (Normalno)" },
-        { nameof(LungCancerModelEpochData.NormalF1Score), "F1 (Normalno)" },
+        { nameof(LCEpochDataDto.NormalPrecision), "Preciznost (Normalno)" },
+        { nameof(LCEpochDataDto.NormalRecall), "Odziv (Normalno)" },
+        { nameof(LCEpochDataDto.NormalF1Score), "F1 (Normalno)" },
 
     };
     }
 
+    private string GetMultiSelectionModelText(IReadOnlyList<LCDto> selectedValues)
+    {
+        var values = new List<string>();
+        foreach (var model in selectedValues)
+        {
+            values.Add(model.Name);
+        }
+        return string.Join(", ", values);
+    }
+    
     private string GetMultiSelectionMetricText(IReadOnlyList<string> selectedValues)
     {
         var values = new List<string>();
         var translations = GetMetricTranslations();
-        foreach(var value in selectedValues)
+        foreach (var value in selectedValues)
         {
             values.Add(translations[value]);
         }
@@ -166,8 +195,7 @@
     }
 
 
-
-    private ApexChartOptions<LungCancerModelEpochData> options = new()
+    private ApexChartOptions<LCEpochDataDto> options = new()
     {
         Xaxis = new XAxis
         {

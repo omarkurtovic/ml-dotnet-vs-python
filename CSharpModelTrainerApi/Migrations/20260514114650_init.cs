@@ -11,51 +11,28 @@ namespace CSharpModelTrainerApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "LungCancerModels",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Language = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LungCancerModels", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SentimentAnalysisModels",
+                name: "LCModels",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Language = table.Column<int>(type: "INTEGER", nullable: false),
-                    TrainerAlgorithm = table.Column<int>(type: "INTEGER", nullable: false),
-                    TrainingAccuracy = table.Column<double>(type: "REAL", nullable: true),
-                    TrainingF1Score = table.Column<double>(type: "REAL", nullable: true),
-                    TrainingAreaUnderRocCurve = table.Column<double>(type: "REAL", nullable: true),
-                    TrainingPositivePrecision = table.Column<double>(type: "REAL", nullable: true),
-                    TrainingPositiveRecall = table.Column<double>(type: "REAL", nullable: true),
-                    TestingAccuracy = table.Column<double>(type: "REAL", nullable: true),
-                    TestingF1Score = table.Column<double>(type: "REAL", nullable: true),
-                    TestingAreaUnderRocCurve = table.Column<double>(type: "REAL", nullable: true),
-                    TestingPositivePrecision = table.Column<double>(type: "REAL", nullable: true),
-                    TestingPositiveRecall = table.Column<double>(type: "REAL", nullable: true)
+                    TrainingTimeInSeconds = table.Column<int>(type: "INTEGER", nullable: false),
+                    HardwareInfo = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SentimentAnalysisModels", x => x.Id);
+                    table.PrimaryKey("PK_LCModels", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "LungCancerModelEpochData",
+                name: "LCEpochData",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    LungCancerModelId = table.Column<int>(type: "INTEGER", nullable: false),
+                    LCModelId = table.Column<int>(type: "INTEGER", nullable: false),
                     Epoch = table.Column<int>(type: "INTEGER", nullable: false),
                     TrainingLoss = table.Column<double>(type: "REAL", nullable: true),
                     TrainingAccuracy = table.Column<double>(type: "REAL", nullable: true),
@@ -79,32 +56,29 @@ namespace CSharpModelTrainerApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LungCancerModelEpochData", x => x.Id);
+                    table.PrimaryKey("PK_LCEpochData", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_LungCancerModelEpochData_LungCancerModels_LungCancerModelId",
-                        column: x => x.LungCancerModelId,
-                        principalTable: "LungCancerModels",
+                        name: "FK_LCEpochData_LCModels_LCModelId",
+                        column: x => x.LCModelId,
+                        principalTable: "LCModels",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_LungCancerModelEpochData_LungCancerModelId",
-                table: "LungCancerModelEpochData",
-                column: "LungCancerModelId");
+                name: "IX_LCEpochData_LCModelId",
+                table: "LCEpochData",
+                column: "LCModelId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "LungCancerModelEpochData");
+                name: "LCEpochData");
 
             migrationBuilder.DropTable(
-                name: "SentimentAnalysisModels");
-
-            migrationBuilder.DropTable(
-                name: "LungCancerModels");
+                name: "LCModels");
         }
     }
 }

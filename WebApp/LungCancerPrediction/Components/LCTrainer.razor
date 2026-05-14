@@ -1,4 +1,4 @@
-﻿@page "/lungCancer/trainer"
+﻿@page "/trainer"
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using OmarDesignSystem
@@ -13,65 +13,70 @@
 
 <PageTitle>Treniranje Modela za Rak Pluća</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mb-16 mt-8">
-    
-    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-6">
-        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/lungCancer" Color="Color.Default" />
-        <SubHeading Class="mb-0">Treniranje Modela</SubHeading>
-    </MudStack>
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 mb-16">
+    <MudGrid Spacing="2">
+        <MudItem xs="12">
+            <PageTop Title="Treniranje Modela"></PageTop>
+        </MudItem>
 
-    <MudCard Elevation="1">
-        <MudCardContent Class="pa-6">
-            <MudForm @ref="Form">
-                <MudStack Spacing="4">
-                    <MudTextField @bind-Value="TrainingParams.Name" 
-                                  Required="true"
-                                  RequiredError="Naziv modela je obavezan!" 
-                                  Variant="Variant.Outlined" 
-                                  Label="Naziv modela" />
+        <MudItem xs="12">
+            <MudCard Elevation="1">
+                <MudCardContent Class="pa-6">
+                    <MudForm @ref="Form">
+                        <MudStack Spacing="4">
+                            <MudTextField @bind-Value="TrainingParams.Name"
+                                          Required="true"
+                                          RequiredError="Naziv modela je obavezan!"
+                                          Variant="Variant.Outlined"
+                                          Label="Naziv modela" />
                                   
-                    <MudNumericField @bind-Value="TrainingParams.Epochs" 
-                                     Required="true" 
-                                     RequiredError="Broj epoha je obavezan!" 
-                                     Variant="Variant.Outlined" 
-                                     Label="Broj epoha" 
-                                     Min="1" Max="10" />
+                            <MudNumericField @bind-Value="TrainingParams.Epochs"
+                                             Required="true"
+                                             RequiredError="Broj epoha je obavezan!"
+                                             Variant="Variant.Outlined"
+                                             Label="Broj epoha"
+                                             Min="1" Max="10" />
 
-                    <MudSelect T="ModelLanguageDto" 
-                               @bind-Value="TrainingParams.Language" 
-                               Label="Jezik modela"
-                               Variant="Variant.Outlined" 
-                               Required="true" 
-                               RequiredError="Model Mašinskog Učenja je obavezan!" 
-                               Clearable>
-                        @foreach (var item in Enum.GetValues<ModelLanguage>())
+                            <MudSelect T="ModelLanguageDto"
+                                       @bind-Value="TrainingParams.Language"
+                                       Label="Jezik modela"
+                                       Variant="Variant.Outlined"
+                                       Required="true"
+                                       RequiredError="Model Mašinskog Učenja je obavezan!"
+                                       Clearable>
+                                @foreach (var item in Enum.GetValues<ModelLanguageDto>())
+                                {
+                                    <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudCheckBox @bind-Value="TrainingParams.WithFlips"
+                                         Label="Rotiraj slike (Augmentacija)"
+                                         Color="Color.Primary" />
+                        </MudStack>
+                    </MudForm>
+                </MudCardContent>
+                <MudCardActions Class="pa-6 pt-0">
+                    <MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.End" Style="width: 100%;">
+                        @if (ModelId != null)
                         {
-                            <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
+                            <MudButton OnClick="ShowModelDetails" Color="@Color.Default" Variant="@Variant.Outlined">
+                                Prikaži Rezultate
+                            </MudButton>
                         }
-                    </MudSelect>
-                    <MudCheckBox @bind-Value="TrainingParams.WithFlips" 
-                                 Label="Rotiraj slike (Augmentacija)" 
-                                 Color="Color.Primary" />
-                </MudStack>
-            </MudForm>
-        </MudCardContent>
-        <MudCardActions Class="pa-6 pt-0">
-            <MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.End" Style="width: 100%;">
-                @if (Model != null)
-                {
-                    <MudButton OnClick="ShowModelDetails" Color="@Color.Default" Variant="@Variant.Outlined">
-                        Prikaži Rezultate
-                    </MudButton>
-                }
-                <LoadingButton Color="@Color.Primary"
-                               Variant="@Variant.Filled"
-                               OnClick="TrainModel"
-                               LoadingText="Treniranje...">
-                    Treniraj
-                </LoadingButton>
-            </MudStack>
-        </MudCardActions>
-    </MudCard>
+                        <LoadingButton Color="@Color.Primary"
+                                       Variant="@Variant.Filled"
+                                       OnClick="TrainModel"
+                                       LoadingText="Treniranje...">
+                            Treniraj
+                        </LoadingButton>
+                    </MudStack>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+    
+
+    
 </MudContainer>
 
 <MudDrawer @bind-Open="@IsSideDrawerOpen"
@@ -89,9 +94,9 @@
 
     private MudForm Form = null!;
 
-    private TrainingParamsDto TrainingParams = new();
+    private LCTrainingParamsDto TrainingParams = new();
 
-    private LCDto Model { get; set; } = null!;
+    private int? ModelId { get; set; } = null;
 
     private bool IsSideDrawerOpen = false;
 
@@ -101,7 +106,7 @@
 
     protected override void OnInitialized()
     {
-        TrainingParams = new TrainingParamsDto()
+        TrainingParams = new LCTrainingParamsDto()
         {
             Name = $"RakPlucaModel_{DateTime.Now:yyyyMMdd_HHmmss}",
             Epochs = 5,
@@ -117,7 +122,7 @@
         if (!Form.IsValid)
             return;
 
-        Result<LCDto> result;
+        Result<int> result;
         if (TrainingParams.Language == ModelLanguageDto.CSharp)
         {
             result = await CSharpLCApi.TrainModelAsync(TrainingParams);
@@ -130,7 +135,7 @@
         if (result.IsSuccess)
         {
             Snackbar.Add("Model je uspešno treniran!", Severity.Success);
-            Model = result.Data!;
+            ModelId = result.Data!;
             await ShowModelDetails();
         }
         else
@@ -141,7 +146,12 @@
 
     private async Task ShowModelDetails()
     {
-        await LCInfo.ShowModelDetails(Model.Id);
+        if(ModelId == null)
+        {
+            return;
+        }
+
+        await LCInfo.ShowModelDetails((int)ModelId);
         IsSideDrawerOpen = true;
     }
 }
