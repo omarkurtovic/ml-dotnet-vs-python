@@ -1,10 +1,7 @@
 ﻿using CSharpModelTrainerApi.LungCancerPrediction.Datasets;
 using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
-using Microsoft.ML;
-using SkiaSharp;
 using TorchSharp;
 using TorchSharp.Modules;
-using System.Timers;
 using static TorchSharp.TensorExtensionMethods;
 using static TorchSharp.torch;
 using static TorchSharp.torch.distributions;
@@ -13,36 +10,33 @@ using static TorchSharp.torch.nn.functional;
 using static TorchSharp.torch.utils;
 using static TorchSharp.torch.utils.data;
 using System.Diagnostics;
-using System;
 using SharedCL;
 using CSharpModelTrainerApi.Services;
-using CSharpModelTrainerApi.Enums;
-using SharedCL.LungCancerPrediction.Models;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class LCTrainer(PathResolver pathResolver)
     {
-        public  Result<LungCancerModel> TrainModel(LCTrainingParamsDto trainInfo, HardwareInfoService hardwareInfoService)
+        public  Result<LCDto> TrainModel(LCTrainingParamsDto trainInfo, HardwareInfoService hardwareInfoService)
         {
             if(string.IsNullOrEmpty(trainInfo.Name))
             {
-                return Result<LungCancerModel>.Failure("Ime modela ne smije biti prazno");
+                return Result<LCDto>.Failure("Ime modela ne smije biti prazno");
             }
             if(trainInfo.Language != ModelLanguageDto.CSharp)
             {
-                return Result<LungCancerModel>.Failure("Podržan je samo C# jezik");
+                return Result<LCDto>.Failure("Podržan je samo C# jezik");
             }
             if (trainInfo.Epochs < 1 || trainInfo.Epochs > 10)
             {
-                return Result<LungCancerModel>.Failure("Broj epoha mora biti između 1 i 10");
+                return Result<LCDto>.Failure("Broj epoha mora biti između 1 i 10");
             }
 
 
-            var modelDB = new LungCancerModel();
+            var modelDB = new LCDto();
             modelDB.Name = trainInfo.Name;
-            modelDB.Language = (ModelLanguage)trainInfo.Language;
-            modelDB.EpochData = new List<LungCancerModelEpochData>();
+            modelDB.Language = (ModelLanguageDto)trainInfo.Language;
+            modelDB.EpochData = new List<LCEpochDataDto>();
 
 
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
@@ -74,7 +68,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 var trainEpochData = Train(trainLoader, model, loss, optimizer);
                 var valdationEpochData = Vaildate(testLoader, model, loss);
 
-                var epochData = new LungCancerModelEpochData()
+                var epochData = new LCEpochDataDto()
                 {
                     Epoch = epoch,
                     TrainingLoss = trainEpochData.Loss,
@@ -107,7 +101,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             model.save(modelPath);
 
 
-            return Result<LungCancerModel>.Success(modelDB);
+            return Result<LCDto>.Success(modelDB);
         }
 
 

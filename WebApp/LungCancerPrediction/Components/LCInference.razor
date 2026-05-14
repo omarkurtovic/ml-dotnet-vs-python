@@ -4,11 +4,10 @@
 @using System.Globalization
 @using OmarDesignSystem
 @using SharedCL
-@using SharedCL.Shared.Models
 @using WebApp.LungCancerPrediction.ApiClients
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @using Microsoft.AspNetCore.Components.Forms
-@inject CSharpLCApiClient CSharpLungCancerApi
+@inject CSharpLCApiClient CSharpLCApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer
@@ -96,11 +95,11 @@
     private List<LCDto> Models { get; set; } = new List<LCDto>();
     private LCDto SelectedModel = null!;
 
-    private LCPredictionDto? Prediction = null;
+    private PredictionDto? Prediction = null;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await CSharpLungCancerApi.GetModelsAsync();
+        var result = await CSharpLCApi.GetModelsAsync();
         if (result.IsSuccess)
         {
             Models = result.Data!;
@@ -121,7 +120,7 @@
             return;
         }
 
-        var predResult = await CSharpLungCancerApi.PredictAsync(SelectedModel.Id, _file);
+        var predResult = await CSharpLCApi.PredictAsync(SelectedModel.Id, _file);
         if (predResult.IsSuccess)
         {
             Prediction = predResult.Data!;

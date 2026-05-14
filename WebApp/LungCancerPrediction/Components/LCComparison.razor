@@ -3,11 +3,10 @@
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using SharedCL
-@using SharedCL.Shared.Enums
 @using System.Text
 @using WebApp.LungCancerPrediction.ApiClients
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
-@inject CSharpLCApiClient LungCancerApi
+@inject CSharpLCApiClient CSharpLCApi
 @inject IApexChartService ApexChartService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -35,7 +34,7 @@
             }
             else
             {
-                <MudSelect  T="LungCancerModel" Label="Modeli" MultiSelection="true" @bind-SelectedValues="_selectedModels">
+                <MudSelect  T="LungCancerModel" Label="Modeli" MultiSelection="true" @bind-SelectedValues="SelectedModels">
                     @foreach (var model in _models)
                     {
                         <MudSelectItem T="LungCancerModel" Value="@model">@model.Name</MudSelectItem>
@@ -44,8 +43,8 @@
 
 
                 <MudSelect MultiSelectionTextFunc="@(new Func<IReadOnlyList<string>, string>(GetMultiSelectionMetricText))" T="string" Label="Metrike"
-                    MultiSelection="true" @bind-SelectedValues="_selectedMetrics">
-                    @foreach (var metric in _metrics)
+                    MultiSelection="true" @bind-SelectedValues="SelectedMetrics">
+                    @foreach (var metric in Metrics)
                     {
                         <MudSelectItem T="string" Value="@metric.Key">@metric.Value</MudSelectItem>
                     }
@@ -55,13 +54,13 @@
             }
         </MudItem>
 
-        @foreach (var metric in _selectedMetrics)
+        @foreach (var metric in SelectedMetrics)
         {
             <MudItem xs="12" Class="mt-6">
                 <ApexChart TItem="LungCancerModelEpochData"
                            Title="@((GetMetricTranslations())[metric])">
 
-                    @foreach(var model in _selectedModels)
+                    @foreach(var model in SelectedModels)
                     {
                         <ApexPointSeries TItem="LungCancerModelEpochData"
                                          Items="model.EpochData"
@@ -90,25 +89,28 @@
             return 0;
         }
     }
+
     private bool _isLoading = true;
 
     private List<LungCancerModel> _models = [];
-    private IReadOnlyCollection<LungCancerModel> _selectedModels = [];
 
-    private Dictionary<string, string> _metrics = [];
-    private IReadOnlyCollection<string> _selectedMetrics = [];
+    private IReadOnlyCollection<LungCancerModel> SelectedModels = [];
+
+    private Dictionary<string, string> Metrics = [];
+
+    private IReadOnlyCollection<string> SelectedMetrics = [];
 
     protected override async Task OnInitializedAsync()
     {
         await LoadModels();
-        _metrics = GetMetricTranslations();
+        Metrics = GetMetricTranslations();
     }
 
     private async Task LoadModels()
     {
         _isLoading = true;
-        // var result = await LungCancerApi.GetModelsAsync();
-        // _models = result.IsSuccess ? result.Data! : [];
+        var result = await CSharpLCApi.GetModelsAsync();
+        _models = result.IsSuccess ? result.Data! : [];
         _isLoading = false;
     }
 

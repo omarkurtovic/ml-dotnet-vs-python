@@ -1,11 +1,8 @@
-﻿using CSharpModelTrainerApi.LungCancerPrediction.Datasets;
-using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
+﻿using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
 using CSharpModelTrainerApi.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SharedCL;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using TorchSharp;
 using static TorchSharp.torch;
@@ -55,9 +52,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     NormalScore = prediction[0, 2].item<float>()
                 };
             }
-
-
-            
         }
 
         private async Task<LCPredictionDto> PredictWithOnnx(LCDto dbModel, IFormFile file)

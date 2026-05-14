@@ -3,12 +3,10 @@
 @using MudBlazor
 @using OmarDesignSystem
 @using SharedCL
-@using SharedCL.Shared.Enums
-@using SharedCL.Shared.Models
 @using WebApp.LungCancerPrediction.ApiClients
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
-@inject CSharpLCApiClient CSharpLungCancerApi
-@inject PythonLCApiClient PythonLungCancerApi
+@inject CSharpLCApiClient CSharpLCApi
+@inject PythonLCApiClient PythonLCApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer
@@ -91,7 +89,7 @@
 
     private MudForm Form = null!;
 
-    private LCTrainingParamsDto TrainingParams = new();
+    private TrainingParamsDto TrainingParams = new();
 
     private LCDto Model { get; set; } = null!;
 
@@ -103,7 +101,7 @@
 
     protected override void OnInitialized()
     {
-        TrainingParams = new LCTrainingParamsDto()
+        TrainingParams = new TrainingParamsDto()
         {
             Name = $"RakPlucaModel_{DateTime.Now:yyyyMMdd_HHmmss}",
             Epochs = 5,
@@ -122,11 +120,11 @@
         Result<LCDto> result;
         if (TrainingParams.Language == ModelLanguageDto.CSharp)
         {
-            result = await CSharpLungCancerApi.TrainModelAsync(TrainingParams);
+            result = await CSharpLCApi.TrainModelAsync(TrainingParams);
         }
         else
         {
-            result = await PythonLungCancerApi.TrainModelAsync(TrainingParams);
+            result = await PythonLCApi.TrainModelAsync(TrainingParams);
         }
 
         if (result.IsSuccess)

@@ -1,5 +1,4 @@
 ﻿using SharedCL;
-using SharedCL.Models;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -15,7 +14,7 @@ namespace WebApp.LungCancerPrediction.ApiClients
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        public async Task<Result<LCDto>> TrainModelAsync(LCTrainingParamsDto trainDto)
+        public async Task<Result<LCDto>> TrainModelAsync(TrainingParamsDto trainDto)
         {
             try
             {

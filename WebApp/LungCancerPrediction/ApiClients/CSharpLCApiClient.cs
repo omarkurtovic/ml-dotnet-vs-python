@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
-using SharedCL.LungCancerPrediction.Dtos;
-using SharedCL.LungCancerPrediction.Models;
-using SharedCL.Models;
+using SharedCL;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
@@ -11,28 +9,149 @@ namespace WebApp.LungCancerPrediction.ApiClients
     {
         private readonly HttpClient _httpClient = httpClient;
 
-        public async Task<Result<LCModelsPageDataDto>> GetModelsAsync(LCModelsGridOptionsDto options)
+        public async Task<Result<List<LCDto>>> GetModelsAsync()
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("LungCancer/Search", options);
+                var response = await _httpClient.GetAsync("LungCancer/Models");
                 if (response.IsSuccessStatusCode)
                 {
-                    var models = await response.Content.ReadFromJsonAsync<LCModelsPageDataDto>() ?? new();
-                    return Result<LCModelsPageDataDto>.Success(models);
+                    var models = await response.Content.ReadFromJsonAsync<List<LCDto>>() ?? new();
+                    return Result<List<LCDto>>.Success(models);
                 }
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    return Result<LCModelsPageDataDto>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                    return Result<List<LCDto>>.Failure("Unauthorized access.", FailureReason.Unauthorized);
                 }
-
-                Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
-                return Result<LCModelsPageDataDto>.Failure("Failed to fetch models    .");
+                Console.WriteLine($"Error fetching model names! Status Code: {response.StatusCode}!");
+                return Result<List<LCDto>>.Failure("Failed to fetch model names.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return Result<LCModelsPageDataDto>.Failure("An error occurred while fetching models.");
+                return Result<List<LCDto>>.Failure("An error occurred while fetching model names.");
+            }
+        }
+
+        public async Task<Result<LCDto>> GetModelAsync(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"LungCancer/Models/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var model = await response.Content.ReadFromJsonAsync<LCDto>() ?? new LCDto();
+                    return Result<LCDto>.Success(model);
+                }
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return Result<LCDto>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                }
+
+                Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
+                return Result<LCDto>.Failure("Failed to fetch models    .");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Result<LCDto>.Failure("An error occurred while fetching models.");
+            }
+        }
+
+        public async Task<Result<List<LCBasic>>> GetModelsBasicAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("LungCancer/Models/Basic");
+                if (response.IsSuccessStatusCode)
+                {
+                    var models = await response.Content.ReadFromJsonAsync<List<LCBasic>>() ?? new();
+                    return Result<List<LCBasic>>.Success(models);
+                }
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return Result<List<LCBasic>>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                }
+                Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
+                return Result<List<LCBasic>>.Failure("Failed to fetch models    .");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Result<List<LCBasic>>.Failure("An error occurred while fetching models.");
+            }
+        }
+
+        public async Task<Result<LCBasic>> GetModelBasicAsync(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"LungCancer/Models/Basic/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var model = await response.Content.ReadFromJsonAsync<LCBasic>() ?? new LCBasic();
+                    return Result<LCBasic>.Success(model);
+                }
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return Result<LCBasic>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                }
+                Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
+                return Result<LCBasic>.Failure("Failed to fetch models    .");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Result<LCBasic>.Failure("An error occurred while fetching models.");
+            }
+        }
+
+        public async Task<Result<LCGridPageDataDto>> SearchModelsAsync(LCGridPageDataDto options)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("LungCancer/Models/Search", options);
+                if (response.IsSuccessStatusCode)
+                {
+                    var models = await response.Content.ReadFromJsonAsync<LCGridPageDataDto>() ?? new();
+                    return Result<LCGridPageDataDto>.Success(models);
+                }
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return Result<LCGridPageDataDto>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                }
+
+                Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
+                return Result<LCGridPageDataDto>.Failure("Failed to fetch models    .");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Result<LCGridPageDataDto>.Failure("An error occurred while fetching models.");
+            }
+        }
+
+        public async Task<Result<LCInfo>> GetModelInfoAsync(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"LungCancer/Models/Info/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var model = await response.Content.ReadFromJsonAsync<LCInfo>();
+                    return Result<LCInfo>.Success(model!);
+                }
+                else
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
+                    return Result<LCInfo>.Failure("");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
+                return Result<LCInfo>.Failure("");
             }
         }
 
@@ -58,30 +177,6 @@ namespace WebApp.LungCancerPrediction.ApiClients
             {
                 Console.WriteLine(ex.Message);
                 return Result<List<LCDto>>.Failure("An error occurred while fetching models.");
-            }
-        }
-
-        public async Task<Result<LCMoreInfoDto>> GetModelDetailsAsync(int id)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync($"LungCancer/GetDetailsById?id={id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var model = await response.Content.ReadFromJsonAsync<LCMoreInfoDto>();
-                    return Result<LCMoreInfoDto>.Success(model!);
-                }
-                else
-                {
-                    var errorDetails = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<LCMoreInfoDto>.Failure("");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<LCMoreInfoDto>.Failure("");
             }
         }
 
@@ -144,7 +239,8 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 return Result<LCDto>.Failure("");
             }
         }
-        public async Task<Result> SaveModelAsync(LungCancerModel model)
+
+        public async Task<Result> SaveModelAsync(LCDto model)
         {
             try
             {

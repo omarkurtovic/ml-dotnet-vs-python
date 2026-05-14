@@ -3,7 +3,7 @@
 @using SharedCL
 @using WebApp.LungCancerPrediction.ApiClients
 @inject ISnackbar Snackbar
-@inject CSharpLCApiClient LungCancerApi
+@inject CSharpLCApiClient CSharpLCApi
 
 @if(Model != null)
 {
@@ -102,7 +102,7 @@
 
     [Parameter] public EventCallback Close { get; set; }
 
-    public LCMoreInfoDto? Model { get; set; }
+    public SharedCL.LCInfo? Model { get; set; }
 
     public async Task ShowModelDetails(int id)
     {
@@ -112,7 +112,7 @@
             return;
         }
 
-        var result = await LungCancerApi.GetModelDetailsAsync(id);
+        var result = await CSharpLCApi.GetModelDetailsAsync(id);
         if (result.IsSuccess)
         {
             Model = result.Data;

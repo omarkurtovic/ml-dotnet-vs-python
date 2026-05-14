@@ -10,8 +10,8 @@ namespace CSharpModelTrainerApi.Database
         {
         }
         public virtual DbSet<SAModel> SentimentAnalysisModels { get; set; }
-        public virtual DbSet<LCModel> LungCancerModels { get; set; }
-        public virtual DbSet<LCEpochData> LungCancerModelEpochData { get; set; }
+        public virtual DbSet<LCModel> LCModels { get; set; }
+        public virtual DbSet<LCEpochData> LCEpochData { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

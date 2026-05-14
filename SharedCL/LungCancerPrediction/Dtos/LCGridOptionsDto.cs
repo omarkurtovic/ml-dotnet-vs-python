@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SharedCL
 {
-    public class LCModelsGridOptionsDto
+    public class LCGridOptionsDto
     {
         public bool IsReoccuring { get; set; } = false;
         public int PageSize { get; set; } = 10;

@@ -1,10 +1,8 @@
 ﻿using CSharpModelTrainerApi.Enums;
 using CSharpModelTrainerApi.LungCancerPrediction.Services;
-using CSharpModelTrainerApi.SentimentAnalysis.Services;
 using CSharpModelTrainerApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using SharedCL;
-using SharedCL.LungCancerPrediction.Dtos;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 {
@@ -23,21 +21,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         private PathResolver PathResolver { get; set; } = pathResolver;
         private HardwareInfoService HardwareInfoService { get; set; } = hardwareInfoService;
 
-        [HttpPost]
-        [Route("Search")]
-        public async Task<IActionResult> GetModels([FromBody] LCModelsGridOptionsDto options)
-        {
-            var result = await LungCancerModelRepository.GetModelsPageData(options);
-            if (!result.IsSuccess)
-            {
-                return BadRequest();
-            }
-            else
-            {
-                return Ok(result.Data);
-            }
-        }
-
         [HttpGet]
         [Route("Models")]
         public async Task<IActionResult> GetModels()
@@ -54,10 +37,74 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         }
 
         [HttpGet]
-        [Route("GetDetailsById")]
-        public async Task<IActionResult> GetDetailsById([FromQuery] int id)
+        [Route("Models/{id}")]
+        public async Task<IActionResult> GetModel([FromRoute] int id)
         {
-            var modelResult = await LungCancerModelRepository.GetDetailsById(id);
+            var modelResult = await LungCancerModelRepository.GetModel(id);
+            if (!modelResult.IsSuccess)
+            {
+                return BadRequest();
+            }
+            var model = modelResult.Data;
+            if (model == null)
+            {
+                return NotFound();
+            }
+            return Ok(model);
+        }
+
+        [HttpGet]
+        [Route("Models/Basic")]
+        public async Task<IActionResult> GetModelsBasic()
+        {
+            var result = await LungCancerModelRepository.GetModelsBasic();
+            if (!result.IsSuccess)
+            {
+                return BadRequest();
+            }
+            else
+            {
+                return Ok(result.Data);
+            }
+        }
+
+        [HttpGet]
+        [Route("Models/Basic/{id}")]
+        public async Task<IActionResult> GetModelBasic([FromRoute] int id)
+        {
+            var modelResult = await LungCancerModelRepository.GetModelBasic(id);
+            if (!modelResult.IsSuccess)
+            {
+                return BadRequest();
+            }
+            var model = modelResult.Data;
+            if (model == null)
+            {
+                return NotFound();
+            }
+            return Ok(model);
+        }
+
+        [HttpPost]
+        [Route("Models/Search")]
+        public async Task<IActionResult> GetModels([FromBody] LCGridOptionsDto options)
+        {
+            var result = await LungCancerModelRepository.GetModelsSearch(options);
+            if (!result.IsSuccess)
+            {
+                return BadRequest();
+            }
+            else
+            {
+                return Ok(result.Data);
+            }
+        }
+
+        [HttpGet]
+        [Route("Models/Info/{id}")]
+        public async Task<IActionResult> GetModelInfo([FromRoute] int id)
+        {
+            var modelResult = await LungCancerModelRepository.GetModelInfo(id);
             if (!modelResult.IsSuccess)
             {
                 return BadRequest();
@@ -74,7 +121,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         [Route("Predict")]
         public async Task<IActionResult> Predict([FromQuery] int id, [FromForm] IFormFile file)
         {
-            var modelResult = await LungCancerModelRepository.GetById(id);
+            var modelResult = await LungCancerModelRepository.GetModel(id);
             if (!modelResult.IsSuccess)
             {
                 return BadRequest();
@@ -91,7 +138,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             return Ok(prediction);
         }
 
-
         [HttpPost]
         [Route("Train")]
         public async Task<IActionResult> Train([FromBody] LCTrainingParamsDto trainParams)
@@ -102,12 +148,12 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return BadRequest(modelRes.Message);
             }
             await LungCancerModelRepository.Save(modelRes.Data!);
-            return Ok(LungCancerModelRepository.GetById(modelRes.Data!.Id).Result.Data);
+            return Ok(LungCancerModelRepository.GetModelInfo(modelRes.Data!.Id).Result.Data);
         }
 
         [HttpPost]
         [Route("Save")]
-        public async Task<IActionResult> Save([FromBody] LCWithEpochs model)
+        public async Task<IActionResult> Save([FromBody] LCDto model)
         {
             var saveResult = await LungCancerModelRepository.Save(model);
             if (!saveResult.IsSuccess)
@@ -120,7 +166,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         [Route("Delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
         {
-            var modelResult = await LungCancerModelRepository.GetDetailsById(id);
+            var modelResult = await LungCancerModelRepository.GetModelBasic(id);
             if (!modelResult.IsSuccess)
             {
                 return BadRequest();

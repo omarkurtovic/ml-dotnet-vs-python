@@ -4,9 +4,9 @@ using System.Text;
 
 namespace SharedCL
 {
-    public class LCModelsPageDataDto
+    public class LCGridPageDataDto
     {
-        public List<LCDto> Models { get; set; } = [];
+        public List<LCBasic> Models { get; set; } = new List<LCBasic>();
         public int TotalItems { get; set; }
     }
 }
