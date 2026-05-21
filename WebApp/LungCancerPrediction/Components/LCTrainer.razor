@@ -122,26 +122,52 @@
         if (!Form.IsValid)
             return;
 
-        Result<int> result;
+
         if (TrainingParams.Language == ModelLanguageDto.CSharp)
         {
-            result = await CSharpLCApi.TrainModelAsync(TrainingParams);
+            await TrainCSharpModel();
         }
         else
         {
-            result = await PythonLCApi.TrainModelAsync(TrainingParams);
+            await TrainPythonModel();
         }
 
-        if (result.IsSuccess)
-        {
-            Snackbar.Add("Model je uspešno treniran!", Severity.Success);
-            ModelId = result.Data!;
-            await ShowModelDetails();
-        }
-        else
+    }
+
+    private async Task TrainPythonModel()
+    {
+        var trainingResult = await PythonLCApi.TrainModelAsync(TrainingParams);
+        if (!trainingResult.IsSuccess)
         {
             Snackbar.Add("Greška prilikom treniranja modela.", Severity.Error);
+            return;
         }
+
+        var modelDto = trainingResult.Data!;
+        var saveResult = await CSharpLCApi.SaveModelAsync(modelDto);
+        if (!saveResult.IsSuccess)
+        {
+            Snackbar.Add("Model je treniran, ali došlo je do greške prilikom spremanja modela.", Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Model je uspešno treniran i spremljen!", Severity.Success);
+        ModelId = saveResult.Data;
+        await ShowModelDetails();
+    }
+
+    private async Task TrainCSharpModel()
+    {
+        var result = await CSharpLCApi.TrainModelAsync(TrainingParams);
+        if (!result.IsSuccess)
+        {
+            Snackbar.Add("Greška prilikom treniranja modela.", Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Model je uspešno treniran i spremljen!", Severity.Success);
+        ModelId = result.Data;
+        await ShowModelDetails();
     }
 
     private async Task ShowModelDetails()

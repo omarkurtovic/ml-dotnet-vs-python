@@ -163,7 +163,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             var saveResult = await LungCancerModelRepository.Save(model);
             if (!saveResult.IsSuccess)
                 return BadRequest(saveResult.Message);
-            return Ok();
+            return Ok(saveResult.Data);
         }
 
         [HttpDelete]

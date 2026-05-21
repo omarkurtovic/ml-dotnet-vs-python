@@ -24,7 +24,6 @@
                 <MudCardContent Class="pa-6">
                     <MudForm @ref="_form">
                         <MudStack Spacing="4">
-                    
                             <MudPaper Outlined="true" Elevation="0" Class="pa-4" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: transparent;">
                                 <MudStack AlignItems="AlignItems.Center" Spacing="3">
                             
@@ -63,9 +62,15 @@
 
                             @if (Prediction != null)
                             {
-                                <MudAlert Variant="Variant.Filled" Dense="true" Severity="@GetPredictionSeverity(Prediction.PredictedLabel)" Class="mt-2">
-                                    <b>Rezultat: @Prediction.PredictedLabel</b>
-                                </MudAlert>
+                                <MudStack Row="false" AlignItems="AlignItems.Center">
+
+                                    <MudAlert Variant="Variant.Filled" Dense="true" Severity="@GetPredictionSeverity(Prediction.PredictedLabel)" Class="mt-2">
+                                        <b>Rezultat: @Prediction.PredictedLabel</b>
+                                    </MudAlert>
+                                    <MudChip T="string" Icon="@Icons.Material.Filled.Timer" Size="Size.Small">
+                                        @Prediction.PredictionTimeInMiliSeconds milisekundi
+                                    </MudChip>
+                                </MudStack>
                             }
                     
                         </MudStack>

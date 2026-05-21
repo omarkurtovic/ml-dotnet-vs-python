@@ -14,7 +14,7 @@ namespace WebApp.LungCancerPrediction.ApiClients
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        public async Task<Result<int>> TrainModelAsync(LCTrainingParamsDto trainDto)
+        public async Task<Result<LCDto>> TrainModelAsync(LCTrainingParamsDto trainDto)
         {
             try
             {
@@ -27,20 +27,20 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    var performance = await response.Content.ReadFromJsonAsync<int>();
-                    return Result<int>.Success(performance!);
+                    var modelDto = await response.Content.ReadFromJsonAsync<LCDto>();
+                    return Result<LCDto>.Success(modelDto!);
                 }
                 else
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<int>.Failure("");
+                    return Result<LCDto>.Failure("");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<int>.Failure("");
+                return Result<LCDto>.Failure("");
             }
         }
     }

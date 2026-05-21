@@ -2,11 +2,11 @@
 from pydantic import BaseModel
 from enum import IntEnum
 
-class ModelLanguage(IntEnum):
+class ModelLanguageDto(IntEnum):
     CSharp = 0
     Python = 1
 
-class LungCancerModelEpochData(BaseModel):
+class LCEpochDataDto(BaseModel):
     epoch: int
     trainingLoss: float = None
     trainingAccuracy: float = None
@@ -28,16 +28,16 @@ class LungCancerModelEpochData(BaseModel):
     weightedRecall: float = None
     weightedF1Score: float = None
 
-class LungCancerModel(BaseModel):
+class LCDto(BaseModel):
     name: str
-    language: ModelLanguage
-    epochData: list[LungCancerModelEpochData] = []
+    language: ModelLanguageDto
+    epochData: list[LCEpochDataDto] = []
     trainingTimeInSeconds: int
     hardwareInfo: str
 
 
-class LungCancerTrainingParams(BaseModel):
-    modelName: str
-    modelLanguage: ModelLanguage
+class LCTrainingParamsDto(BaseModel):
+    name: str
+    language: ModelLanguageDto
     epochs: int
     withFlips: bool

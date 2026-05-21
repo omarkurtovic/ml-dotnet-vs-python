@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\OmarDesignSystem\OmarDesignSystem\OmarDesignSystem.csproj" />
+    <ProjectReference Include="..\..\OmarDesignSystem\OmarDesignSystem\OmarDesignSystem.csproj" />
     <ProjectReference Include="..\ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj" />
     <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
   </ItemGroup>

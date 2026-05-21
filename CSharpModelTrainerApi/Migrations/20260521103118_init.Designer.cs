@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CSharpModelTrainerApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260514114650_init")]
+    [Migration("20260521103118_init")]
     partial class init
     {
         /// <inheritdoc />

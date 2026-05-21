@@ -190,6 +190,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return Result<LCInfoDto>.Success(new LCInfoDto
             {
                 Name = model.Name,
+                NumberOfEpochs = model.EpochData.Count,
                 Language = (ModelLanguageDto)model.Language,
                 TrainingTimeInSeconds = model.TrainingTimeInSeconds,
                 HardwareInfo = model.HardwareInfo,

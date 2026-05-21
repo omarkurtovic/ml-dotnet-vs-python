@@ -215,7 +215,7 @@ namespace WebApp.LungCancerPrediction.ApiClients
             }
         }
 
-        public async Task<Result> SaveModelAsync(LCDto model)
+        public async Task<Result<int>> SaveModelAsync(LCDto model)
         {
             try
             {
@@ -227,20 +227,21 @@ namespace WebApp.LungCancerPrediction.ApiClients
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return Result.Success();
+                    var modelId = await response.Content.ReadFromJsonAsync<int>();
+                    return Result<int>.Success(modelId!);
                 }
                 else
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result.Failure("");
+                    return Result<int>.Failure("");
 
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result.Failure("");
+                return Result<int>.Failure("");
             }
         }
 

@@ -15,7 +15,7 @@ from keras.src.legacy.preprocessing.image import ImageDataGenerator
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
 import time
-from .models import ModelLanguage, LungCancerModel, LungCancerModelEpochData, LungCancerTrainingParams
+from .models import ModelLanguageDto, LCDto, LCEpochDataDto, LCTrainingParamsDto
 from .hardware_utils import get_optimal_hardware_info
 
 router = APIRouter()
@@ -26,11 +26,11 @@ directory = repo_root.joinpath('data/lung-cancer-prediction')
 
 
 @router.post("/Python/LungCancer/Train")
-def train(train_data: LungCancerTrainingParams):
-    if(train_data.modelName == ""):
+def train(train_data: LCTrainingParamsDto):
+    if(train_data.name == ""):
         raise HTTPException(status_code=400, detail="Naziv modela ne smije biti prazan")
     
-    if(train_data.modelLanguage != ModelLanguage.Python):
+    if(train_data.language != ModelLanguageDto.Python):
         raise HTTPException(status_code=400, detail="Jezik modela mora biti Python")
 
     if(train_data.epochs < 1 or train_data.epochs > 10):
@@ -115,16 +115,16 @@ def train(train_data: LungCancerTrainingParams):
     end_time = time.perf_counter()
 
 
-    dbModel = LungCancerModel(
-        name=train_data.modelName,
-        language=ModelLanguage.Python,
+    dbModel = LCDto(
+        name=train_data.name,
+        language=ModelLanguageDto.Python,
         epochData=[],
         trainingTimeInSeconds=int(end_time - start_time),
         hardwareInfo = get_optimal_hardware_info()
     )
 
     for epoch in range(train_data.epochs):
-        epoch_data = LungCancerModelEpochData(
+        epoch_data = LCEpochDataDto(
         epoch=epoch,
         trainingLoss=history.history['loss'][epoch],
         trainingAccuracy=history.history['accuracy'][epoch],
@@ -167,7 +167,7 @@ def train(train_data: LungCancerTrainingParams):
 
     input_signature = [tf.TensorSpec([None, img_size, img_size, 1], tf.float32, name='x')]
     onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature, opset=13)
-    onnx.save(onnx_model, model_dir / f"{train_data.modelName}.onnx")
+    onnx.save(onnx_model, model_dir / f"{train_data.name}.onnx")
 
     return dbModel
 

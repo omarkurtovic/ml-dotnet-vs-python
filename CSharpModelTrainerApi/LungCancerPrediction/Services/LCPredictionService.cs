@@ -4,6 +4,7 @@ using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SharedCL;
 using SixLabors.ImageSharp.Processing;
+using System.Diagnostics;
 using TorchSharp;
 using static TorchSharp.torch;
 using static TorchSharp.torch.nn;
@@ -42,14 +43,19 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             
             using (torch.no_grad())
             {
+                Stopwatch stopWatch = Stopwatch.StartNew();
+
                 var output = model.call(image);
                 var prediction = output.softmax(dim: 1);
+
+                stopWatch.Stop();
 
                 return new LCPredictionDto
                 {
                     BenignScore = prediction[0, 0].item<float>(),
                     MalignantScore = prediction[0, 1].item<float>(),
-                    NormalScore = prediction[0, 2].item<float>()
+                    NormalScore = prediction[0, 2].item<float>(),
+                    PredictionTimeInMiliSeconds = (int)stopWatch.Elapsed.TotalMilliseconds
                 };
             }
         }
@@ -75,14 +81,19 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var tensor = new DenseTensor<float>(floatData, [1, imgSize, imgSize, 1]);
             var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, tensor) };
 
+            var stopWatch = Stopwatch.StartNew();
+
             using var results = session.Run(inputs);
             var scores = results[0].AsEnumerable<float>().ToArray();
+
+            stopWatch.Stop();
 
             return new LCPredictionDto
             {
                 BenignScore = scores[0],
                 MalignantScore = scores[1],
-                NormalScore = scores[2]
+                NormalScore = scores[2],
+                PredictionTimeInMiliSeconds = (int)stopWatch.Elapsed.TotalMilliseconds
             };
         }
     }
