@@ -22,8 +22,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ml-dotnet-vs-python.Service
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpModelTrainerApi", "CSharpModelTrainerApi\CSharpModelTrainerApi.csproj", "{5AC5EA44-A926-A861-55D5-052BD577489B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OmarDesignSystem", "..\OmarDesignSystem\OmarDesignSystem\OmarDesignSystem.csproj", "{694A2257-F6D1-7A6C-8C28-5927BA4EBA5C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,10 +50,6 @@ Global
 		{5AC5EA44-A926-A861-55D5-052BD577489B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AC5EA44-A926-A861-55D5-052BD577489B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AC5EA44-A926-A861-55D5-052BD577489B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{694A2257-F6D1-7A6C-8C28-5927BA4EBA5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{694A2257-F6D1-7A6C-8C28-5927BA4EBA5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{694A2257-F6D1-7A6C-8C28-5927BA4EBA5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{694A2257-F6D1-7A6C-8C28-5927BA4EBA5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

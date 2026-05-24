@@ -17,10 +17,10 @@
   <ItemGroup>
     <PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
     <PackageReference Include="MudBlazor" Version="9.4.0" />
+    <PackageReference Include="OmarDesignSystem" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\OmarDesignSystem\OmarDesignSystem\OmarDesignSystem.csproj" />
     <ProjectReference Include="..\ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj" />
     <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
   </ItemGroup>
