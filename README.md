@@ -25,7 +25,7 @@ Supported Machine Learning Domains:
 
 #### Live Demo
 
-Check out the live demo here: [ml-dotnet-vs-python](http://49.13.166.156/lungCancer)
+Check out the live demo here: [ml-dotnet-vs-python](http://49.13.166.156)
 
 
 
