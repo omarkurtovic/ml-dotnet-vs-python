@@ -2,14 +2,11 @@
 @inherits LayoutComponentBase
 @inject IServiceProvider ServiceProvider
 
-@* Required *@
-<MudThemeProvider @bind-IsDarkMode="@DarkMode" Theme="ThemeService.Theme" />
+<MudThemeProvider @bind-IsDarkMode="@DarkMode" Theme="ThemeService.Theme"  />
 <MudPopoverProvider />
 
-@* Needed for dialogs *@
 <MudDialogProvider />
 
-@* Needed for snackbars *@
 <MudSnackbarProvider />
 <MudLayout>
     <MudAppBar Elevation="1">
@@ -19,6 +16,7 @@
         <MudIconButton Icon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
                                     Color="MudBlazor.Color.Default"
                                     OnClick="ThemeChanged" />
+        <LanguageToggle />
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
         <MudDrawerHeader>

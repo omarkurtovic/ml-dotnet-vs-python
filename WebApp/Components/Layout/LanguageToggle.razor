@@ -1,0 +1,15 @@
+﻿@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<MudMenu Icon="@Icons.Material.Filled.Language" Color="MudBlazor.Color.Default">
+    <MudMenuItem OnClick="@(() => ChangeLanguage("en-US"))">English</MudMenuItem>
+    <MudMenuItem OnClick="@(() => ChangeLanguage("bs-BA"))">Bosanski</MudMenuItem>
+</MudMenu>
+
+@code {
+    private async Task ChangeLanguage(string culture)
+    {
+        await JS.InvokeVoidAsync("setCultureCookie", culture);
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

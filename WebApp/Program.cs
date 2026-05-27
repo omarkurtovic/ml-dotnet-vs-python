@@ -1,12 +1,22 @@
 using ApexCharts;
 using Microsoft.AspNetCore.HttpOverrides;
 using MudBlazor.Services;
+using MudBlazor.Translations;
 using WebApp.Components;
 using WebApp.LungCancerPrediction.ApiClients;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
+builder.AddServiceDefaults(); 
+
+var supportedCultures = new[] { "en-US", "bs-BA" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+builder.Services.AddLocalization();
+builder.Services.AddMudTranslations();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -33,6 +43,8 @@ builder.Services.AddHttpClient<PythonLCApiClient>(client =>
 #pragma warning restore EXTEXP0001
 
 var app = builder.Build();
+
+app.UseRequestLocalization(localizationOptions);
 
 app.MapDefaultEndpoints();
 

@@ -1,11 +1,14 @@
 ﻿@page "/"
 @using MudBlazor
-@using OmarDesignSystem
+@using OmarDesignSystem 
+@using Microsoft.Extensions.Localization
+@using WebApp.Resources;
+@inject IStringLocalizer<SharedResource> Localizer
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mb-16 mt-8">
     
     <MudStack AlignItems="AlignItems.Center" Class="mb-12">
-        <MainHeading>Analiza Raka Pluća</MainHeading>
+        <MainHeading>@Localizer["Title"]</MainHeading>
         <BodyText Style="max-width: 700px;">
             Ova platforma služi za treniranje, analizu i direktnu usporedbu modela mašinskog učenja razvijenih u C# i Python programskim jezicima koristeći IQOTHNCCD CT dijagnostiku.
         </BodyText>
