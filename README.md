@@ -1,15 +1,7 @@
 ## C# vs. Python: Machine Learning Architecture
 
 A web application built to benchmark and compare machine learning model training and inference between the .NET (C#) and Python ecosystems.
-Developed as part of a Bachelor's Thesis focusing on Computer Vision.
-
-Supported Machine Learning Domains:
-
-- Computer Vision : Lung Cancer image classification using Convolutional Neural Networks (CNNs).
-
-- Natural Language Processing : Sentiment Analysis on text data using various classification algorithms.
-
-
+Developed as part of a Bachelor's Thesis focusing on Computer Vision. The program is focused on a computer vision task of Lung Cancer detection.
 
 #### Features
 
@@ -21,13 +13,9 @@ Supported Machine Learning Domains:
 
 - Persistent Storage: All model metadata is tracked and stored in a unified SQLite database.
 
-
-
 #### Live Demo
 
 Check out the live demo here: [ml-dotnet-vs-python](http://49.13.166.156)
-
-
 
 #### Tech Stack
 
