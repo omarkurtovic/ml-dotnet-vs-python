@@ -25,9 +25,13 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="LungCancerPrediction\Datasets\lc_train_dataset.py" />
     <Compile Include="LungCancerPrediction\hardware_utils.py" />
+    <Compile Include="LungCancerPrediction\Services\lc_trainer.py" />
     <Compile Include="LungCancerPrediction\lung_cancer_prediction_model_trainer.py" />
     <Compile Include="LungCancerPrediction\models.py" />
+    <Compile Include="LungCancerPrediction\Services\path_resolver.py" />
+    <Compile Include="LungCancerPrediction\Services\training_helper.py" />
     <Compile Include="LungCancerPrediction\__init__.py" />
     <Compile Include="main.py" />
   </ItemGroup>
@@ -37,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="LungCancerPrediction\" />
+    <Folder Include="LungCancerPrediction\Datasets\" />
+    <Folder Include="LungCancerPrediction\Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

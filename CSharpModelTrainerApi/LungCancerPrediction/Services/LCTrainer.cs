@@ -21,23 +21,21 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         {
             if(string.IsNullOrEmpty(trainInfo.Name))
             {
-                return Result<LCDto>.Failure("Ime modela ne smije biti prazno");
+                return Result<LCDto>.Failure("Naziv modela ne smije biti prazan");
             }
             if(trainInfo.Language != ModelLanguageDto.CSharp)
             {
-                return Result<LCDto>.Failure("Podržan je samo C# jezik");
+                return Result<LCDto>.Failure("Jezik modela mora biti C#");
             }
             if (trainInfo.Epochs < 1 || trainInfo.Epochs > 10)
             {
                 return Result<LCDto>.Failure("Broj epoha mora biti između 1 i 10");
             }
 
-
             var modelDB = new LCDto();
             modelDB.Name = trainInfo.Name;
             modelDB.Language = (ModelLanguageDto)trainInfo.Language;
             modelDB.EpochData = new List<LCEpochDataDto>();
-
 
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
             torch.set_default_device(defaultDevice);
