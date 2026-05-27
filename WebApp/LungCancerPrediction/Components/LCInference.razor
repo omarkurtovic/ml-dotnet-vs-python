@@ -1,0 +1,179 @@
+﻿@page "/inference"
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using System.Globalization
+@using OmarDesignSystem
+@using SharedCL
+@using WebApp.LungCancerPrediction.ApiClients
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Microsoft.AspNetCore.Components.Forms
+@inject CSharpLCApiClient CSharpLCApi
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@rendermode InteractiveServer
+
+<PageTitle>Rak pluća </PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mb-16 mt-8">
+    <MudGrid Spacing="2">
+        <MudItem xs="12">
+            <PageTop Title="Analiza Slike"></PageTop>
+        </MudItem>
+        <MudItem xs="12">
+            <MudCard Elevation="1">
+                <MudCardContent Class="pa-6">
+                    <MudForm @ref="_form">
+                        <MudStack Spacing="4">
+                            <MudPaper Outlined="true" Elevation="0" Class="pa-4" Style="border: 2px dashed var(--mud-palette-lines-default); background-color: transparent;">
+                                <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                            
+                                    @if (!string.IsNullOrWhiteSpace(_base64))
+                                    {
+                                        <MudImage Src="@_base64" Alt="CT Scan Preview" Height="180" Elevation="2" Class="rounded-lg" ObjectFit="ObjectFit.Cover" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" Style="opacity: 0.5;" />
+                                        <BodyText>Odaberite CT snimak pluća</BodyText>
+                                    }
+
+                                    <MudFileUpload T="IBrowserFile" @bind-Files="_file" @bind-Files:after="UploadImage"
+                                                   Required="true" RequiredError="Slika je obavezna!"
+                                                   Accept=".png,.jpg,.jpeg">
+                                        <CustomContent>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       OnClick="@context.OpenFilePickerAsync"
+                                                       StartIcon="@Icons.Material.Filled.CloudUpload">
+                                                @(_file == null ? "Pretraži fajlove" : "Promijeni sliku")
+                                            </MudButton>
+                                        </CustomContent>
+                                    </MudFileUpload>
+                                </MudStack>
+                            </MudPaper>
+
+                            <MudSelect T="LCBasicDto" Label="Model za analizu" @bind-Value="SelectedModel"
+                                       Required="true" RequiredError="Model je obavezan!" Clearable="true" Variant="Variant.Outlined">
+                                @foreach (var item in Models)
+                                {
+                                    <MudSelectItem Value="@item">@item.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            @if (Prediction != null)
+                            {
+                                <MudStack Row="false" AlignItems="AlignItems.Center">
+
+                                    <MudAlert Variant="Variant.Filled" Dense="true" Severity="@GetPredictionSeverity(Prediction.PredictedLabel)" Class="mt-2">
+                                        <b>Rezultat: @Prediction.PredictedLabel</b>
+                                    </MudAlert>
+                                    <MudChip T="string" Icon="@Icons.Material.Filled.Timer" Size="Size.Small">
+                                        @Prediction.PredictionTimeInMiliSeconds milisekundi
+                                    </MudChip>
+                                </MudStack>
+                            }
+                    
+                        </MudStack>
+                    </MudForm>
+                </MudCardContent>
+
+                <MudCardActions Class="pa-6 pt-0" Style="justify-content: center;">
+                    <LoadingButton Color="@Color.Primary"
+                                   Variant="@Variant.Filled"
+                                   OnClick="Predict"
+                                   LoadingText="Analiziranje...">
+                        Analiziraj Sliku
+                    </LoadingButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+
+@code {
+
+    private MudForm _form = null!;
+    private IBrowserFile? _file = null;
+    private string _base64 = string.Empty;
+
+    private List<LCBasicDto> Models { get; set; } = new List<LCBasicDto>();
+    private LCBasicDto SelectedModel = null!;
+
+    private LCPredictionDto? Prediction = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await CSharpLCApi.GetModelsBasicAsync();
+        if (result.IsSuccess)
+        {
+            Models = result.Data!;
+        }
+        else
+        {
+            Snackbar.Add("Greška prilikom učitavanja modela!", Severity.Error);
+        }
+        await base.OnInitializedAsync();
+    }
+
+    private async Task Predict()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        var predResult = await CSharpLCApi.PredictAsync(SelectedModel.Id, _file);
+        if (predResult.IsSuccess)
+        {
+            Prediction = predResult.Data!;
+
+        }
+        else
+        {
+            Snackbar.Add("Greška prilikom analiziranja!", Severity.Error);
+        }
+    }
+
+    private async Task UploadImage()
+    {
+        if (_file == null)
+        {
+            _base64 = string.Empty;
+            StateHasChanged();
+            return;
+        }
+        if (_file.Size > 5242880)
+        {
+            Snackbar.Add("Veličina fajla prevelika! (preko 5MB)");
+            return;
+        }
+
+        using var stream = _file.OpenReadStream(5242880);
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var fileBytes = memoryStream.ToArray();
+
+        _base64 = $"data:{_file.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
+
+    }
+
+
+    private Severity GetPredictionSeverity(string prediction)
+    {
+        if (prediction == "Benign")
+        {
+            return Severity.Success;
+        }
+        else if (prediction == "Malignant")
+        {
+            return Severity.Error;
+        }
+        else
+        {
+            return Severity.Info;
+        }
+    }
+}

@@ -1,6 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SharedCL.LungCancerPrediction.Models;
-using SharedCL.SentimentAnalysis.Models;
+﻿using CSharpModelTrainerApi.LungCancerPrediction.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CSharpModelTrainerApi.Database
 {
@@ -9,18 +8,17 @@ namespace CSharpModelTrainerApi.Database
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-        public virtual DbSet<SentimentAnalysisModel> SentimentAnalysisModels { get; set; }
-        public virtual DbSet<LungCancerModel> LungCancerModels { get; set; }
-        public virtual DbSet<LungCancerModelEpochData> LungCancerModelEpochData { get; set; }
+        public virtual DbSet<LCModel> LCModels { get; set; }
+        public virtual DbSet<LCEpochData> LCEpochData { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<LungCancerModel>()
+            modelBuilder.Entity<LCModel>()
                 .HasMany(l => l.EpochData)
-                .WithOne(e => e.LungCancerModel)
-                .HasForeignKey(e => e.LungCancerModelId);
+                .WithOne(e => e.LCModel)
+                .HasForeignKey(e => e.LCModelId);
         }
     }
 }

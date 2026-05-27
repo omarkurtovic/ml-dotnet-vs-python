@@ -1,0 +1,181 @@
+﻿@page "/models"
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using OmarDesignSystem
+@using SharedCL
+@using WebApp.LungCancerPrediction.ApiClients
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject CSharpLCApiClient CSharpLCApi
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@rendermode InteractiveServer
+
+<PageTitle>Pregled Modela</PageTitle>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudGrid>
+        <MudItem xs="12">
+            <PageTop Title="Pregled Modela"></PageTop>
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="SearchString"
+                          Placeholder="Pretraži modele..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium"
+                          Variant="Variant.Outlined"
+                          Immediate="true" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudDataGrid @ref="@DataGrid" T="LCBasicDto" Hover Filterable="false" Striped ServerData="ServerReload" FixedHeader FixedFooter>
+                <NoRecordsContent>
+                    @if (!string.IsNullOrWhiteSpace(SearchString))
+                    {
+                        <NoRecords Title="Modeli nisu pronađeni"
+                                   Message="Promjenite filtere za prikaz modela" Filtered />
+                    }
+                    else
+                    {
+                        <NoRecords Title="Modeli nisu pronađeni"
+                                   Message="Trenirajte prvi model da možete početi raditi analizu" />
+                    }
+                </NoRecordsContent>
+                <Columns>
+                    <PropertyColumn Property="x => x.Name" Title="Naziv" Sortable="true" />
+                    <PropertyColumn Property="x => x.Language" Title="Jezik" Sortable="true" />
+                    <PropertyColumn Property="x => x.MacroRecall" Title="Odziv" Format="P2" Sortable="true" />
+                    <PropertyColumn Property="x => x.MacroPrecision" Title="Preciznost" Format="P2" Sortable="true" />
+                    <PropertyColumn Property="x => x.MacroF1Score" Title="F1" Format="P2" Sortable="true" />
+                    <TemplateColumn Title="" Sortable="false" Filterable="false">
+                        <CellTemplate>
+                            <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                     AnchorOrigin="Origin.BottomRight"
+                                     TransformOrigin="Origin.TopRight"
+                                     Size="Size.Small"
+                                     Dense="true">
+                                <MudMenuItem OnClick="@(() => ShowModelDetails(context.Item))" Icon="@Icons.Material.Filled.Info">
+                                    Detalji
+                                </MudMenuItem>
+                                <MudMenuItem OnClick="@(() => ConfirmDelete(context.Item))" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">
+                                    Obriši
+                                </MudMenuItem>
+                            </MudMenu>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="LCBasicDto" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<MudDrawer @bind-Open="@IsSideDrawerOpen"
+           Fixed="true"
+           Anchor="Anchor.End"
+           Variant="@DrawerVariant.Temporary"
+           Width="min(100vw, 600px)"
+           Elevation="2">
+    <div class="px-6 mt-6">
+        <LCInfo @ref="LCInfo" Close="CloseDrawer"></LCInfo>
+    </div>
+</MudDrawer>
+
+@code {
+    private MudDataGrid<LCBasicDto> DataGrid = null!;
+
+    private string search = string.Empty;
+
+    private string SearchString
+    {
+        get
+        {
+            return search;
+        }
+        set
+        {
+            search = value;
+            DataGrid.ReloadServerData();
+        }
+    }
+
+    private bool IsSideDrawerOpen = false;
+
+    private void CloseDrawer() => IsSideDrawerOpen = false;
+
+    private LCInfo LCInfo = null!;
+
+    private async Task<GridData<LCBasicDto>> ServerReload(GridState<LCBasicDto> state, CancellationToken token)
+    {
+        var options = new LCGridOptionsDto();
+        options.Search = SearchString;
+        var sortDefintion = state.SortDefinitions.FirstOrDefault();
+        if (sortDefintion != null)
+        {
+            options.SortBy = sortDefintion.SortBy;
+            options.SortDescending = sortDefintion.Descending;
+        }
+        options.PageSize = state.PageSize;
+        options.CurrentPage = state.Page;
+        var result = await CSharpLCApi.GetModelsSearchAsync(options);
+
+        if (result.IsSuccess && result.Data is not null)
+        {
+            return new GridData<LCBasicDto>()
+            {
+                Items = result.Data.Models,
+                TotalItems = result.Data.TotalItems
+            };
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Error fetching models!", Severity.Error);
+        }
+
+        return new GridData<LCBasicDto>()
+        {
+            Items = new List<LCBasicDto>(),
+            TotalItems = 0
+        };
+    }
+
+    private async Task ShowModelDetails(LCBasicDto model)
+    {
+        await LCInfo.ShowModelDetails(model.Id);
+        IsSideDrawerOpen = true;
+    }
+
+    private async Task ConfirmDelete(LCBasicDto model)
+    {
+        var parameters = new DialogParameters<ConfirmDeleteDialog>
+        {
+            { x => x.Message, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"?" },
+            { x => x.OnDelete, async () =>
+                {
+                    Result apiResult = await CSharpLCApi.DeleteModelAsync(model.Id);
+                    if (!apiResult.IsSuccess)
+                    {
+                        Snackbar.Add($"Greška pri brisanju modela \"{model.Name}\".", Severity.Error);
+                    }
+
+                    return apiResult.IsSuccess;
+                }
+            }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDeleteDialog>("Confirm", parameters);
+        var dialogResult = await dialog.Result;
+
+        if (!dialogResult!.Canceled)
+        {
+            bool isSuccess = (bool)dialogResult.Data!;
+
+            if (isSuccess)
+            {
+                Snackbar.Add($"Model \"{model.Name}\" je uspješno obrisan.", Severity.Success);
+                await DataGrid.ReloadServerData();
+            }
+        }
+    }
+}
+

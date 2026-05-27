@@ -30,8 +30,6 @@
     <Compile Include="LungCancerPrediction\models.py" />
     <Compile Include="LungCancerPrediction\__init__.py" />
     <Compile Include="main.py" />
-    <Compile Include="SentimentAnalysis\sentiment_analysis_model_trainer.py" />
-    <Compile Include="SentimentAnalysis\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".python-version" />
@@ -39,7 +37,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="LungCancerPrediction\" />
-    <Folder Include="SentimentAnalysis\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

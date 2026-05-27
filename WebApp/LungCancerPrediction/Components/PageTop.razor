@@ -1,0 +1,17 @@
+﻿@using MudBlazor
+@using OmarDesignSystem
+
+@if (!string.IsNullOrWhiteSpace(Title))
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-6">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/" Color="Color.Default" />
+        <SubHeading>@Title</SubHeading>
+    </MudStack>
+}
+
+
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = null!;
+}

@@ -1,0 +1,207 @@
+﻿@page "/comparison"
+@using ApexCharts
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using OmarDesignSystem
+@using SharedCL
+@using System.Text
+@using WebApp.LungCancerPrediction.ApiClients
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject CSharpLCApiClient CSharpLCApi
+@inject IApexChartService ApexChartService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@rendermode InteractiveServer
+
+<PageTitle>Poređenje Modela</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16 mt-8">
+    <MudGrid Spacing="2">
+        <MudItem xs="12">
+            <PageTop Title="Uporedi Modele"></PageTop>
+        </MudItem>
+        <MudItem xs="12">
+            @if (_models == null || _models.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+                    Nema dostupnih modela za poređenje.
+                </MudAlert>
+            }
+            else
+            {
+                <MudCard Elevation="1" Class="mb-8" Style="border-radius: 16px;">
+                    <MudCardContent>
+                        <MudGrid Spacing="4">
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="LCDto" Label="Odaberite Modele"
+                                           MultiSelection="true"
+                                           @bind-SelectedValues="SelectedModels"
+                                           Variant="Variant.Outlined"
+                                           Clearable="true">
+                                    @foreach (var model in _models)
+                                    {
+                                        <MudSelectItem T="LCDto" Value="@model">@model.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="string" Label="Odaberite Metrike"
+                                           MultiSelection="true"
+                                           @bind-SelectedValues="SelectedMetrics"
+                                           MultiSelectionTextFunc="@(new Func<IReadOnlyList<string>, string>(GetMultiSelectionMetricText))"
+                                           Variant="Variant.Outlined"
+                                           Clearable="true">
+                                    @foreach (var metric in Metrics)
+                                    {
+                                        <MudSelectItem T="string" Value="@metric.Key">@metric.Value</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                @if (SelectedModels != null && SelectedModels.Any() && SelectedMetrics != null && SelectedMetrics.Any())
+                {
+                    <MudCard Elevation="1" Style="border-radius: 16px;">
+                        <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="MudBlazor.Color.Default">
+                            @foreach (var metric in SelectedMetrics)
+                            {
+                                <MudTabPanel Text="@(GetMetricTranslations()[metric])">
+                                    <ApexChart TItem="LCEpochDataDto" Title="@((GetMetricTranslations())[metric])" Height="400">
+                                        @foreach (var model in SelectedModels)
+                                        {
+                                            <ApexPointSeries TItem="LCEpochDataDto"
+                                                             Items="model.EpochData"
+                                                             Name="@model.Name"
+                                                             SeriesType="SeriesType.Line"
+                                                             XValue="@(ed => ed.Epoch)"
+                                                             YValue="@(ed => GetValue(metric, ed))" />
+                                        }
+                                    </ApexChart>
+                                </MudTabPanel>
+                            }
+                        </MudTabs>
+                    </MudCard>
+                }
+                else if (SelectedModels != null && SelectedModels.Any())
+                {
+                    <MudAlert Severity="Severity.Normal" Variant="Variant.Filled" Style="background-color: var(--mud-palette-background-grey);">
+                        Odaberite barem jednu metriku za prikaz grafikona.
+                    </MudAlert>
+                }
+            }
+        </MudItem>
+    </MudGrid>
+
+    
+
+</MudContainer>
+
+@code {
+    private decimal GetValue(string metric, LCEpochDataDto epochData)
+    {
+        var value = epochData.GetType().GetProperty(metric)!.GetValue(epochData); 
+        if (value is double doubleValue)
+        {
+            return (decimal)doubleValue;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    private List<LCDto> _models = [];
+
+    private IReadOnlyCollection<LCDto> SelectedModels = [];
+
+    private Dictionary<string, string> Metrics = [];
+
+    private IReadOnlyCollection<string> SelectedMetrics = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadModels();
+        Metrics = GetMetricTranslations();
+    }
+
+    private async Task LoadModels()
+    {
+        var result = await CSharpLCApi.GetModelsAsync();
+        _models = result.IsSuccess ? result.Data! : [];
+    }
+
+
+    private string GetMultiSelectionModelText(IReadOnlyList<string> selectedValues)
+    {
+        var values = new List<string>();
+        var translations = GetMetricTranslations();
+        foreach (var value in selectedValues)
+        {
+            values.Add(translations[value]);
+        }
+        return string.Join(", ", values);
+    }
+
+    public static Dictionary<string, string> GetMetricTranslations()
+    {
+        return new Dictionary<string, string>
+    {
+        { nameof(LCEpochDataDto.MacroPrecision), "Makro preciznost" },
+        { nameof(LCEpochDataDto.MacroRecall), "Makro odziv" },
+        { nameof(LCEpochDataDto.MacroF1Score), "Makro F1" },
+
+        { nameof(LCEpochDataDto.TrainingLoss), "Gubitak pri treniranju" },
+        { nameof(LCEpochDataDto.TrainingAccuracy), "Preciznost pri treniranju" },
+        { nameof(LCEpochDataDto.ValidationLoss), "Gubitak pri validaciji" },
+        { nameof(LCEpochDataDto.ValidationAccuracy), "Preciznost pri validaciji" },
+
+        { nameof(LCEpochDataDto.BenignPrecision), "Preciznost (Benigno)" },
+        { nameof(LCEpochDataDto.BenignRecall), "Odziv (Benigno)" },
+        { nameof(LCEpochDataDto.BenignF1Score), "F1 (Benigno)" },
+
+        { nameof(LCEpochDataDto.MalignantPrecision), "Preciznost (Maligno)" },
+        { nameof(LCEpochDataDto.MalignantRecall), "Odziv (Maligno)" },
+        { nameof(LCEpochDataDto.MalignantF1Score), "F1 (Maligno)" },
+
+        { nameof(LCEpochDataDto.NormalPrecision), "Preciznost (Normalno)" },
+        { nameof(LCEpochDataDto.NormalRecall), "Odziv (Normalno)" },
+        { nameof(LCEpochDataDto.NormalF1Score), "F1 (Normalno)" },
+
+    };
+    }
+
+    private string GetMultiSelectionModelText(IReadOnlyList<LCDto> selectedValues)
+    {
+        var values = new List<string>();
+        foreach (var model in selectedValues)
+        {
+            values.Add(model.Name);
+        }
+        return string.Join(", ", values);
+    }
+    
+    private string GetMultiSelectionMetricText(IReadOnlyList<string> selectedValues)
+    {
+        var values = new List<string>();
+        var translations = GetMetricTranslations();
+        foreach (var value in selectedValues)
+        {
+            values.Add(translations[value]);
+        }
+        return string.Join(", ", values);
+    }
+
+
+    private ApexChartOptions<LCEpochDataDto> options = new()
+    {
+        Xaxis = new XAxis
+        {
+            Type = XAxisType.Numeric,
+            TickAmount = 5
+        }
+    };
+}
+

@@ -1,7 +1,9 @@
-﻿@inherits LayoutComponentBase
+﻿@using ApexCharts
+@inherits LayoutComponentBase
+@inject IServiceProvider ServiceProvider
 
 @* Required *@
-<MudThemeProvider />
+<MudThemeProvider @bind-IsDarkMode="@DarkMode" Theme="ThemeService.Theme" />
 <MudPopoverProvider />
 
 @* Needed for dialogs *@
@@ -14,18 +16,16 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="MudBlazor.Color.Inherit" Edge="Edge.Start"
                         OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
+        <MudIconButton Icon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                                    Color="MudBlazor.Color.Default"
+                                    OnClick="ThemeChanged" />
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
         <MudDrawerHeader>
             <MudText Typo="Typo.h5" Class="mt-1">C# vs Python</MudText>
         </MudDrawerHeader>
         <MudNavMenu>
-            <MudNavLink Href="sentimentAnalysis" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.SentimentNeutral">
-                Analiza Sentimenta
-            </MudNavLink>
-        </MudNavMenu>
-        <MudNavMenu>
-            <MudNavLink Href="lungCancer" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.HealthAndSafety">
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.HealthAndSafety">
                 Analiza Raka Pluća
             </MudNavLink>
         </MudNavMenu>
@@ -38,12 +38,50 @@
 </MudLayout>
 
 
-@code{
+@code {
+
+    private IApexChartService? apexChartService;
+
     bool _drawerOpen = true;
+
+    private bool DarkMode { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        apexChartService = ServiceProvider.GetService<IApexChartService>();
+    }
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
 
+    private async Task ThemeChanged()
+    {
+        DarkMode = !DarkMode;
+        await RefreshGraphs();
+        StateHasChanged();
+    }
+
+    private async Task RefreshGraphs()
+    {
+        if (apexChartService == null)
+        {
+            return;
+        }
+
+        await apexChartService.SetGlobalOptionsAsync(new ApexChartBaseOptions
+        {
+            Debug = false,
+            Theme = new Theme
+            {
+                Mode = DarkMode ? Mode.Dark : Mode.Light,
+                Palette = PaletteType.Palette6
+            },
+            Chart = new Chart
+            {
+                Background = "transparent"
+            }
+        }, true);
+    }
 }

@@ -1,0 +1,118 @@
+﻿@page "/"
+@using MudBlazor
+@using OmarDesignSystem
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16 mt-8">
+    
+    <MudStack AlignItems="AlignItems.Center" Class="mb-12">
+        <MainHeading>Analiza Raka Pluća</MainHeading>
+        <BodyText Style="max-width: 700px;">
+            Ova platforma služi za treniranje, analizu i direktnu usporedbu modela mašinskog učenja razvijenih u C# i Python programskim jezicima koristeći IQOTHNCCD CT dijagnostiku.
+        </BodyText>
+    </MudStack>
+
+    <MudGrid Spacing="4" Class="mb-8">
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Large">
+                            <MudIcon Icon="@Icons.Material.Filled.ModelTraining" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <SectionHeading>Treniraj Model</SectionHeading>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <BodyText>
+                        Konfigurišite i pokrenite proces treniranja novog modela. Podesite broj epoha, augmentaciju slika (rotaciju) i odaberite željeni backend sistem (C# ili Python).
+                    </BodyText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="/trainer" Variant="Variant.Filled" Color="Color.Primary" Class="mb-2">
+                        Započni Treniranje
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Large">
+                            <MudIcon Icon="@Icons.Material.Filled.PlayArrow" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <SectionHeading>Pokreni Analizu</SectionHeading>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <BodyText>
+                        Izvršite evaluaciju istreniranih modela na nezavisnim CT snimcima pluća. Model će klasifikovati tkivo kao normalno, benigno ili maligno.
+                    </BodyText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="/inference" Variant="Variant.Filled" Color="Color.Primary" Class="mb-2">
+                        Nova Analiza
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="1">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary">
+                            <MudIcon Icon="@Icons.Material.Filled.List" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <SectionHeading>Pregled Modela</SectionHeading>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <BodyText>
+                        Pregledajte historiju svih do sada treniranih modela, analizirajte njihove finalne parametre ili obrišite one koji više nisu potrebni.
+                    </BodyText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="/models" Variant="Variant.Outlined" Color="Color.Primary" Class="mb-2">
+                        Otvori Pregled
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="1">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary">
+                            <MudIcon Icon="@Icons.Material.Filled.StackedLineChart" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <SectionHeading>Uporedi Modele</SectionHeading>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <BodyText>
+                        Direktno usporedite performanse različitih modela kroz epohe (Loss, Accuracy). Odaberite proizvoljan broj modela za generisanje grafikona.
+                    </BodyText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="/comparison" Variant="Variant.Outlined" Color="Color.Primary" Class="mb-2">
+                        Uporedi Performanse
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+</MudContainer>

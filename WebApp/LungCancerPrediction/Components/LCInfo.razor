@@ -1,0 +1,133 @@
+﻿@using MudBlazor
+@using OmarDesignSystem
+@using SharedCL
+@using WebApp.LungCancerPrediction.ApiClients
+@inject ISnackbar Snackbar
+@inject CSharpLCApiClient CSharpLCApi
+
+@if(Model != null)
+{
+    <MudStack Spacing="4" Class="pa-4">
+        
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            <SubHeading Class="mb-0">Detalji Modela</SubHeading>
+            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                           Color="Color.Default"
+                           OnClick="@(async () => await Close.InvokeAsync())" />
+        </MudStack>
+
+        <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
+            <MudChip T="string" Color="@(Model.Language == ModelLanguageDto.CSharp ? Color.Primary : Color.Secondary)" Size="Size.Small">
+                @Model.Language
+            </MudChip>
+            <MudChip T="string" Icon="@Icons.Material.Filled.Autorenew" Size="Size.Small">
+                @Model.NumberOfEpochs Epoha
+            </MudChip>
+            <MudChip T="string" Icon="@Icons.Material.Filled.Timer" Size="Size.Small">
+                @Model.TrainingTimeInSeconds sekundi
+            </MudChip>
+            <MudChip T="string" Icon="@Icons.Material.Filled.Memory" Size="Size.Small" Variant="Variant.Outlined">
+                @Model.HardwareInfo
+            </MudChip>
+        </MudStack>
+
+        <MudDivider Class="my-2" />
+
+        <SectionHeading>Performanse</SectionHeading>
+        <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
+            <thead>
+                <tr>
+                    <th>Metrika</th>
+                    <th>Trening</th>
+                    <th>Validacija</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>Preciznost</b></td>
+                    <td>@(Model.TrainingAccuracy.HasValue ? $"{Math.Round(Model.TrainingAccuracy.Value * 100, 2)}%" : "-")</td>
+                    <td>@(Model.ValidationAccuracy.HasValue ? $"{Math.Round(Model.ValidationAccuracy.Value * 100, 2)}%" : "-")</td>
+                </tr>
+                <tr>
+                    <td><b>Gubitak (Loss)</b></td>
+                    <td>@(Model.TrainingLoss.HasValue ? Math.Round(Model.TrainingLoss.Value, 4).ToString() : "-")</td>
+                    <td>@(Model.ValidationLoss.HasValue ? Math.Round(Model.ValidationLoss.Value, 4).ToString() : "-")</td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+
+        <SectionHeading Class="mt-4">Detalji po klasama</SectionHeading>
+        <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
+            <thead>
+                <tr>
+                    <th>Klasa</th>
+                    <th>Odziv (Recall)</th>
+                    <th>Preciznost</th>
+                    <th>F1 Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: var(--mud-palette-background-grey);">
+                    <td><b>Makro Prosjek</b></td>
+                    <td>@(FormatPercent(Model.MacroRecall))</td>
+                    <td>@(FormatPercent(Model.MacroPrecision))</td>
+                    <td>@(FormatPercent(Model.MacroF1Score))</td>
+                </tr>
+                <tr>
+                    <td>Normalno</td>
+                    <td>@(FormatPercent(Model.NormalRecall))</td>
+                    <td>@(FormatPercent(Model.NormalPrecision))</td>
+                    <td>@(FormatPercent(Model.NormalF1Score))</td>
+                </tr>
+                <tr>
+                    <td>Benigno</td>
+                    <td>@(FormatPercent(Model.BenignRecall))</td>
+                    <td>@(FormatPercent(Model.BenignPrecision))</td>
+                    <td>@(FormatPercent(Model.BenignF1Score))</td>
+                </tr>
+                <tr>
+                    <td>Maligno</td>
+                    <td>@(FormatPercent(Model.MalignantRecall))</td>
+                    <td>@(FormatPercent(Model.MalignantPrecision))</td>
+                    <td>@(FormatPercent(Model.MalignantF1Score))</td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+    </MudStack>
+}
+
+@code {
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public EventCallback Close { get; set; }
+
+    public LCInfoDto? Model { get; set; }
+
+    public async Task ShowModelDetails(int id)
+    {
+        if (id == 0)
+        {
+            await Close.InvokeAsync();
+            return;
+        }
+
+        var result = await CSharpLCApi.GetModelInfoAsync(id);
+        if (result.IsSuccess)
+        {
+            Model = result.Data;
+        }
+        else
+        {
+            Snackbar.Add("Greška prilikom učitavanja modela!", Severity.Error);
+            await Close.InvokeAsync();
+        }
+
+        StateHasChanged();
+    }
+
+    private string FormatPercent(double? value)
+    {
+        return value.HasValue ? $"{Math.Round(value.Value * 100, 2)}%" : "-";
+    }
+}
