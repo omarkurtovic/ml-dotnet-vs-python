@@ -14,3 +14,5 @@ confidence as well
 
 gotta actually make the comparisons make sense
 what is the point of comparing python keras and c# torchsharp if they are not doing the same thing
+
+compare performance shows no models loaded first before any models actually have time to load

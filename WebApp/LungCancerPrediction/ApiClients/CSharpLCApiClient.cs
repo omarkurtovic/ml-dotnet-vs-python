@@ -21,15 +21,15 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 }
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    return Result<List<LCDto>>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                    return Result<List<LCDto>>.Failure(Loc.T("LCErrors_UnauthorizedAccess"), FailureReason.Unauthorized);
                 }
                 Console.WriteLine($"Error fetching model names! Status Code: {response.StatusCode}!");
-                return Result<List<LCDto>>.Failure("Failed to fetch model names.");
+                return Result<List<LCDto>>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return Result<List<LCDto>>.Failure("An error occurred while fetching model names.");
+                return Result<List<LCDto>>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
         }
 
@@ -45,16 +45,16 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 }
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    return Result<LCDto>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                    return Result<LCDto>.Failure(Loc.T("LCErrors_UnauthorizedAccess"), FailureReason.Unauthorized);
                 }
 
                 Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
-                return Result<LCDto>.Failure("Failed to fetch models    .");
+                return Result<LCDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return Result<LCDto>.Failure("An error occurred while fetching models.");
+                return Result<LCDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
         }
 
@@ -70,15 +70,15 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 }
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    return Result<List<LCBasicDto>>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                    return Result<List<LCBasicDto>>.Failure(Loc.T("LCErrors_UnauthorizedAccess"), FailureReason.Unauthorized);
                 }
                 Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
-                return Result<List<LCBasicDto>>.Failure("Failed to fetch models    .");
+                return Result<List<LCBasicDto>>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return Result<List<LCBasicDto>>.Failure("An error occurred while fetching models.");
+                return Result<List<LCBasicDto>>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
         }
 
@@ -94,15 +94,15 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 }
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    return Result<LCBasicDto>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                    return Result<LCBasicDto>.Failure(Loc.T("LCErrors_UnauthorizedAccess"), FailureReason.Unauthorized);
                 }
                 Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
-                return Result<LCBasicDto>.Failure("Failed to fetch models    .");
+                return Result<LCBasicDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return Result<LCBasicDto>.Failure("An error occurred while fetching models.");
+                return Result<LCBasicDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
         }
 
@@ -118,16 +118,16 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 }
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    return Result<LCGridPageDataDto>.Failure("Unauthorized access.", FailureReason.Unauthorized);
+                    return Result<LCGridPageDataDto>.Failure(Loc.T("LCErrors_UnauthorizedAccess"), FailureReason.Unauthorized);
                 }
 
                 Console.WriteLine($"Error fetching models! Status Code: {response.StatusCode}!");
-                return Result<LCGridPageDataDto>.Failure("Failed to fetch models    .");
+                return Result<LCGridPageDataDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return Result<LCGridPageDataDto>.Failure("An error occurred while fetching models.");
+                return Result<LCGridPageDataDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
         }
 
@@ -145,13 +145,13 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<LCInfoDto>.Failure("");
+                    return Result<LCInfoDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<LCInfoDto>.Failure("");
+                return Result<LCInfoDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
             }
         }
 
@@ -175,13 +175,13 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<LCPredictionDto>.Failure("");
+                    return Result<LCPredictionDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<LCPredictionDto>.Failure("");
+                return Result<LCPredictionDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
             }
         }
 
@@ -205,13 +205,13 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<int>.Failure("");
+                    return Result<int>.Failure(Loc.T("LCErrors_ErrorGeneric"));
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<int>.Failure("");
+                return Result<int>.Failure(Loc.T("LCErrors_ErrorGeneric"));
             }
         }
 
@@ -234,14 +234,14 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<int>.Failure("");
+                    return Result<int>.Failure(Loc.T("LCErrors_ErrorGeneric"));
 
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<int>.Failure("");
+                return Result<int>.Failure(Loc.T("LCErrors_ErrorGeneric"));
             }
         }
 
@@ -259,13 +259,13 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<bool>.Failure("");
+                    return Result<bool>.Failure(Loc.T("LCErrors_ErrorGeneric"));
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<bool>.Failure("");
+                return Result<bool>.Failure(Loc.T("LCErrors_ErrorGeneric"));
             }
         }
     }

@@ -10,7 +10,7 @@
     <MudStack Spacing="4" Class="pa-4">
         
         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-            <SubHeading Class="mb-0">Detalji Modela</SubHeading>
+            <SubHeading Class="mb-0">@Loc.T("LCInfo_Title")</SubHeading>
             <MudIconButton Icon="@Icons.Material.Filled.Close"
                            Color="Color.Default"
                            OnClick="@(async () => await Close.InvokeAsync())" />
@@ -21,10 +21,10 @@
                 @Model.Language
             </MudChip>
             <MudChip T="string" Icon="@Icons.Material.Filled.Autorenew" Size="Size.Small">
-                @Model.NumberOfEpochs Epoha
+                @Model.NumberOfEpochs @Loc.T("LCInfo_Epochs")
             </MudChip>
             <MudChip T="string" Icon="@Icons.Material.Filled.Timer" Size="Size.Small">
-                @Model.TrainingTimeInSeconds sekundi
+                @Model.TrainingTimeInSeconds @Loc.T("LCInfo_Seconds")
             </MudChip>
             <MudChip T="string" Icon="@Icons.Material.Filled.Memory" Size="Size.Small" Variant="Variant.Outlined">
                 @Model.HardwareInfo
@@ -33,60 +33,60 @@
 
         <MudDivider Class="my-2" />
 
-        <SectionHeading>Performanse</SectionHeading>
+        <SectionHeading>@Loc.T("LCInfo_Performance")</SectionHeading>
         <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
             <thead>
                 <tr>
-                    <th>Metrika</th>
-                    <th>Trening</th>
-                    <th>Validacija</th>
+                    <th>@Loc.T("LCInfo_Metric")</th>
+                    <th>@Loc.T("LCInfo_Training")</th>
+                    <th>@Loc.T("LCInfo_Validation")</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><b>Preciznost</b></td>
+                    <td><b>@Loc.T("LCInfo_Accuracy")</b></td>
                     <td>@(Model.TrainingAccuracy.HasValue ? $"{Math.Round(Model.TrainingAccuracy.Value * 100, 2)}%" : "-")</td>
                     <td>@(Model.ValidationAccuracy.HasValue ? $"{Math.Round(Model.ValidationAccuracy.Value * 100, 2)}%" : "-")</td>
                 </tr>
                 <tr>
-                    <td><b>Gubitak (Loss)</b></td>
+                    <td><b>@Loc.T("LCInfo_Loss")</b></td>
                     <td>@(Model.TrainingLoss.HasValue ? Math.Round(Model.TrainingLoss.Value, 4).ToString() : "-")</td>
                     <td>@(Model.ValidationLoss.HasValue ? Math.Round(Model.ValidationLoss.Value, 4).ToString() : "-")</td>
                 </tr>
             </tbody>
         </MudSimpleTable>
 
-        <SectionHeading Class="mt-4">Detalji po klasama</SectionHeading>
+        <SectionHeading Class="mt-4">@Loc.T("LCInfo_PerformanceByClass")</SectionHeading>
         <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
             <thead>
                 <tr>
-                    <th>Klasa</th>
-                    <th>Odziv (Recall)</th>
-                    <th>Preciznost</th>
-                    <th>F1 Score</th>
+                    <th>@Loc.T("LCInfo_ClassByClass")</th>
+                    <th>@Loc.T("LCInfo_RecallByClass")</th>
+                    <th>@Loc.T("LCInfo_PrecisionByClass")</th>
+                    <th>@Loc.T("LCInfo_F1ScoreByClass")</th>
                 </tr>
             </thead>
             <tbody>
                 <tr style="background-color: var(--mud-palette-background-grey);">
-                    <td><b>Makro Prosjek</b></td>
+                    <td><b>@Loc.T("LCInfo_MacroAverage")</b></td>
                     <td>@(FormatPercent(Model.MacroRecall))</td>
                     <td>@(FormatPercent(Model.MacroPrecision))</td>
                     <td>@(FormatPercent(Model.MacroF1Score))</td>
                 </tr>
                 <tr>
-                    <td>Normalno</td>
+                    <td>@Loc.T("LCInfo_NormalClass")</td>
                     <td>@(FormatPercent(Model.NormalRecall))</td>
                     <td>@(FormatPercent(Model.NormalPrecision))</td>
                     <td>@(FormatPercent(Model.NormalF1Score))</td>
                 </tr>
                 <tr>
-                    <td>Benigno</td>
+                    <td>@Loc.T("LCInfo_BenignClass")</td>
                     <td>@(FormatPercent(Model.BenignRecall))</td>
                     <td>@(FormatPercent(Model.BenignPrecision))</td>
                     <td>@(FormatPercent(Model.BenignF1Score))</td>
                 </tr>
                 <tr>
-                    <td>Maligno</td>
+                    <td>@Loc.T("LCInfo_MalignantClass")</td>
                     <td>@(FormatPercent(Model.MalignantRecall))</td>
                     <td>@(FormatPercent(Model.MalignantPrecision))</td>
                     <td>@(FormatPercent(Model.MalignantF1Score))</td>
@@ -119,7 +119,7 @@
         }
         else
         {
-            Snackbar.Add("Greška prilikom učitavanja modela!", Severity.Error);
+            Snackbar.Add(Loc.T("LCInfo_Error"), Severity.Error);
             await Close.InvokeAsync();
         }
 
