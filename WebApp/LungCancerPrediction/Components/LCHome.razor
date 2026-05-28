@@ -2,15 +2,13 @@
 @using MudBlazor
 @using OmarDesignSystem 
 @using Microsoft.Extensions.Localization
-@using WebApp.Resources;
-@inject IStringLocalizer<SharedResource> Localizer
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mb-16 mt-8">
     
     <MudStack AlignItems="AlignItems.Center" Class="mb-12">
-        <MainHeading>@Localizer["Title"]</MainHeading>
+        <MainHeading>@Loc.T("LCHome_Title")</MainHeading>
         <BodyText Style="max-width: 700px;">
-            Ova platforma služi za treniranje, analizu i direktnu usporedbu modela mašinskog učenja razvijenih u C# i Python programskim jezicima koristeći IQOTHNCCD CT dijagnostiku.
+            @Loc.T("LCHome_Description")
         </BodyText>
     </MudStack>
 
@@ -24,17 +22,17 @@
                         </MudAvatar>
                     </CardHeaderAvatar>
                     <CardHeaderContent>
-                        <SectionHeading>Treniraj Model</SectionHeading>
+                        <SectionHeading>@Loc.T("LCHome_TrainModel")</SectionHeading>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
                     <BodyText>
-                        Konfigurišite i pokrenite proces treniranja novog modela. Podesite broj epoha, augmentaciju slika (rotaciju) i odaberite željeni backend sistem (C# ili Python).
+                        @Loc.T("LCHome_TrainModelDescription")
                     </BodyText>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Href="/trainer" Variant="Variant.Filled" Color="Color.Primary" Class="mb-2">
-                        Započni Treniranje
+                        @Loc.T("LCHome_TrainModelAction")
                     </MudButton>
                 </MudCardActions>
             </MudCard>
@@ -49,17 +47,17 @@
                         </MudAvatar>
                     </CardHeaderAvatar>
                     <CardHeaderContent>
-                        <SectionHeading>Pokreni Analizu</SectionHeading>
+                        <SectionHeading>@Loc.T("LCHome_RunAnalysis")</SectionHeading>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
                     <BodyText>
-                        Izvršite evaluaciju istreniranih modela na nezavisnim CT snimcima pluća. Model će klasifikovati tkivo kao normalno, benigno ili maligno.
+                        @Loc.T("LCHome_RunAnalysisDescription")
                     </BodyText>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Href="/inference" Variant="Variant.Filled" Color="Color.Primary" Class="mb-2">
-                        Nova Analiza
+                        @Loc.T("LCHome_RunAnalysisAction")
                     </MudButton>
                 </MudCardActions>
             </MudCard>
@@ -76,17 +74,17 @@
                         </MudAvatar>
                     </CardHeaderAvatar>
                     <CardHeaderContent>
-                        <SectionHeading>Pregled Modela</SectionHeading>
+                        <SectionHeading>@Loc.T("LCHome_ReviewModels")</SectionHeading>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
                     <BodyText>
-                        Pregledajte historiju svih do sada treniranih modela, analizirajte njihove finalne parametre ili obrišite one koji više nisu potrebni.
+                        @Loc.T("LCHome_ReviewModelsDescription")
                     </BodyText>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Href="/models" Variant="Variant.Outlined" Color="Color.Primary" Class="mb-2">
-                        Otvori Pregled
+                        @Loc.T("LCHome_ReviewModelsAction")
                     </MudButton>
                 </MudCardActions>
             </MudCard>
@@ -101,17 +99,17 @@
                         </MudAvatar>
                     </CardHeaderAvatar>
                     <CardHeaderContent>
-                        <SectionHeading>Uporedi Modele</SectionHeading>
+                        <SectionHeading>@Loc.T("LCHome_Comparison")</SectionHeading>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
                     <BodyText>
-                        Direktno usporedite performanse različitih modela kroz epohe (Loss, Accuracy). Odaberite proizvoljan broj modela za generisanje grafikona.
+                        @Loc.T("LCHome_ComparisonDescription")
                     </BodyText>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Href="/comparison" Variant="Variant.Outlined" Color="Color.Primary" Class="mb-2">
-                        Uporedi Performanse
+                        @Loc.T("LCHome_ComparisonAction")
                     </MudButton>
                 </MudCardActions>
             </MudCard>
