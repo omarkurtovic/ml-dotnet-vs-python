@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset
 import torchvision.transforms.functional as TF
 from PIL import Image
-from image_loader import ImageLoader
+from .services import ImageLoader
 
 class LungCancerTestDataset(Dataset):
     def __init__(self, data_directory):

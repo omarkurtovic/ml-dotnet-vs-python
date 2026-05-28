@@ -1,18 +1,15 @@
 
 # https://www.kaggle.com/code/adityamahimkar/lung-cancer-prediction-on-image-data/notebook
 
-from keras.src.metrics import TruePositives
 import numpy as np 
 import cv2
 import random
 import os
-import torch
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
 import time
-from .hardware_utils import get_optimal_hardware_info
-from training_helper import TrainingHelper
-from path_resolver import PathResolver
+
+import torch
 from torch.utils.data import DataLoader
 
 from .models import ModelLanguageDto, LCDto, LCEpochDataDto, LCTrainingParamsDto, EpochData

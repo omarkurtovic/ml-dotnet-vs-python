@@ -1,5 +1,4 @@
 
-from ctypes.wintypes import HACCEL
 import io
 from LungCancerPrediction.models import LCTrainingParamsDto
 import torch
