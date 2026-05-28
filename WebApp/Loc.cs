@@ -22,6 +22,27 @@ public static class Loc
             ["LCHome_Comparison"] = "Compare Models",
             ["LCHome_ComparisonDescription"] = "Directly compare the performance of different models across epochs (Loss, Accuracy). Select any number of models to generate graphs.",
             ["LCHome_ComparisonAction"] = "Compare Performance",
+
+            ["LCTrainer_PageTitle"] = "Lung Cancer Model Training",
+            ["LCTrainer_Title"] = "Model Training",
+            ["LCTrainer_NameRequired"] = "Model name is required.",
+            ["LCTrainer_ModelName"] = "Model Name",
+            ["LCTrainer_EpochsRequired"] = "Number of epochs is required.",
+            ["LCTrainer_Epochs"] = "Epochs",
+            ["LCTrainer_ModelLanguageRequired"] = "Model language is required.",
+            ["LCTrainer_ModelLanguage"] = "Model Language",
+            ["LCTrainer_WithFlips"] = "Rotate images (Augmentation)",
+            ["LCTrainer_ShowResults"] = "Show Results",
+            ["LCTrainer_LoadingText"] = "Training...",
+            ["LCTrainer_Train"] = "Train",
+            ["LCTrainer_InitModelName"] = "LungCancerModel",
+            ["LCTrainer_TrainingError"] = "An error occurred during model training. Please try again.",
+            ["LCTrainer_SavingError"] = "The model was trained, but an error occurred while saving the model. Please try again.",
+            ["LCTrainer_TrainingSuccess"] = "The model was successfully trained and saved."
+
+
+
+
         },
         ["bs-BA"] = new()
         {
@@ -39,6 +60,24 @@ public static class Loc
             ["LCHome_Comparison"] = "Uporedi Modele",
             ["LCHome_ComparisonDescription"] = "Direktno usporedite performanse različitih modela kroz epohe (Loss, Accuracy). Odaberite proizvoljan broj modela za generisanje grafikona.",
             ["LCHome_ComparisonAction"] = "Uporedi Performanse",
+
+            ["LCTrainer_PageTitle"] = "Treniranje Modela za Rak Pluća",
+            ["LCTrainer_Title"] = "Treniranje Modela",
+            ["LCTrainer_NameRequired"] = "Naziv modela je obavezan.",
+            ["LCTrainer_ModelName"] = "Naziv Modela",
+            ["LCTrainer_EpochsRequired"] = "Broj epoha je obavezan.",
+            ["LCTrainer_Epochs"] = "Epohe",
+            ["LCTrainer_ModelLanguageRequired"] = "Jezik modela je obavezan.",
+            ["LCTrainer_ModelLanguage"] = "Jezik Modela",
+            ["LCTrainer_WithFlips"] = "Rotiraj slike (Augmentacija)",
+            ["LCTrainer_ShowResults"] = "Prikaži Rezultate",
+            ["LCTrainer_LoadingText"] = "Treniranje...",
+            ["LCTrainer_Train"] = "Treniraj",
+            ["LCTrainer_InitModelName"] = "ModelZaRakPluca",
+            ["LCTrainer_TrainingError"] = "Došlo je do greške tokom treniranja modela. Molimo pokušajte ponovo.",
+            ["LCTrainer_SavingError"] = "Model je treniran, ali došlo je do greške prilikom spremanja modela. Molimo pokušajte ponovo.",
+            ["LCTrainer_TrainingSuccess"] = "Model je uspješno treniran i spremljen."
+
 
         }
     };
