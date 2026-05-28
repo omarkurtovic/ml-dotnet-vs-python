@@ -10,15 +10,15 @@
 @inject IDialogService DialogService
 @rendermode InteractiveServer
 
-<PageTitle>Pregled Modela</PageTitle>
+<PageTitle>@Loc.T("LCModels_PageTitle")</PageTitle>
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <MudGrid>
         <MudItem xs="12">
-            <PageTop Title="Pregled Modela"></PageTop>
+            <PageTop Title="@Loc.T("LCModels_Title")"></PageTop>
         </MudItem>
         <MudItem xs="12">
             <MudTextField @bind-Value="SearchString"
-                          Placeholder="Pretraži modele..."
+                          Placeholder="@Loc.T("LCModels_Search")"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           IconSize="Size.Medium"
@@ -30,21 +30,21 @@
                 <NoRecordsContent>
                     @if (!string.IsNullOrWhiteSpace(SearchString))
                     {
-                        <NoRecords Title="Modeli nisu pronađeni"
-                                   Message="Promjenite filtere za prikaz modela" Filtered />
+                        <NoRecords Title="@Loc.T("LCModels_NoResults")"
+                                   Message="@Loc.T("LCModels_ChangeFilters")" Filtered />
                     }
                     else
                     {
-                        <NoRecords Title="Modeli nisu pronađeni"
-                                   Message="Trenirajte prvi model da možete početi raditi analizu" />
+                        <NoRecords Title="@Loc.T("LCModels_NoModels")"
+                                   Message="@Loc.T("LCModels_NoModels")" />
                     }
                 </NoRecordsContent>
                 <Columns>
-                    <PropertyColumn Property="x => x.Name" Title="Naziv" Sortable="true" />
-                    <PropertyColumn Property="x => x.Language" Title="Jezik" Sortable="true" />
-                    <PropertyColumn Property="x => x.MacroRecall" Title="Odziv" Format="P2" Sortable="true" />
-                    <PropertyColumn Property="x => x.MacroPrecision" Title="Preciznost" Format="P2" Sortable="true" />
-                    <PropertyColumn Property="x => x.MacroF1Score" Title="F1" Format="P2" Sortable="true" />
+                    <PropertyColumn Property="x => x.Name" Title="@Loc.T("LCModels_Name")" Sortable="true" />
+                    <PropertyColumn Property="x => x.Language" Title="@Loc.T("LCModels_Language")" Sortable="true" />
+                    <PropertyColumn Property="x => x.MacroRecall" Title="@Loc.T("LCModels_Recall")" Format="P2" Sortable="true" />
+                    <PropertyColumn Property="x => x.MacroPrecision" Title="@Loc.T("LCModels_Precision")" Format="P2" Sortable="true" />
+                    <PropertyColumn Property="x => x.MacroF1Score" Title="@Loc.T("LCModels_F1Score")" Format="P2" Sortable="true" />
                     <TemplateColumn Title="" Sortable="false" Filterable="false">
                         <CellTemplate>
                             <MudMenu Icon="@Icons.Material.Filled.MoreVert"
@@ -53,10 +53,10 @@
                                      Size="Size.Small"
                                      Dense="true">
                                 <MudMenuItem OnClick="@(() => ShowModelDetails(context.Item))" Icon="@Icons.Material.Filled.Info">
-                                    Detalji
+                                    @Loc.T("LCModels_Details")
                                 </MudMenuItem>
                                 <MudMenuItem OnClick="@(() => ConfirmDelete(context.Item))" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">
-                                    Obriši
+                                    @Loc.T("LCModels_Delete")
                                 </MudMenuItem>
                             </MudMenu>
                         </CellTemplate>
@@ -129,7 +129,7 @@
         }
         else
         {
-            Snackbar.Add(result.Message ?? "Error fetching models!", Severity.Error);
+            Snackbar.Add(Loc.T("LCModels_Error"), Severity.Error);
         }
 
         return new GridData<LCBasicDto>()
@@ -149,13 +149,13 @@
     {
         var parameters = new DialogParameters<ConfirmDeleteDialog>
         {
-            { x => x.Message, $"Da li ste sigurni da želite obrisati model \"{model.Name}\"?" },
+            { x => x.Message, Loc.T("LCModels_ConfirmDelete") },
             { x => x.OnDelete, async () =>
                 {
                     Result apiResult = await CSharpLCApi.DeleteModelAsync(model.Id);
                     if (!apiResult.IsSuccess)
                     {
-                        Snackbar.Add($"Greška pri brisanju modela \"{model.Name}\".", Severity.Error);
+                        Snackbar.Add(Loc.T("LCModels_DeleteError"), Severity.Error);
                     }
 
                     return apiResult.IsSuccess;
@@ -172,7 +172,7 @@
 
             if (isSuccess)
             {
-                Snackbar.Add($"Model \"{model.Name}\" je uspješno obrisan.", Severity.Success);
+                Snackbar.Add(Loc.T("LCModels_DeleteSuccess"), Severity.Success);
                 await DataGrid.ReloadServerData();
             }
         }

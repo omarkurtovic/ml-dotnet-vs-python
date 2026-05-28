@@ -13,18 +13,18 @@
 @inject IDialogService DialogService
 @rendermode InteractiveServer
 
-<PageTitle>Poređenje Modela</PageTitle>
+<PageTitle>@Loc.T("LCComparison_PageTitle")</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mb-16 mt-8">
     <MudGrid Spacing="2">
         <MudItem xs="12">
-            <PageTop Title="Uporedi Modele"></PageTop>
+            <PageTop Title="@Loc.T("LCComparison_Title")"></PageTop>
         </MudItem>
         <MudItem xs="12">
             @if (_models == null || _models.Count == 0)
             {
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
-                    Nema dostupnih modela za poređenje.
+                    @Loc.T("LCComparison_NoModels")
                 </MudAlert>
             }
             else
@@ -33,7 +33,7 @@
                     <MudCardContent>
                         <MudGrid Spacing="4">
                             <MudItem xs="12" md="6">
-                                <MudSelect T="LCDto" Label="Odaberite Modele"
+                                <MudSelect T="LCDto" Label="@Loc.T("LCComparison_ModelSelect")"
                                            MultiSelection="true"
                                            @bind-SelectedValues="SelectedModels"
                                            Variant="Variant.Outlined"
@@ -46,7 +46,7 @@
                             </MudItem>
 
                             <MudItem xs="12" md="6">
-                                <MudSelect T="string" Label="Odaberite Metrike"
+                                <MudSelect T="string" Label="@Loc.T("LCComparison_MetricSelect")"
                                            MultiSelection="true"
                                            @bind-SelectedValues="SelectedMetrics"
                                            MultiSelectionTextFunc="@(new Func<IReadOnlyList<string>, string>(GetMultiSelectionMetricText))"
@@ -88,7 +88,7 @@
                 else if (SelectedModels != null && SelectedModels.Any())
                 {
                     <MudAlert Severity="Severity.Normal" Variant="Variant.Filled" Style="background-color: var(--mud-palette-background-grey);">
-                        Odaberite barem jednu metriku za prikaz grafikona.
+                        @Loc.T("LCComparison_NoMetricsSelected")
                     </MudAlert>
                 }
             }
@@ -130,6 +130,10 @@
     private async Task LoadModels()
     {
         var result = await CSharpLCApi.GetModelsAsync();
+        if (!result.IsSuccess)
+        {
+            Snackbar.Add(Loc.T("LCComparison_LoadModelsError"), Severity.Error);
+        }   
         _models = result.IsSuccess ? result.Data! : [];
     }
 
@@ -149,26 +153,26 @@
     {
         return new Dictionary<string, string>
     {
-        { nameof(LCEpochDataDto.MacroPrecision), "Makro preciznost" },
-        { nameof(LCEpochDataDto.MacroRecall), "Makro odziv" },
-        { nameof(LCEpochDataDto.MacroF1Score), "Makro F1" },
+        { nameof(LCEpochDataDto.MacroPrecision), @Loc.T("LCComparison_MacroPrecision") },
+        { nameof(LCEpochDataDto.MacroRecall), @Loc.T("LCComparison_MacroRecall") },
+        { nameof(LCEpochDataDto.MacroF1Score), @Loc.T("LCComparison_MacroF1Score") },
 
-        { nameof(LCEpochDataDto.TrainingLoss), "Gubitak pri treniranju" },
-        { nameof(LCEpochDataDto.TrainingAccuracy), "Preciznost pri treniranju" },
-        { nameof(LCEpochDataDto.ValidationLoss), "Gubitak pri validaciji" },
-        { nameof(LCEpochDataDto.ValidationAccuracy), "Preciznost pri validaciji" },
+        { nameof(LCEpochDataDto.TrainingLoss), @Loc.T("LCComparison_TrainingLoss") },
+        { nameof(LCEpochDataDto.TrainingAccuracy), @Loc.T("LCComparison_TrainingPrecision") },
+        { nameof(LCEpochDataDto.ValidationLoss), @Loc.T("LCComparison_ValidationLoss") },
+        { nameof(LCEpochDataDto.ValidationAccuracy), @Loc.T("LCComparison_ValidationPrecision") },
 
-        { nameof(LCEpochDataDto.BenignPrecision), "Preciznost (Benigno)" },
-        { nameof(LCEpochDataDto.BenignRecall), "Odziv (Benigno)" },
-        { nameof(LCEpochDataDto.BenignF1Score), "F1 (Benigno)" },
+        { nameof(LCEpochDataDto.BenignPrecision), @Loc.T("LCComparison_BenignPrecision") },
+        { nameof(LCEpochDataDto.BenignRecall), @Loc.T("LCComparison_BenignRecall") },
+        { nameof(LCEpochDataDto.BenignF1Score), @Loc.T("LCComparison_BenignF1Score") },
 
-        { nameof(LCEpochDataDto.MalignantPrecision), "Preciznost (Maligno)" },
-        { nameof(LCEpochDataDto.MalignantRecall), "Odziv (Maligno)" },
-        { nameof(LCEpochDataDto.MalignantF1Score), "F1 (Maligno)" },
+        { nameof(LCEpochDataDto.MalignantPrecision), @Loc.T("LCComparison_MalignantPrecision") },
+        { nameof(LCEpochDataDto.MalignantRecall), @Loc.T("LCComparison_MalignantRecall") },
+        { nameof(LCEpochDataDto.MalignantF1Score), @Loc.T("LCComparison_MalignantF1Score") },
 
-        { nameof(LCEpochDataDto.NormalPrecision), "Preciznost (Normalno)" },
-        { nameof(LCEpochDataDto.NormalRecall), "Odziv (Normalno)" },
-        { nameof(LCEpochDataDto.NormalF1Score), "F1 (Normalno)" },
+        { nameof(LCEpochDataDto.NormalPrecision), @Loc.T("LCComparison_NormalPrecision") },
+        { nameof(LCEpochDataDto.NormalRecall), @Loc.T("LCComparison_NormalRecall") },
+        { nameof(LCEpochDataDto.NormalF1Score), @Loc.T("LCComparison_NormalF1Score") },
 
     };
     }

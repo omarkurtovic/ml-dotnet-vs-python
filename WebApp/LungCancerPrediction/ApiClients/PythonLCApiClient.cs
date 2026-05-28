@@ -34,13 +34,13 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<LCDto>.Failure("");
+                    return Result<LCDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<LCDto>.Failure("");
+                return Result<LCDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
             }
         }
     }

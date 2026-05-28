@@ -1,0 +1,13 @@
+﻿@inject IJSRuntime JS
+
+<MudMenu Icon="@Icons.Material.Filled.Language" Color="Color.Default">
+    <MudMenuItem OnClick='() => SetLanguage("en-US")'>@Loc.T("LCLayout_English")</MudMenuItem>
+    <MudMenuItem OnClick='() => SetLanguage("bs-BA")'>@Loc.T("LCLayout_Bosnian")</MudMenuItem>
+</MudMenu>
+
+@code {
+    private async Task SetLanguage(string culture)
+    {
+        await JS.InvokeVoidAsync("setLanguage", culture);
+    }
+}

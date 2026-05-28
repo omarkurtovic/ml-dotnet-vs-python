@@ -12,12 +12,12 @@
 @inject IDialogService DialogService
 @rendermode InteractiveServer
 
-<PageTitle>Rak pluća </PageTitle>
+<PageTitle>@Loc.T("LCInference_PageTitle")</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mb-16 mt-8">
     <MudGrid Spacing="2">
         <MudItem xs="12">
-            <PageTop Title="Analiza Slike"></PageTop>
+            <PageTop Title="@Loc.T("LCInference_Title")"></PageTop>
         </MudItem>
         <MudItem xs="12">
             <MudCard Elevation="1">
@@ -34,26 +34,26 @@
                                     else
                                     {
                                         <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" Style="opacity: 0.5;" />
-                                        <BodyText>Odaberite CT snimak pluća</BodyText>
+                                        <BodyText>@Loc.T("LCInference_Description")</BodyText>
                                     }
 
                                     <MudFileUpload T="IBrowserFile" @bind-Files="_file" @bind-Files:after="UploadImage"
-                                                   Required="true" RequiredError="Slika je obavezna!"
+                                                   Required="true" RequiredError="@Loc.T("LCInference_ImageRequired")"
                                                    Accept=".png,.jpg,.jpeg">
                                         <CustomContent>
                                             <MudButton Variant="Variant.Outlined"
                                                        Color="Color.Primary"
                                                        OnClick="@context.OpenFilePickerAsync"
                                                        StartIcon="@Icons.Material.Filled.CloudUpload">
-                                                @(_file == null ? "Pretraži fajlove" : "Promijeni sliku")
+                                                @(_file == null ? @Loc.T("LCInference_BrowseFiles") : @Loc.T("LCInference_ChangeImage"))
                                             </MudButton>
                                         </CustomContent>
                                     </MudFileUpload>
                                 </MudStack>
                             </MudPaper>
 
-                            <MudSelect T="LCBasicDto" Label="Model za analizu" @bind-Value="SelectedModel"
-                                       Required="true" RequiredError="Model je obavezan!" Clearable="true" Variant="Variant.Outlined">
+                            <MudSelect T="LCBasicDto" Label="@Loc.T("LCInference_ModelSelect")" @bind-Value="SelectedModel"
+                                       Required="true" RequiredError="@Loc.T("LCInference_ModelRequired")" Clearable="true" Variant="Variant.Outlined">
                                 @foreach (var item in Models)
                                 {
                                     <MudSelectItem Value="@item">@item.Name</MudSelectItem>
@@ -65,10 +65,10 @@
                                 <MudStack Row="false" AlignItems="AlignItems.Center">
 
                                     <MudAlert Variant="Variant.Filled" Dense="true" Severity="@GetPredictionSeverity(Prediction.PredictedLabel)" Class="mt-2">
-                                        <b>Rezultat: @Prediction.PredictedLabel</b>
+                                        <b>@Loc.T("LCInference_Result"): @Prediction.PredictedLabel</b>
                                     </MudAlert>
                                     <MudChip T="string" Icon="@Icons.Material.Filled.Timer" Size="Size.Small">
-                                        @Prediction.PredictionTimeInMiliSeconds milisekundi
+                                        @Prediction.PredictionTimeInMiliSeconds @Loc.T("LCInference_PredictionTime")
                                     </MudChip>
                                 </MudStack>
                             }
@@ -81,8 +81,8 @@
                     <LoadingButton Color="@Color.Primary"
                                    Variant="@Variant.Filled"
                                    OnClick="Predict"
-                                   LoadingText="Analiziranje...">
-                        Analiziraj Sliku
+                                   LoadingText="@Loc.T("LCInference_LoadingText")">
+                        @Loc.T("LCInference_AnalyzeImage")
                     </LoadingButton>
                 </MudCardActions>
             </MudCard>
@@ -111,7 +111,7 @@
         }
         else
         {
-            Snackbar.Add("Greška prilikom učitavanja modela!", Severity.Error);
+            Snackbar.Add(@Loc.T("LCInference_ModelLoadingError"), Severity.Error);
         }
         await base.OnInitializedAsync();
     }
@@ -133,7 +133,7 @@
         }
         else
         {
-            Snackbar.Add("Greška prilikom analiziranja!", Severity.Error);
+            Snackbar.Add(@Loc.T("LCInference_AnalysisError"), Severity.Error);
         }
     }
 
@@ -147,7 +147,7 @@
         }
         if (_file.Size > 5242880)
         {
-            Snackbar.Add("Veličina fajla prevelika! (preko 5MB)");
+            Snackbar.Add(@Loc.T("LCInference_FileSizeError"), Severity.Error);
             return;
         }
 

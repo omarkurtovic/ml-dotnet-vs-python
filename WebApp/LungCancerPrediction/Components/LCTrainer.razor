@@ -11,12 +11,12 @@
 @inject IDialogService DialogService
 @rendermode InteractiveServer
 
-<PageTitle>Treniranje Modela za Rak Pluća</PageTitle>
+<PageTitle>@Loc.T("LCTrainer_PageTitle")</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 mb-16">
     <MudGrid Spacing="2">
         <MudItem xs="12">
-            <PageTop Title="Treniranje Modela"></PageTop>
+            <PageTop Title="@Loc.T("LCTrainer_PageTitle")"></PageTop>
         </MudItem>
 
         <MudItem xs="12">
@@ -26,23 +26,23 @@
                         <MudStack Spacing="4">
                             <MudTextField @bind-Value="TrainingParams.Name"
                                           Required="true"
-                                          RequiredError="Naziv modela je obavezan!"
+                                          RequiredError="@Loc.T("LCTrainer_NameRequired")"
                                           Variant="Variant.Outlined"
-                                          Label="Naziv modela" />
+                                          Label="@Loc.T("LCTrainer_ModelName")" />
                                   
                             <MudNumericField @bind-Value="TrainingParams.Epochs"
                                              Required="true"
-                                             RequiredError="Broj epoha je obavezan!"
+                                             RequiredError="@Loc.T("LCTrainer_EpochsRequired")"
                                              Variant="Variant.Outlined"
-                                             Label="Broj epoha"
+                                             Label="@Loc.T("LCTrainer_Epochs")"
                                              Min="1" Max="10" />
 
                             <MudSelect T="ModelLanguageDto"
                                        @bind-Value="TrainingParams.Language"
-                                       Label="Jezik modela"
+                                       Label="@Loc.T("LCTrainer_ModelLanguage")"
                                        Variant="Variant.Outlined"
                                        Required="true"
-                                       RequiredError="Model Mašinskog Učenja je obavezan!"
+                                       RequiredError="@Loc.T("LCTrainer_ModelLanguageRequired")"
                                        Clearable>
                                 @foreach (var item in Enum.GetValues<ModelLanguageDto>())
                                 {
@@ -50,7 +50,7 @@
                                 }
                             </MudSelect>
                             <MudCheckBox @bind-Value="TrainingParams.WithFlips"
-                                         Label="Rotiraj slike (Augmentacija)"
+                                         Label="@Loc.T("LCTrainer_WithFlips")"
                                          Color="Color.Primary" />
                         </MudStack>
                     </MudForm>
@@ -60,14 +60,14 @@
                         @if (ModelId != null)
                         {
                             <MudButton OnClick="ShowModelDetails" Color="@Color.Default" Variant="@Variant.Outlined">
-                                Prikaži Rezultate
+                                @Loc.T("LCTrainer_ShowResults")
                             </MudButton>
                         }
                         <LoadingButton Color="@Color.Primary"
                                        Variant="@Variant.Filled"
                                        OnClick="TrainModel"
-                                       LoadingText="Treniranje...">
-                            Treniraj
+                                       LoadingText="@Loc.T("LCTrainer_LoadingText")">
+                            @Loc.T("LCTrainer_Train")
                         </LoadingButton>
                     </MudStack>
                 </MudCardActions>
@@ -108,7 +108,7 @@
     {
         TrainingParams = new LCTrainingParamsDto()
         {
-            Name = $"RakPlucaModel_{DateTime.Now:yyyyMMdd_HHmmss}",
+            Name = $"{Loc.T("LCTrainer_InitModelName")}_{DateTime.Now:yyyyMMdd_HHmmss}",
             Epochs = 5,
             Language = ModelLanguageDto.CSharp
         };
@@ -139,7 +139,7 @@
         var trainingResult = await PythonLCApi.TrainModelAsync(TrainingParams);
         if (!trainingResult.IsSuccess)
         {
-            Snackbar.Add("Greška prilikom treniranja modela.", Severity.Error);
+            Snackbar.Add(Loc.T("LCTrainer_TrainingError"), Severity.Error);
             return;
         }
 
@@ -147,11 +147,11 @@
         var saveResult = await CSharpLCApi.SaveModelAsync(modelDto);
         if (!saveResult.IsSuccess)
         {
-            Snackbar.Add("Model je treniran, ali došlo je do greške prilikom spremanja modela.", Severity.Error);
+            Snackbar.Add(Loc.T("LC_SavingError"), Severity.Error);
             return;
         }
 
-        Snackbar.Add("Model je uspešno treniran i spremljen!", Severity.Success);
+        Snackbar.Add(Loc.T("LCTrainer_TrainingSuccess"), Severity.Success);
         ModelId = saveResult.Data;
         await ShowModelDetails();
     }
@@ -161,11 +161,11 @@
         var result = await CSharpLCApi.TrainModelAsync(TrainingParams);
         if (!result.IsSuccess)
         {
-            Snackbar.Add("Greška prilikom treniranja modela.", Severity.Error);
+            Snackbar.Add(Loc.T("LCTrainer_TrainingError"), Severity.Error);
             return;
         }
 
-        Snackbar.Add("Model je uspešno treniran i spremljen!", Severity.Success);
+        Snackbar.Add(Loc.T("LCTrainer_TrainingSuccess"), Severity.Success);
         ModelId = result.Data;
         await ShowModelDetails();
     }

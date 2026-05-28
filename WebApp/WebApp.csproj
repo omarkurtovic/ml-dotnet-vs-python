@@ -1,28 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="LungCancerPrediction\Models\**" />
-    <Content Remove="LungCancerPrediction\Models\**" />
-    <EmbeddedResource Remove="LungCancerPrediction\Models\**" />
-    <None Remove="LungCancerPrediction\Models\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="LungCancerPrediction\Models\**" />
+		<Content Remove="LungCancerPrediction\Models\**" />
+		<EmbeddedResource Remove="LungCancerPrediction\Models\**" />
+		<None Remove="LungCancerPrediction\Models\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
-    <PackageReference Include="MudBlazor" Version="9.4.0" />
-    <PackageReference Include="OmarDesignSystem" Version="1.0.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
+		<PackageReference Include="MudBlazor" Version="9.4.0" />
+		<PackageReference Include="MudBlazor.Translations" Version="3.3.0" />
+		<PackageReference Include="OmarDesignSystem" Version="1.0.1" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj" />
+		<ProjectReference Include="..\SharedCL\SharedCL.csproj" />
+	</ItemGroup>
 
 </Project>

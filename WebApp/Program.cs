@@ -1,12 +1,17 @@
 using ApexCharts;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Localization;
 using MudBlazor.Services;
+using MudBlazor.Translations;
 using WebApp.Components;
 using WebApp.LungCancerPrediction.ApiClients;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+builder.Services.AddLocalization();
+builder.Services.AddMudTranslations();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -44,6 +49,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+var supportedCultures = new[] { "en-US", "bs-BA" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
