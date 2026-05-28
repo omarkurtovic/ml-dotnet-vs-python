@@ -64,30 +64,30 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             foreach (var epoch in Enumerable.Range(0, epochs))
             {
                 var trainEpochData = Train(trainLoader, model, loss, optimizer);
-                var valdationEpochData = Vaildate(testLoader, model, loss);
+                var validationEpochData = Validate(testLoader, model, loss);
 
                 var epochData = new LCEpochDataDto()
                 {
                     Epoch = epoch,
                     TrainingLoss = trainEpochData.Loss,
                     TrainingAccuracy = trainEpochData.Accuracy,
-                    ValidationLoss = valdationEpochData.Loss,
-                    ValidationAccuracy = valdationEpochData.Accuracy,
-                    BenignPrecision = valdationEpochData.BenignPrecision,
-                    BenignRecall = valdationEpochData.BenignRecall,
-                    BenignF1Score = valdationEpochData.BenignF1Score,
-                    NormalPrecision = valdationEpochData.NormalPrecision,
-                    NormalRecall = valdationEpochData.NormalRecall,
-                    NormalF1Score = valdationEpochData.NormalF1Score,
-                    MalignantPrecision = valdationEpochData.MalignantPrecision,
-                    MalignantRecall = valdationEpochData.MalignantRecall,
-                    MalignantF1Score = valdationEpochData.MalignantF1Score,
-                    MacroPrecision = valdationEpochData.MacroPrecision,
-                    MacroRecall = valdationEpochData.MacroRecall,
-                    MacroF1Score = valdationEpochData.MacroF1Score,
-                    WeightedPrecision = valdationEpochData.WeightedPrecision,
-                    WeightedRecall = valdationEpochData.WeightedRecall,
-                    WeightedF1Score = valdationEpochData.WeightedF1Score,
+                    ValidationLoss = validationEpochData.Loss,
+                    ValidationAccuracy = validationEpochData.Accuracy,
+                    BenignPrecision = validationEpochData.BenignPrecision,
+                    BenignRecall = validationEpochData.BenignRecall,
+                    BenignF1Score = validationEpochData.BenignF1Score,
+                    NormalPrecision = validationEpochData.NormalPrecision,
+                    NormalRecall = validationEpochData.NormalRecall,
+                    NormalF1Score = validationEpochData.NormalF1Score,
+                    MalignantPrecision = validationEpochData.MalignantPrecision,
+                    MalignantRecall = validationEpochData.MalignantRecall,
+                    MalignantF1Score = validationEpochData.MalignantF1Score,
+                    MacroPrecision = validationEpochData.MacroPrecision,
+                    MacroRecall = validationEpochData.MacroRecall,
+                    MacroF1Score = validationEpochData.MacroF1Score,
+                    WeightedPrecision = validationEpochData.WeightedPrecision,
+                    WeightedRecall = validationEpochData.WeightedRecall,
+                    WeightedF1Score = validationEpochData.WeightedF1Score,
                 };
 
                 modelDB.EpochData.Add(epochData);
@@ -102,7 +102,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         }
 
 
-        private static EpochDataDto Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
+        private static EpochData Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
         {
             var size = dataloader.dataset.Count;
             model.train();
@@ -111,7 +111,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             int batchCount = 0;
             int[,] confusionMatrix = new int[3, 3];
             long total = dataloader.dataset.Count;
-
 
             foreach (var item in dataloader)
             {
@@ -151,7 +150,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return ClassificationReport(confusionMatrix, 3, size, averageTrainLoss);
         }
 
-        private static EpochDataDto Vaildate(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn)
+        private static EpochData Validate(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn)
         {
             model.eval();
 
@@ -189,9 +188,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         }
 
 
-        private static EpochDataDto ClassificationReport(int[,] confusionMatrix, int numClasses, long total, float averageLoss)
+        private static EpochData ClassificationReport(int[,] confusionMatrix, int numClasses, long total, float averageLoss)
         {
-            EpochDataDto result = new();
+            EpochData result = new();
             result.Loss = averageLoss;
 
             float macroPrecision = 0f, macroRecall = 0f, macroF1 = 0f;
@@ -204,20 +203,20 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 int truePositives = 0;
                 int falsePositives = 0;
                 int falseNegatives = 0;
-
                 int classSupport = 0;
 
                 for (int j = 0; j < numClasses; ++j)
                 {
-                    classSupport += confusionMatrix[i, j];
+                    int val = confusionMatrix[i, j];
+                    classSupport += val;
                     if (i == j)
                     {
-                        truePositives += confusionMatrix[i, j];
-                        correct += confusionMatrix[i, j];
+                        truePositives += val;
+                        correct += val;
                     }
                     else
                     {
-                        falseNegatives += confusionMatrix[i, j];
+                        falseNegatives += val;
                         falsePositives += confusionMatrix[j, i];
                     }
                 }
@@ -275,7 +274,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return result;
         }
 
-        public class EpochDataDto
+        public class EpochData
         {
             public float Accuracy { get; set; }
             public float Loss { get; set; }

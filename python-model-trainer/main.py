@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from LungCancerPrediction.lung_cancer_prediction_model_trainer import router as lung_cancer_router
+from LungCancerPrediction.lc_trainer import router as lung_cancer_router
 
 app = FastAPI()
 
