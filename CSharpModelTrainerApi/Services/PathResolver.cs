@@ -5,7 +5,7 @@ namespace CSharpModelTrainerApi.Services
 {
     public class PathResolver
     {
-        private string GetRepoRoot()
+        private static string GetRepoRoot()
         {
             var envRoot = Environment.GetEnvironmentVariable("REPO_ROOT");
             if (!string.IsNullOrEmpty(envRoot))
@@ -17,10 +17,7 @@ namespace CSharpModelTrainerApi.Services
         
         public string GetModelPath(LCBasicDto dto) => GetLCModelPath(dto.Name, (ModelLanguage)dto.Language);
 
-        public string GetModelPath(LCInfoDto dto) => GetLCModelPath(dto.Name, (ModelLanguage)dto.Language);
-
         public string GetModelPath(LCTrainingParamsDto dto) => GetLCModelPath(dto.Name, (ModelLanguage)dto.Language);
-
 
         public string GetLungCancerDataPath()
         {
