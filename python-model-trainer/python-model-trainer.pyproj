@@ -33,13 +33,16 @@
     <Compile Include="LungCancerPrediction\models.py" />
     <Compile Include="LungCancerPrediction\__init__.py" />
     <Compile Include="main.py" />
+    <Compile Include="tests\test_datasets.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".python-version" />
+    <Content Include="pyproject.toml" />
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="LungCancerPrediction\" />
+    <Folder Include="tests\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

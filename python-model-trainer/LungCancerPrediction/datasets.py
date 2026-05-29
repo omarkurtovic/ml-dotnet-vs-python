@@ -49,10 +49,12 @@ class LungCancerTrainDataset(Dataset):
     def __init__(self, with_flips, data_directory, max_images_per_category=None):
         self.images = []
         self.labels = []
+        self.categories = ["Bengin cases", "Malignant cases", "Normal cases"]
+
+        if data_directory is None or not os.path.exists(data_directory):
+            return
         
-        categories = ["Bengin cases", "Malignant cases", "Normal cases"]
-        
-        for i, category in enumerate(categories):
+        for i, category in enumerate(self.categories):
             path = os.path.join(data_directory, category)
             files = os.listdir(path)
             
@@ -74,6 +76,14 @@ class LungCancerTrainDataset(Dataset):
                     self.images.append(TF.vflip(tensor).clone())
                     self.labels.append(i)
 
+    @staticmethod
+    def from_params(images, labels, categories):
+        dataset = LungCancerTrainDataset(with_flips=False, data_directory="")
+        dataset.images = images
+        dataset.labels = labels
+        dataset.categories = categories
+        return dataset
+
     def __len__(self):
         return len(self.images)
 
@@ -87,10 +97,21 @@ class LungCancerTrainDataset(Dataset):
         }
 
     def get_class_weights(self):
-        total = len(self.labels)
-        num_classes = 3
-        
-        counts = {label: self.labels.count(label) for label in set(self.labels)}
-        
-        weights = [total / (num_classes * counts[i]) for i in range(num_classes)]
-        return torch.tensor(weights, dtype=torch.float)
+
+        if self.categories is None or len(self.categories) == 0:
+            return []
+
+        if self.labels is None or len(self.labels) == 0:
+            return [0] * len(self.categories)
+
+        total_labels = len(self.labels)
+        class_weights = [0] * len(self.categories)
+
+        for i in range(len(class_weights)):
+            class_count = self.labels.count(i)
+            if class_count > 0:
+                class_weights[i] = total_labels / (len(self.categories) * class_count)
+            else:
+                class_weights[i] = 0
+
+        return class_weights

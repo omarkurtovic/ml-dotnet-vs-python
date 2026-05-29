@@ -10,13 +10,13 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
         private readonly List<Tensor> Images = [];
         private readonly List<long> Labels = [];
 
+        private readonly string[] Categories = ["Bengin cases", "Malignant cases", "Normal cases"];
+
         public LungCancerTrainDataset(bool withFlips, string dataDirectory, int? maxImagesPerCategory = null)
         {
-            var categories = new List<string> { "Bengin cases", "Malignant cases", "Normal cases" };
-
-            for (int i = 0; i < categories.Count; ++i)
+            for (int i = 0; i < Categories.Length; ++i)
             {
-                var path = Path.Join(dataDirectory, categories[i]);
+                var path = Path.Join(dataDirectory, Categories[i]);
                 var files = Directory.GetFiles(path);
                 int categoryImageCount = (int)(files.Length * 0.75);
 
@@ -42,6 +42,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
                 }
             }
         }
+
+        public LungCancerTrainDataset(List<Tensor> images, List<long> labels, string[] categories)
+        {
+            Images = images;
+            Labels = labels;
+            Categories = categories;
+        }
+
         public override long Count => Images.Count;
 
         public override Dictionary<string, Tensor> GetTensor(long index)
@@ -55,17 +63,36 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
                 ["label"] = torch.tensor(label)
             };
         }
+
         public float[] GetClassWeights()
         {
-            int totalLabels = Labels.Count;
-            float[] result = new float[3];
-            for(int i = 0; i < result.Length; ++i)
+            if (Categories.Length == 0)
             {
-                int classCount = Labels.Count(l => l == i);
-                result[i] = totalLabels / (3.0f * classCount);
+                return [];
             }
 
-            return result;
+            if (Labels.Count == 0)
+            {
+                return new float[Categories.Length];
+            }
+
+            int totalLabels = Labels.Count;
+            float[] classWeights = new float[Categories.Length];
+
+            for(int i = 0; i < classWeights.Length; ++i)
+            {
+                int classCount = Labels.Count(l => l == i); 
+                if (classCount == 0)
+                {
+                    classWeights[i] = 0f;
+                }
+                else
+                {
+                    classWeights[i] = totalLabels / ((float)Categories.Length * classCount);
+                }
+            }
+
+            return classWeights;
         }
     }
 }
