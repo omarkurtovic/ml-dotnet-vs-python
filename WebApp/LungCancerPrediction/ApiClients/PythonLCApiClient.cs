@@ -1,4 +1,5 @@
-﻿using SharedCL;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using SharedCL;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -41,6 +42,36 @@ namespace WebApp.LungCancerPrediction.ApiClients
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
                 return Result<LCDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
+            }
+        }
+
+        public async Task<Result<LCPredictionDto>> PredictAsync(string modelName, IBrowserFile file)
+        {
+            try
+            {
+                string url = $"Python/LungCancer/Predict?model_name={modelName}";
+                var request = new HttpRequestMessage(HttpMethod.Post, url);
+                request.Content = new MultipartFormDataContent
+                {
+                    { new StreamContent(file.OpenReadStream()), "file", file.Name }
+                };
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var prediction = await response.Content.ReadFromJsonAsync<LCPredictionDto>();
+                    return Result<LCPredictionDto>.Success(prediction!);
+                }
+                else
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
+                    return Result<LCPredictionDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
+                return Result<LCPredictionDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
             }
         }
     }

@@ -9,9 +9,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Models
         public string Name { get; set; } = null!;
         public ModelLanguage Language { get; set; }
         public IList<LCEpochData> EpochData { get; set; } = null!;
-        public int TrainingTimeInSeconds { get; set; }
-        public int ValidationTimeInSeconds { get; set; }
-        public int DataLoadingTimeInSeconds { get; set; }
+        public double TrainingTimeInSeconds { get; set; }
+        public double ValidationTimeInSeconds { get; set; }
+        public double DataLoadingTimeInSeconds { get; set; }
         public string HardwareInfo { get; set; } = null!;
     }
 }

@@ -104,9 +104,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 modelDB.EpochData.Add(epochData);
             }
 
-            modelDB.TrainingTimeInSeconds = (int)trainingTime;
-            modelDB.ValidationTimeInSeconds = (int)validationTime;
-            modelDB.DataLoadingTimeInSeconds = (int)dataLoadingStopwatch.Elapsed.TotalSeconds;
+            modelDB.TrainingTimeInSeconds = trainingTime;
+            modelDB.ValidationTimeInSeconds = validationTime;
+            modelDB.DataLoadingTimeInSeconds = dataLoadingStopwatch.Elapsed.TotalSeconds;
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 

@@ -5,7 +5,7 @@
         public float BenignScore { get; set; }
         public float MalignantScore { get; set; }
         public float NormalScore { get; set; }
-        public int PredictionTimeInMiliSeconds { get; set; }
+        public double PredictionTimeInSeconds { get; set; }
 
         public string PredictedLabel => new[] {
             ("Benign", BenignScore),

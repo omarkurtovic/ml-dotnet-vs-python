@@ -10,9 +10,9 @@ namespace SharedCL
         public string Name { get; set; } = null!;
         public ModelLanguageDto Language { get; set; }
         public IList<LCEpochDataDto> EpochData { get; set; } = null!;
-        public int TrainingTimeInSeconds { get; set; }
-        public int ValidationTimeInSeconds { get; set; }
-        public int DataLoadingTimeInSeconds { get; set; }
+        public double TrainingTimeInSeconds { get; set; }
+        public double ValidationTimeInSeconds { get; set; }
+        public double DataLoadingTimeInSeconds { get; set; }
         public string HardwareInfo { get; set; } = null!;
 
         public bool Equals(LCDto? other)

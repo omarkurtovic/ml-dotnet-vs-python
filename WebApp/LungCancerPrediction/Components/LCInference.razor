@@ -7,7 +7,8 @@
 @using WebApp.LungCancerPrediction.ApiClients
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @using Microsoft.AspNetCore.Components.Forms
-@inject CSharpLCApiClient CSharpLCApi
+@inject CSharpLCApiClient CSharpApi
+@inject PythonLCApiClient PythonApiClient
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer
@@ -68,7 +69,7 @@
                                         <b>@Loc.T("LCInference_Result"): @Prediction.PredictedLabel</b>
                                     </MudAlert>
                                     <MudChip T="string" Icon="@Icons.Material.Filled.Timer" Size="Size.Small">
-                                        @Prediction.PredictionTimeInMiliSeconds @Loc.T("LCInference_PredictionTime")
+                                        @Math.Round(Prediction.PredictionTimeInSeconds, 2) @Loc.T("LCInference_PredictionTime")
                                     </MudChip>
                                 </MudStack>
                             }
@@ -104,7 +105,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await CSharpLCApi.GetModelsBasicAsync();
+        var result = await CSharpApi.GetModelsBasicAsync();
         if (result.IsSuccess)
         {
             Models = result.Data!;
@@ -125,11 +126,19 @@
             return;
         }
 
-        var predResult = await CSharpLCApi.PredictAsync(SelectedModel.Id, _file);
+        Result<LCPredictionDto> predResult;
+        if(SelectedModel.Language == ModelLanguageDto.CSharp)
+        {
+            predResult = await CSharpApi.PredictAsync(SelectedModel.Id, _file);
+        }
+        else
+        {
+            predResult = await PythonApiClient.PredictAsync(SelectedModel.Name, _file);
+        }
+
         if (predResult.IsSuccess)
         {
             Prediction = predResult.Data!;
-
         }
         else
         {

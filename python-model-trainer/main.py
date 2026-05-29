@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from LungCancerPrediction.lc_trainer import router as lung_cancer_router
+from LungCancerPrediction.lc_controller import router as lc_router
 
 app = FastAPI()
 
-app.include_router(lung_cancer_router)
+app.include_router(lc_router)
