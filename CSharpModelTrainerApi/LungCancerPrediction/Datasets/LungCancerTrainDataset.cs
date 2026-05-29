@@ -57,12 +57,15 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
         }
         public float[] GetClassWeights()
         {
-            int total = Labels.Count;
-            int numClasses = 3;
-            var counts = Labels.GroupBy(l => l).ToDictionary(g => g.Key, g => g.Count());
-            return Enumerable.Range(0, numClasses)
-                .Select(i => (float)total / (numClasses * counts[(long)i]))
-                .ToArray();
+            int totalLabels = Labels.Count;
+            float[] result = new float[3];
+            for(int i = 0; i < result.Length; ++i)
+            {
+                int classCount = Labels.Count(l => l == i);
+                result[i] = totalLabels / (3.0f * classCount);
+            }
+
+            return result;
         }
     }
 }
