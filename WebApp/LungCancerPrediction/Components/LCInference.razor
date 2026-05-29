@@ -65,8 +65,8 @@
                             {
                                 <MudStack Row="false" AlignItems="AlignItems.Center">
 
-                                    <MudAlert Variant="Variant.Filled" Dense="true" Severity="@GetPredictionSeverity(Prediction.PredictedLabel)" Class="mt-2">
-                                        <b>@Loc.T("LCInference_Result"): @Prediction.PredictedLabel</b>
+                                    <MudAlert Variant="Variant.Filled" Dense="true" Severity="@GetPredictionSeverity(Prediction.PredictionType)" Class="mt-2">
+                                        <b>@Loc.T("LCInference_Result"): @GetPredictionLabel(Prediction.PredictionType)</b>
                                     </MudAlert>
                                     <MudChip T="string" Icon="@Icons.Material.Filled.Timer" Size="Size.Small">
                                         @Math.Round(Prediction.PredictionTimeInSeconds, 2) @Loc.T("LCInference_PredictionTime")
@@ -170,19 +170,35 @@
     }
 
 
-    private Severity GetPredictionSeverity(string prediction)
+    private Severity GetPredictionSeverity(PredictionTypeDto prediction)
     {
-        if (prediction == "Benign")
+        if (prediction == PredictionTypeDto.Benign)
         {
             return Severity.Success;
         }
-        else if (prediction == "Malignant")
+        else if (prediction == PredictionTypeDto.Malignant)
         {
             return Severity.Error;
         }
         else
         {
             return Severity.Info;
+        }
+    }
+
+    private string GetPredictionLabel(PredictionTypeDto prediction)
+    {
+        if (prediction == PredictionTypeDto.Benign)
+        {
+            return Loc.T("LCInference_Benign");
+        }
+        else if (prediction == PredictionTypeDto.Malignant)
+        {
+            return Loc.T("LCInference_Malignant");
+        }
+        else
+        {
+            return Loc.T("LCInference_Normal");
         }
     }
 }

@@ -84,6 +84,9 @@ public static class Loc
             ["LCInference_ModelLoadingError"] = "Error occurred while loading the models. Please try again.",
             ["LCInference_AnalysisError"] = "Error occurred while analyzing the image. Please try again.",
             ["LCInference_FileSizeError"] = "File size is too large! (over 5MB). Please try again.",
+            ["LCInference_Benign"] = "Benign",
+            ["LCInference_Malignant"] = "Malignant",
+            ["LCInference_Normal"] = "Normal",
 
             ["LCModels_PageTitle"] = "Models Overview",
             ["LCModels_Title"] = "Models Overview",
@@ -214,6 +217,10 @@ public static class Loc
             ["LCInference_ModelLoadingError"] = "Greška prilikom učitavanja modela. Molimo pokušajte ponovo.",
             ["LCInference_AnalysisError"] = "Greška prilikom analiziranja. Molimo pokušajte ponovo.",
             ["LCInference_FileSizeError"] = "Veličina fajla prevelika! (preko 5MB). Molimo pokušajte ponovo.",
+            ["LCInference_Benign"] = "Benigno",
+            ["LCInference_Malignant"] = "Maligno",
+            ["LCInference_Normal"] = "Normalno",
+
 
             ["LCModels_PageTitle"] = "Pregled Modela",
             ["LCModels_Title"] = "Pregled Modela",

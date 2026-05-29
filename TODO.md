@@ -18,3 +18,5 @@ what is the point of comparing python keras and c# torchsharp if they are not do
 compare performance shows no models loaded first before any models actually have time to load
 
 need to fix prediction time suc that the code called is actually the python vs c#
+
+need to update the cpu info string to capture the current culture

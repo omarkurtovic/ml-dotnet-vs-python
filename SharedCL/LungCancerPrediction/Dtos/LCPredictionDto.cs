@@ -6,12 +6,17 @@
         public float MalignantScore { get; set; }
         public float NormalScore { get; set; }
         public double PredictionTimeInSeconds { get; set; }
-
-        public string PredictedLabel => new[] {
-            ("Benign", BenignScore),
-            ("Malignant", MalignantScore),
-            ("Normal", NormalScore)
-        }.MaxBy(x => x.Item2).Item1;
-
+        public PredictionTypeDto PredictionType
+        {
+            get
+            {
+                if (BenignScore >= MalignantScore && BenignScore >= NormalScore)
+                    return PredictionTypeDto.Benign;
+                else if (MalignantScore >= BenignScore && MalignantScore >= NormalScore)
+                    return PredictionTypeDto.Malignant;
+                else
+                    return PredictionTypeDto.Normal;
+            }
+        }
     }
 }
