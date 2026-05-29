@@ -7,6 +7,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
     {
         public static torch.Device GetOptimalDevice()
         {
+            return torch.device("cpu");
+
             Device defaultDevice = default!;
             if (torch.cuda.is_available())
             {

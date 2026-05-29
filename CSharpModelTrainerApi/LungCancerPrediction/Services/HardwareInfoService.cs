@@ -20,7 +20,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 return GetGpuInfo();
             }
         }
-        private string GetCpuInfo()
+        public string GetCpuInfo()
         {
             hardwareInfo.RefreshCPUList();
             var cpu = hardwareInfo.CpuList.FirstOrDefault();
@@ -32,7 +32,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return $"{cpuName} ({physicalCores} Korova / {logicalCores} Threadova)";
         }
 
-        private string GetGpuInfo()
+        public string GetGpuInfo()
         {
             hardwareInfo.RefreshVideoControllerList();
             var gpu = hardwareInfo.VideoControllerList.FirstOrDefault();

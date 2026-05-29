@@ -23,6 +23,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 Name = model.Name,
                 Language = (ModelLanguageDto)model.Language,
                 TrainingTimeInSeconds = model.TrainingTimeInSeconds,
+                ValidationTimeInSeconds = model.ValidationTimeInSeconds,
+                DataLoadingTimeInSeconds = model.DataLoadingTimeInSeconds,
                 HardwareInfo = model.HardwareInfo,
                 EpochData = [.. model.EpochData.Select(epoch => new LCEpochDataDto
                 {

@@ -23,38 +23,12 @@
             <MudChip T="string" Icon="@Icons.Material.Filled.Autorenew" Size="Size.Small">
                 @Model.NumberOfEpochs @Loc.T("LCInfo_Epochs")
             </MudChip>
-            <MudChip T="string" Icon="@Icons.Material.Filled.Timer" Size="Size.Small">
-                @Model.TrainingTimeInSeconds @Loc.T("LCInfo_Seconds")
-            </MudChip>
             <MudChip T="string" Icon="@Icons.Material.Filled.Memory" Size="Size.Small" Variant="Variant.Outlined">
                 @Model.HardwareInfo
             </MudChip>
         </MudStack>
 
         <MudDivider Class="my-2" />
-
-        <SectionHeading>@Loc.T("LCInfo_Performance")</SectionHeading>
-        <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
-            <thead>
-                <tr>
-                    <th>@Loc.T("LCInfo_Metric")</th>
-                    <th>@Loc.T("LCInfo_Training")</th>
-                    <th>@Loc.T("LCInfo_Validation")</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><b>@Loc.T("LCInfo_Accuracy")</b></td>
-                    <td>@(Model.TrainingAccuracy.HasValue ? $"{Math.Round(Model.TrainingAccuracy.Value * 100, 2)}%" : "-")</td>
-                    <td>@(Model.ValidationAccuracy.HasValue ? $"{Math.Round(Model.ValidationAccuracy.Value * 100, 2)}%" : "-")</td>
-                </tr>
-                <tr>
-                    <td><b>@Loc.T("LCInfo_Loss")</b></td>
-                    <td>@(Model.TrainingLoss.HasValue ? Math.Round(Model.TrainingLoss.Value, 4).ToString() : "-")</td>
-                    <td>@(Model.ValidationLoss.HasValue ? Math.Round(Model.ValidationLoss.Value, 4).ToString() : "-")</td>
-                </tr>
-            </tbody>
-        </MudSimpleTable>
 
         <SectionHeading Class="mt-4">@Loc.T("LCInfo_PerformanceByClass")</SectionHeading>
         <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
@@ -90,6 +64,57 @@
                     <td>@(FormatPercent(Model.MalignantRecall))</td>
                     <td>@(FormatPercent(Model.MalignantPrecision))</td>
                     <td>@(FormatPercent(Model.MalignantF1Score))</td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+
+        <SectionHeading>@Loc.T("LCInfo_Performance")</SectionHeading>
+        <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
+            <thead>
+                <tr>
+                    <th>@Loc.T("LCInfo_Metric")</th>
+                    <th>@Loc.T("LCInfo_Training")</th>
+                    <th>@Loc.T("LCInfo_Validation")</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>@Loc.T("LCInfo_Accuracy")</b></td>
+                    <td>@(FormatPercent(Model.TrainingAccuracy))</td>
+                    <td>@(FormatPercent(Model.ValidationAccuracy))</td>
+                </tr>
+                <tr>
+                    <td><b>@Loc.T("LCInfo_Loss")</b></td>
+                    <td>@(FormatPercent(Model.TrainingLoss))</td>
+                    <td>@(FormatPercent(Model.ValidationLoss))</td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+
+        <SectionHeading>@Loc.T("LCInfo_PerformanceTimes")</SectionHeading>
+        <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
+            <thead>
+                <tr>
+                    <th>@Loc.T("LCInfo_Step")</th>
+                    <th>@Loc.T("LCInfo_TimeSeconds")</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>@Loc.T("LCInfo_DataLoading")</b></td>
+                    <td>@Model.DataLoadingTimeInSeconds s</td>
+                </tr>
+                <tr>
+                    <td><b>@Loc.T("LCInfo_TrainingTime")</b></td>
+                    <td>@Model.TrainingTimeInSeconds s</td>
+                </tr>
+                <tr>
+                    <td><b>@Loc.T("LCInfo_ValidationTime")</b></td>
+                    <td>@Model.ValidationTimeInSeconds s</td>
+                </tr>
+                <tr style="border-top: 2px solid var(--mud-palette-lines-default);">
+                    <td><b>@Loc.T("LCInfo_TotalTime")</b></td>
+                    <td>@(Model.DataLoadingTimeInSeconds + Model.TrainingTimeInSeconds + Model.ValidationTimeInSeconds) s</td>
                 </tr>
             </tbody>
         </MudSimpleTable>

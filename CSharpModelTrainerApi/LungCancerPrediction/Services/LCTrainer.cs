@@ -21,82 +21,92 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         {
             if(string.IsNullOrEmpty(trainInfo.Name))
             {
-                return Result<LCDto>.Failure("Ime modela ne smije biti prazno");
+                return Result<LCDto>.Failure("Naziv modela ne smije biti prazan");
             }
             if(trainInfo.Language != ModelLanguageDto.CSharp)
             {
-                return Result<LCDto>.Failure("Podržan je samo C# jezik");
+                return Result<LCDto>.Failure("Jezik modela mora biti C#");
             }
             if (trainInfo.Epochs < 1 || trainInfo.Epochs > 10)
             {
                 return Result<LCDto>.Failure("Broj epoha mora biti između 1 i 10");
             }
 
-
-            var modelDB = new LCDto();
-            modelDB.Name = trainInfo.Name;
-            modelDB.Language = (ModelLanguageDto)trainInfo.Language;
-            modelDB.EpochData = new List<LCEpochDataDto>();
-
+            var modelDB = new LCDto
+            {
+                Name = trainInfo.Name,
+                Language = (ModelLanguageDto)trainInfo.Language,
+                EpochData = [],
+                HardwareInfo = hardwareInfoService.GetCpuInfo()
+            };
 
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
             torch.set_default_device(defaultDevice);
-
-            modelDB.HardwareInfo = hardwareInfoService.GetHardwareInfo();
-
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 
+            // 1. DATA LOADING BENCHMARK
+            var dataLoadingStopwatch = Stopwatch.StartNew();
             var trainingData = new LungCancerTrainDataset(trainInfo.WithFlips, dataDirectory); 
             var classWeights = torch.tensor(trainingData.GetClassWeights()).to(defaultDevice);
-
             var testData = new LungCancerTestDataset(dataDirectory);
-
             var trainLoader = torch.utils.data.DataLoader(trainingData, batchSize: 8, shuffle: true, device: defaultDevice);
             var testLoader = torch.utils.data.DataLoader(testData, batchSize: 8, shuffle: false, device: defaultDevice);
+            dataLoadingStopwatch.Stop();
 
             var model = new LungCancerNN().to(defaultDevice);
             var loss = nn.CrossEntropyLoss(classWeights);
             var optimizer = torch.optim.Adam(model.parameters(), lr: 1e-4);
-
             var epochs = trainInfo.Epochs;
 
+            double trainingTime = 0;
+            double validationTime = 0;
 
-            Stopwatch stopWatch = Stopwatch.StartNew();
 
             foreach (var epoch in Enumerable.Range(0, epochs))
             {
+                // 2. TRAINING BENCHMARK
+                Stopwatch trainingStopwatch = Stopwatch.StartNew();
                 var trainEpochData = Train(trainLoader, model, loss, optimizer);
-                var valdationEpochData = Vaildate(testLoader, model, loss);
+                trainingStopwatch.Stop();
+
+                // 2. VALIDATION BENCHMARK
+                Stopwatch validationStopwatch = Stopwatch.StartNew();
+                var validationEpochData = Validate(testLoader, model, loss);
+                validationStopwatch.Stop();
+
+                trainingTime += trainingStopwatch.Elapsed.TotalSeconds;
+                validationTime += validationStopwatch.Elapsed.TotalSeconds;
 
                 var epochData = new LCEpochDataDto()
                 {
                     Epoch = epoch,
                     TrainingLoss = trainEpochData.Loss,
                     TrainingAccuracy = trainEpochData.Accuracy,
-                    ValidationLoss = valdationEpochData.Loss,
-                    ValidationAccuracy = valdationEpochData.Accuracy,
-                    BenignPrecision = valdationEpochData.BenignPrecision,
-                    BenignRecall = valdationEpochData.BenignRecall,
-                    BenignF1Score = valdationEpochData.BenignF1Score,
-                    NormalPrecision = valdationEpochData.NormalPrecision,
-                    NormalRecall = valdationEpochData.NormalRecall,
-                    NormalF1Score = valdationEpochData.NormalF1Score,
-                    MalignantPrecision = valdationEpochData.MalignantPrecision,
-                    MalignantRecall = valdationEpochData.MalignantRecall,
-                    MalignantF1Score = valdationEpochData.MalignantF1Score,
-                    MacroPrecision = valdationEpochData.MacroPrecision,
-                    MacroRecall = valdationEpochData.MacroRecall,
-                    MacroF1Score = valdationEpochData.MacroF1Score,
-                    WeightedPrecision = valdationEpochData.WeightedPrecision,
-                    WeightedRecall = valdationEpochData.WeightedRecall,
-                    WeightedF1Score = valdationEpochData.WeightedF1Score,
+                    ValidationLoss = validationEpochData.Loss,
+                    ValidationAccuracy = validationEpochData.Accuracy,
+                    BenignPrecision = validationEpochData.BenignPrecision,
+                    BenignRecall = validationEpochData.BenignRecall,
+                    BenignF1Score = validationEpochData.BenignF1Score,
+                    NormalPrecision = validationEpochData.NormalPrecision,
+                    NormalRecall = validationEpochData.NormalRecall,
+                    NormalF1Score = validationEpochData.NormalF1Score,
+                    MalignantPrecision = validationEpochData.MalignantPrecision,
+                    MalignantRecall = validationEpochData.MalignantRecall,
+                    MalignantF1Score = validationEpochData.MalignantF1Score,
+                    MacroPrecision = validationEpochData.MacroPrecision,
+                    MacroRecall = validationEpochData.MacroRecall,
+                    MacroF1Score = validationEpochData.MacroF1Score,
+                    WeightedPrecision = validationEpochData.WeightedPrecision,
+                    WeightedRecall = validationEpochData.WeightedRecall,
+                    WeightedF1Score = validationEpochData.WeightedF1Score,
                 };
 
                 modelDB.EpochData.Add(epochData);
             }
 
-            stopWatch.Stop();
-            modelDB.TrainingTimeInSeconds = (int)stopWatch.Elapsed.TotalSeconds;
+            modelDB.TrainingTimeInSeconds = (int)trainingTime;
+            modelDB.ValidationTimeInSeconds = (int)validationTime;
+            modelDB.DataLoadingTimeInSeconds = (int)dataLoadingStopwatch.Elapsed.TotalSeconds;
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 
@@ -104,7 +114,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         }
 
 
-        private static EpochDataDto Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
+        private static EpochData Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
         {
             var size = dataloader.dataset.Count;
             model.train();
@@ -113,7 +123,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             int batchCount = 0;
             int[,] confusionMatrix = new int[3, 3];
             long total = dataloader.dataset.Count;
-
 
             foreach (var item in dataloader)
             {
@@ -153,7 +162,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return ClassificationReport(confusionMatrix, 3, size, averageTrainLoss);
         }
 
-        private static EpochDataDto Vaildate(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn)
+        private static EpochData Validate(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn)
         {
             model.eval();
 
@@ -191,9 +200,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         }
 
 
-        private static EpochDataDto ClassificationReport(int[,] confusionMatrix, int numClasses, long total, float averageLoss)
+        private static EpochData ClassificationReport(int[,] confusionMatrix, int numClasses, long total, float averageLoss)
         {
-            EpochDataDto result = new();
+            EpochData result = new();
             result.Loss = averageLoss;
 
             float macroPrecision = 0f, macroRecall = 0f, macroF1 = 0f;
@@ -206,20 +215,20 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 int truePositives = 0;
                 int falsePositives = 0;
                 int falseNegatives = 0;
-
                 int classSupport = 0;
 
                 for (int j = 0; j < numClasses; ++j)
                 {
-                    classSupport += confusionMatrix[i, j];
+                    int val = confusionMatrix[i, j];
+                    classSupport += val;
                     if (i == j)
                     {
-                        truePositives += confusionMatrix[i, j];
-                        correct += confusionMatrix[i, j];
+                        truePositives += val;
+                        correct += val;
                     }
                     else
                     {
-                        falseNegatives += confusionMatrix[i, j];
+                        falseNegatives += val;
                         falsePositives += confusionMatrix[j, i];
                     }
                 }
@@ -277,7 +286,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return result;
         }
 
-        public class EpochDataDto
+        public class EpochData
         {
             public float Accuracy { get; set; }
             public float Loss { get; set; }

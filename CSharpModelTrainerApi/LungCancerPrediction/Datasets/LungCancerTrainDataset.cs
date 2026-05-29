@@ -7,8 +7,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
 {
     public class LungCancerTrainDataset : Dataset
     {
-        private readonly List<Tensor> _images = [];
-        private readonly List<long> _labels = [];
+        private readonly List<Tensor> Images = [];
+        private readonly List<long> Labels = [];
 
         public LungCancerTrainDataset(bool withFlips, string dataDirectory, int? maxImagesPerCategory = null)
         {
@@ -28,26 +28,26 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
                 for (int j = 0; j < categoryImageCount; ++j)
                 {
                     var tensor = ImageLoader.ImagePathToTensor(files[j]);
-                    _images.Add(tensor);
-                    _labels.Add(i);
+                    Images.Add(tensor);
+                    Labels.Add(i);
 
                     if (withFlips)
                     {
-                        _images.Add(tensor.flip([2]).clone());
-                        _labels.Add(i);
+                        Images.Add(tensor.flip([2]).clone());
+                        Labels.Add(i);
 
-                        _images.Add(tensor.flip([1]).clone());
-                        _labels.Add(i);
+                        Images.Add(tensor.flip([1]).clone());
+                        Labels.Add(i);
                     }
                 }
             }
         }
-        public override long Count => _images.Count;
+        public override long Count => Images.Count;
 
         public override Dictionary<string, Tensor> GetTensor(long index)
         {
-            var image = _images[(int)index];
-            var label = _labels[(int)index];
+            var image = Images[(int)index];
+            var label = Labels[(int)index];
 
             return new Dictionary<string, Tensor>
             {
@@ -57,12 +57,15 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
         }
         public float[] GetClassWeights()
         {
-            int total = _labels.Count;
-            int numClasses = 3;
-            var counts = _labels.GroupBy(l => l).ToDictionary(g => g.Key, g => g.Count());
-            return Enumerable.Range(0, numClasses)
-                .Select(i => (float)total / (numClasses * counts[(long)i]))
-                .ToArray();
+            int totalLabels = Labels.Count;
+            float[] result = new float[3];
+            for(int i = 0; i < result.Length; ++i)
+            {
+                int classCount = Labels.Count(l => l == i);
+                result[i] = totalLabels / (3.0f * classCount);
+            }
+
+            return result;
         }
     }
 }

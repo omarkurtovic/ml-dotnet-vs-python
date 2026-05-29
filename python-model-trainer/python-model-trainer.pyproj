@@ -25,7 +25,10 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="LungCancerPrediction\hardware_utils.py" />
+    <Compile Include="LungCancerPrediction\datasets.py" />
+    <Compile Include="LungCancerPrediction\neural_networks.py" />
+    <Compile Include="LungCancerPrediction\services.py" />
+    <Compile Include="LungCancerPrediction\lc_trainer.py" />
     <Compile Include="LungCancerPrediction\lung_cancer_prediction_model_trainer.py" />
     <Compile Include="LungCancerPrediction\models.py" />
     <Compile Include="LungCancerPrediction\__init__.py" />
