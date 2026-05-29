@@ -52,7 +52,7 @@ namespace CSharpTests
         }
 
         [Test]
-        public void GetClassWeights_ThreeClasses_SomeLabels_ReturnsCorrectWeights()
+        public void GetClassWeights_UnbalancedClasses_ReturnsCorrectWeights()
         {
             var dataset = new LungCancerTrainDataset([], [0, 0, 1, 2, 2], ["Class1", "Class2", "Class3"]);
             var result = dataset.GetClassWeights();
