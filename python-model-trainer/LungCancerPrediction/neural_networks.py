@@ -2,7 +2,7 @@ import torch.nn as nn
 
 class LungCancerNN(nn.Module):
     def __init__(self):
-        super(LungCancerNN, self).__init__()
+        super().__init__()
         
         self.model = nn.Sequential(
             nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3),

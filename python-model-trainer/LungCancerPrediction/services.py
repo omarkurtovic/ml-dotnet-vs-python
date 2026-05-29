@@ -53,6 +53,7 @@ class PathResolver:
 
 class TrainingHelper:
     @staticmethod
+
     def get_optimal_device() -> torch.device:
         if torch.cuda.is_available():
             return torch.device("cuda:0")
@@ -64,7 +65,16 @@ class TrainingHelper:
 
 class HardwareUntils:
     @staticmethod
+    def get_optimal_hardware_info():
+
+        if torch.cuda.is_available():
+            return HardwareUntils._get_gpu_info(0)
+        else:
+            return HardwareUntils._get_cpu_info()
+
+    @staticmethod
     def _get_cpu_info():
+
         info = get_cpu_info()
         cpu_name = info.get('brand_raw', 'Nepoznat CPU')
         physical_cores = psutil.cpu_count(logical=False)
@@ -73,20 +83,7 @@ class HardwareUntils:
 
     @staticmethod
     def _get_gpu_info(device_index: int = 0):
+
         gpu_name = torch.cuda.get_device_name(device_index)
-    
         gpu_memory = torch.cuda.get_device_properties(device_index).total_memory / (1024 ** 3)
-    
         return f"{gpu_name} (Memorija: {gpu_memory:.2f}GB)"
-
-    @staticmethod
-    def get_optimal_hardware_info():
-
-        return torch.device("cpu")
-
-        if torch.cuda.is_available():
-            return HardwareUntils._get_gpu_info(0)
-        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-            return "Apple M-Series GPU (Dijeljena Memorija)"
-        else:
-            return HardwareUntils._get_cpu_info()

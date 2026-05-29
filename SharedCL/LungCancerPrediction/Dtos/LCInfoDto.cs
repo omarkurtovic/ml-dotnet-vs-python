@@ -9,6 +9,8 @@ namespace SharedCL
         public string Name { get; set; } = null!;
         public ModelLanguageDto Language { get; set; }
         public int TrainingTimeInSeconds { get; set; }
+        public int ValidationTimeInSeconds { get; set; }
+        public int DataLoadingTimeInSeconds { get; set; }
         public string HardwareInfo { get; set; } = null!;
         public int NumberOfEpochs { get; set; }
         public double? TrainingLoss { get; set; }

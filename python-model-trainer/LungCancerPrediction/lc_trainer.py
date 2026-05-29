@@ -36,38 +36,48 @@ def train(train_data: LCTrainingParamsDto):
     if train_data.epochs < 1 or train_data.epochs > 10:
         raise HTTPException(status_code=400, detail="Broj epoha mora biti između 1 i 10")
 
-    model_db = LCDto()
-    model_db.name = train_data.name
-    model_db.language = ModelLanguageDto.Python
-    model_db.epochData = []
+    model_db = LCDto(
+    name = train_data.name,
+    language = ModelLanguageDto.Python,
+    hardwareInfo = HardwareUntils._get_cpu_info(),
+    trainingTimeInSeconds = 0, 
+    epochData = [])
 
     default_device = TrainingHelper.get_optimal_device()
     torch.set_default_device(default_device)
-
-    model_db.hardwareInfo = HardwareUntils.get_optimal_hardware_info()
-    
     data_directory = PathResolver.get_lung_cancer_data_path()
     
+    # 1. DATA LOADING BENCHMARK
+    data_loading_start = time.perf_counter()
     training_data = LungCancerTrainDataset(with_flips=train_data.withFlips, data_directory=data_directory)
     class_weights = training_data.get_class_weights()
-
     test_data = LungCancerTestDataset(data_directory=data_directory)
-    
     train_loader = DataLoader(training_data, batch_size=8, shuffle=True)
     test_loader = DataLoader(test_data, batch_size=8, shuffle=False)
+    end_time = time.perf_counter()
+    data_loading_end = time.perf_counter()
     
     model = LungCancerNN().to(default_device)
     loss = torch.nn.CrossEntropyLoss(weight=class_weights.to(default_device))
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-
     epochs = train_data.epochs
 
-    
-    start_time = time.perf_counter()
+    total_training_time = 0.0
+    total_validation_time = 0.0
 
     for epoch in range(epochs):
+        # 2. TRAINING BENCHMARK
+        training_start = time.perf_counter()
         train_epoch_data = train(train_loader, model, loss, optimizer)
+        training_end = time.perf_counter()
+
+        # 3. VALIDATION BENCHMARK 
+        validation_start = time.perf_counter()
         validation_epoch_data = validate(test_loader, model, loss)
+        validation_end = time.perf_counter()
+
+        total_training_time += (training_end - training_start)
+        total_validation_time += (validation_end - validation_start)
 
         epoch_data = LCEpochDataDto()
         epoch_data.epoch = epoch
@@ -94,7 +104,9 @@ def train(train_data: LCTrainingParamsDto):
         model_db.epochData.append(epoch_data)
 
     end_time = time.perf_counter()
-    model_db.trainingTimeInSeconds = int(end_time - start_time)
+    model_db.trainingTimeInSeconds = int(total_training_time)
+    model_db.validationTimeInSeconds = int(total_validation_time)
+    model_db.dataLoadingTimeInSeconds = int(data_loading_end - data_loading_start)
 
     model_path = PathResolver.get_model_path(train_data)
     torch.save(model.state_dict(), model_path)
