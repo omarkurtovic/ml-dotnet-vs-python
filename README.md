@@ -17,14 +17,21 @@ Developed as part of a Bachelor's Thesis focusing on Computer Vision. The progra
 
 Check out the live demo here: [ml-dotnet-vs-python](http://49.13.166.156)
 
+#### Screenshots
+
+<img width="2557" height="1284" alt="image" src="https://github.com/user-attachments/assets/548e3dd5-bbe2-4d61-8d8b-c4362f98dda4" />
+<img width="2557" height="1281" alt="image" src="https://github.com/user-attachments/assets/7f34b95d-7ee2-4897-9fd5-1d2302f24511" />
+<img width="2556" height="1284" alt="image" src="https://github.com/user-attachments/assets/c7699ec7-f505-43d6-8351-1101dc114298" />
+
+
 #### Tech Stack
 
 - Blazor Server
 - ASP.NET Core Web API
 - SQLite + EF Core
-- ML.NET (C#) and TorchSharp (C# for CNNs)
+- TorchSharp)
 - FastAPI (Python)
-- Scikit-Learn and Keras/PyTorch (Python)
+- PyTorch
 - .NET Aspire for orchestration
 - MudBlazor for UI components
 - Hetzner Cloud (Ubuntu) for deployment
