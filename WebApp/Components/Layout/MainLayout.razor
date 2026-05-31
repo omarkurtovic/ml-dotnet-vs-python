@@ -1,39 +1,49 @@
 ﻿@using ApexCharts
 @inherits LayoutComponentBase
 @inject IServiceProvider ServiceProvider
+@inject ILocalStorageService LocalStorage
+@inject IJSRuntime JS
 
-<MudThemeProvider @bind-IsDarkMode="@DarkMode" Theme="ThemeService.Theme"  />
-<MudPopoverProvider />
+@if (Render)
+{
+    <MudThemeProvider @bind-IsDarkMode="@DarkMode" Theme="ThemeService.Theme" />
+    <MudPopoverProvider />
 
-<MudDialogProvider />
+    <MudDialogProvider />
 
-<MudSnackbarProvider />
-<MudLayout>
-    <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="MudBlazor.Color.Inherit" Edge="Edge.Start"
-                        OnClick="@((e) => DrawerToggle())" />
-        <MudSpacer />
-        <MudIconButton Icon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
-                                    Color="MudBlazor.Color.Default"
-                                    OnClick="ThemeChanged" />
-        <LanguageToggle />
-    </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h5" Class="mt-1">C# vs Python</MudText>
-        </MudDrawerHeader>
-        <MudNavMenu>
-            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.HealthAndSafety">
-                @Loc.T("LCLayout_Title")
-            </MudNavLink>
-        </MudNavMenu>
-    </MudDrawer>
+    <MudSnackbarProvider />
+    <MudLayout>
+        <MudAppBar Elevation="1">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="MudBlazor.Color.Inherit" Edge="Edge.Start"
+            OnClick="@((e) => DrawerToggle())" />
+            <MudSpacer />
+            <MudIconButton Icon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+            Color="MudBlazor.Color.Default"
+            OnClick="ThemeChanged" />
+            <MudMenu Icon="@Icons.Material.Filled.Language" Color="MudBlazor.Color.Default">
+                <MudMenuItem OnClick='() => SetLanguage("en-US")'>@Loc.T("LCLayout_English")</MudMenuItem>
+                <MudMenuItem OnClick='() => SetLanguage("bs-BA")'>@Loc.T("LCLayout_Bosnian")</MudMenuItem>
+            </MudMenu>
+        </MudAppBar>
+        <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
+            <MudDrawerHeader>
+                <MudText Typo="Typo.h5" Class="mt-1">C# vs Python</MudText>
+            </MudDrawerHeader>
+            <MudNavMenu>
+                <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.HealthAndSafety">
+                    @Loc.T("LCLayout_Title")
+                </MudNavLink>
+            </MudNavMenu>
+        </MudDrawer>
 
-    <MudMainContent>
-        @Body
-    </MudMainContent>
+        <MudMainContent>
+            @Body
+        </MudMainContent>
 
-</MudLayout>
+    </MudLayout>
+}
+
+
 
 
 @code {
@@ -44,9 +54,31 @@
 
     private bool DarkMode { get; set; } = false;
 
+    private bool Render = false;
+
     protected override async Task OnInitializedAsync()
     {
         apexChartService = ServiceProvider.GetService<IApexChartService>();
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            bool local = await LocalStorage.GetItemAsync<bool>("user_theme");
+            DarkMode = local;
+
+            string? culture = await LocalStorage.GetItemAsync<string>("user_culture");
+            if (!string.IsNullOrWhiteSpace(culture) && System.Globalization.CultureInfo.GetCultureInfo(culture).ToString() != culture)
+            {
+                await JS.InvokeVoidAsync("setLanguage", culture);
+            }
+
+            Render = true;
+            await RefreshGraphs();
+            StateHasChanged();
+        }        
     }
 
     void DrawerToggle()
@@ -57,6 +89,8 @@
     private async Task ThemeChanged()
     {
         DarkMode = !DarkMode;
+        await LocalStorage.SetItemAsync("user_theme", DarkMode);
+
         await RefreshGraphs();
         StateHasChanged();
     }
@@ -81,5 +115,11 @@
                 Background = "transparent"
             }
         }, true);
+    }
+
+    private async Task SetLanguage(string culture)
+    {
+        await LocalStorage.SetItemAsync("user_culture", culture);
+        await JS.InvokeVoidAsync("setLanguage", culture);
     }
 }
