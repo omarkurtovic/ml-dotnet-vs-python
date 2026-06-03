@@ -26,3 +26,4 @@ UpgradeLog.htm
 /CSharpModelTrainerApi/app.db-wal
 /CSharpModelTrainerApi/app.db
 /python-model-trainer/__pycache__/main.cpython-312.pyc
+/python-model-trainer/venv

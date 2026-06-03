@@ -10,6 +10,9 @@ using WebApp.LungCancerPrediction.ApiClients;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+builder.Services.AddLocalStorageServices();
+
 builder.Services.AddLocalization();
 builder.Services.AddMudTranslations();
 
