@@ -18,5 +18,18 @@
                     return PredictionTypeDto.Normal;
             }
         }
+
+        public double PredictionScore
+        {
+            get
+            {
+                if (BenignScore >= MalignantScore && BenignScore >= NormalScore)
+                    return Math.Round(BenignScore * 100, 2);
+                else if (MalignantScore >= BenignScore && MalignantScore >= NormalScore)
+                    return Math.Round(MalignantScore * 100, 2);
+                else
+                    return Math.Round(NormalScore * 100, 2);
+            }
+        }
     }
 }

@@ -66,7 +66,7 @@
                                 <MudStack Row="false" AlignItems="AlignItems.Center">
 
                                     <MudAlert Variant="Variant.Filled" Dense="true" Severity="@GetPredictionSeverity(Prediction.PredictionType)" Class="mt-2">
-                                        <b>@Loc.T("LCInference_Result"): @GetPredictionLabel(Prediction.PredictionType)</b>
+                                        <b>@Loc.T("LCInference_Result"): @GetPredictionLabel(Prediction.PredictionType) (@Loc.T("LCInference_Confidance"): @(Prediction.PredictionScore)%)</b>
                                     </MudAlert>
                                     <MudChip T="string" Icon="@Icons.Material.Filled.Timer" Size="Size.Small">
                                         @Math.Round(Prediction.PredictionTimeInSeconds, 2) @Loc.T("LCInference_PredictionTime")
