@@ -7,7 +7,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
     {
         public static torch.Device GetOptimalDevice()
         {
-            return torch.device("cpu");
+            if (torch.cuda_is_available())
+            {
+                return torch.CUDA;
+            }
+            else
+            {
+                return torch.CPU;
+            }
         }
     }
 }
