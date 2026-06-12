@@ -14,7 +14,8 @@ what packages exactly libtorch 2.10
 ### word document
 1. Uvod
 1.1 Objasni problem: Python je standard za ML, ali enterprise firme koriste C# i .NET.
-1.2 Cilj rada: Dokazati da li se C# može takmičiti sa Pythonom koristeći isti C++ engine (LibTorch) u pozadini.      
+1.2 Cilj rada: Dokazati da li se C# može takmičiti sa Pythonom koristeći isti C++ engine (LibTorch) u pozadini.
+      
 2. Teorijska osnova
 2.1 Šta su neuralne mreže? 
 2.2. Šta su Konvolutivne neuralne mreže (CNN)
