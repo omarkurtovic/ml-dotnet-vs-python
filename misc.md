@@ -24,13 +24,13 @@ what packages exactly libtorch 2.10
 2.5. Tehnološki okvir mašinskog učenja
 Objasni PyTorch, LibTorch i TorchSharp i kako oba ekosistema dijele isti C++ engine.
 
-3. Arhitektura sistema i metodologija testiranja
+3.  Arhitektura sistema i metodologija testiranja
 3.1 Dizajn i arhitektura CNN modela, Optimizer, Weights
-3.2. Orkestracija i .NET Aspire: Kratko (pola stranice) objasni da Aspire služi da istovremeno pokrene i C# i Python backend kako bi ih mogao testirati "rame uz rame" pod istim hardverskim uslovima.
-3.3. Implementacija Python okruženja: Kratko spomeni FastAPI kao most preko kojeg Blazor šalje komande PyTorchu.
-3.4. Implementacija .NET okruženja: C# ASP.NET Core API i TorchSharp.
+3.2.Orkestracija i .NET Aspire: Kratko (pola stranice) objasni da Aspire služi da istovremeno pokrene i C# i Python backend kako bi ih mogao testirati "rame uz rame" pod istim hardverskim uslovima.
+3.3.Implementacija Python okruženja: Kratko spomeni FastAPI kao most preko kojeg Blazor šalje komande PyTorchu.
+3.4.Implementacija .NET okruženja: C# ASP.NET Core API i TorchSharp.
 3.5 Metodologija testiranja i kontrola varijabli
-3.5. Praćenje rezultata (SQLite & Blazor): Kako UI korisniku prikazuje uporedne rezultate i spašava ih u bazu radi analize.
+3.5.Praćenje rezultata (SQLite & Blazor): Kako UI korisniku prikazuje uporedne rezultate i spašava ih u bazu radi analize.
 
 4. Rezultati i Uporedna 
 4.1 Python vrijeme treniranja vs C# vrijeme treniranja.
