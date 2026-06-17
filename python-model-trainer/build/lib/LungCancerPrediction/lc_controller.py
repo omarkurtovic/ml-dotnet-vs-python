@@ -52,6 +52,14 @@ def train(train_data: LCTrainingParamsDto):
 
     default_device = TrainingHelper.get_optimal_device()
     torch.set_default_device(default_device)
+
+    seed = 42
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+
+
     data_directory = PathResolver.get_lung_cancer_data_path()
     
     # 1. DATA LOADING BENCHMARK
