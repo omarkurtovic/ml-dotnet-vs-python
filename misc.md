@@ -32,7 +32,11 @@ what packages exactly libtorch 2.10
 
     Preprocesiranje slika
 
+    Razdvajanje slika na trenining i validaciju
+
     CNN Architecture, Optimizer (Adam), and Loss Function (Cross-Entropy).
+
+    Epochs and Batching
 
     System Architecture (.NET Aspire, Web APIs, SQLite).
 
