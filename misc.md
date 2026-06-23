@@ -24,7 +24,7 @@ what packages exactly libtorch 2.10
 
     PyTorch vs. TorchSharp (and LibTorch)
 
-    Evaluation Metrics (Recall, Precision, TP/FP/FN, Macro/Weighted).
+    Evaluation Metrics (Recall, Precision, TP/FP/FN, Macro/Weighted). - needs some work
 
 3. Metodologija i Implementacija
 
