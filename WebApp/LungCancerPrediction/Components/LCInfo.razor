@@ -101,20 +101,8 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><b>@Loc.T("LCInfo_DataLoading")</b></td>
-                    <td>@Math.Round(Model.DataLoadingTimeInSeconds, 2) @Loc.T("LCInfo_Seconds")</td>
-                </tr>
-                <tr>
                     <td><b>@Loc.T("LCInfo_TrainingTime")</b></td>
                     <td>@Math.Round(Model.TrainingTimeInSeconds, 2) @Loc.T("LCInfo_Seconds")</td>
-                </tr>
-                <tr>
-                    <td><b>@Loc.T("LCInfo_ValidationTime")</b></td>
-                    <td>@Math.Round(Model.ValidationTimeInSeconds, 2) @Loc.T("LCInfo_Seconds")</td>
-                </tr>
-                <tr style="border-top: 2px solid var(--mud-palette-lines-default);">
-                    <td><b>@Loc.T("LCInfo_TotalTime")</b></td>
-                    <td>@Math.Round(Model.DataLoadingTimeInSeconds + Model.TrainingTimeInSeconds + Model.ValidationTimeInSeconds, 2)  @Loc.T("LCInfo_Seconds")</td>
                 </tr>
             </tbody>
         </MudSimpleTable>

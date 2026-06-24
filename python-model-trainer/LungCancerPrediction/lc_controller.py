@@ -40,13 +40,13 @@ def train(train_data: LCTrainingParamsDto):
     if train_data.language != ModelLanguageDto.Python:
         raise HTTPException(status_code=400, detail="Jezik modela mora biti Python")
 
-    if train_data.epochs < 1 or train_data.epochs > 10:
-        raise HTTPException(status_code=400, detail="Broj epoha mora biti između 1 i 10")
+    if train_data.epochs < 1 or train_data.epochs > 100:
+        raise HTTPException(status_code=400, detail="Broj epoha mora biti između 1 i 100")
 
     model_db = LCDto(
     name = train_data.name,
     language = ModelLanguageDto.Python,
-    hardwareInfo = HardwareUntils._get_cpu_info(),
+    hardwareInfo = HardwareUntils.get_optimal_hardware_info(),
     trainingTimeInSeconds = 0, 
     epochData = [])
 
@@ -63,21 +63,19 @@ def train(train_data: LCTrainingParamsDto):
     data_directory = PathResolver.get_lung_cancer_data_path()
     
     # 1. DATA LOADING BENCHMARK
-    data_loading_start = time.perf_counter()
+    device_generator = torch.Generator(device=default_device)
     training_data = LungCancerTrainDataset(with_flips=train_data.withFlips, data_directory=data_directory)
-    class_weights = training_data.get_class_weights()
+    class_weights = torch.tensor(training_data.get_class_weights(), dtype=torch.float32).to(default_device)
     test_data = LungCancerTestDataset(data_directory=data_directory)
-    train_loader = DataLoader(training_data, batch_size=8, shuffle=True)
+    train_loader = DataLoader(training_data, batch_size=8, shuffle=True, generator=device_generator)
     test_loader = DataLoader(test_data, batch_size=8, shuffle=False)
-    data_loading_end = time.perf_counter()
     
     model = LungCancerNN().to(default_device)
-    loss = torch.nn.CrossEntropyLoss(weight=class_weights.to(default_device))
+    loss = torch.nn.CrossEntropyLoss(weight=class_weights)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     epochs = train_data.epochs
 
     total_training_time = 0.0
-    total_validation_time = 0.0
 
     for epoch in range(epochs):
         # 2. TRAINING BENCHMARK
@@ -86,12 +84,9 @@ def train(train_data: LCTrainingParamsDto):
         training_end = time.perf_counter()
 
         # 3. VALIDATION BENCHMARK 
-        validation_start = time.perf_counter()
         validation_epoch_data = validate(test_loader, model, loss)
-        validation_end = time.perf_counter()
 
         total_training_time += (training_end - training_start)
-        total_validation_time += (validation_end - validation_start)
 
         epoch_data = LCEpochDataDto()
         epoch_data.epoch = epoch
@@ -118,8 +113,6 @@ def train(train_data: LCTrainingParamsDto):
         model_db.epochData.append(epoch_data)
 
     model_db.trainingTimeInSeconds = total_training_time
-    model_db.validationTimeInSeconds = total_validation_time    
-    model_db.dataLoadingTimeInSeconds = data_loading_end - data_loading_start
 
     model_path = PathResolver.get_model_path(train_data)
     torch.save(model.state_dict(), model_path)
@@ -135,9 +128,11 @@ def train(dataloader, model, loss_fn, optimizer):
     total_loss = 0.0
     confusion_matrix = torch.zeros((3, 3), dtype=torch.int32)
 
+    default_device = TrainingHelper.get_optimal_device()
+
     for batch_count, item in enumerate(dataloader, start=1):
-        images = item["image"]
-        correct_indices = item["label"]
+        images = item["image"].to(default_device)
+        correct_indices = item["label"].to(default_device)
 
         predictions = model(images)
         loss = loss_fn(predictions, correct_indices)
@@ -173,11 +168,13 @@ def validate(dataloader, model, loss_fn):
     
     confusion_matrix = torch.zeros((3, 3), dtype=torch.int32)
     total = len(dataloader.dataset)
+    
+    default_device = TrainingHelper.get_optimal_device()
 
     with torch.no_grad():
         for item in dataloader:
-            images = item["image"]
-            correct_indices = item["label"]
+            images = item["image"].to(default_device)
+            correct_indices = item["label"].to(default_device)
 
             predictions = model(images)
             loss = loss_fn(predictions, correct_indices)
