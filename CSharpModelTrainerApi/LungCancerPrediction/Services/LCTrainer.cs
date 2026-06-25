@@ -54,7 +54,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 
-            // 1. DATA LOADING BENCHMARK
             var trainingData = new LungCancerTrainDataset(trainInfo.WithFlips, dataDirectory); 
             var classWeights = torch.tensor(trainingData.GetClassWeights()).to(defaultDevice);
             var testData = new LungCancerTestDataset(dataDirectory);
@@ -67,23 +66,17 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var epochs = trainInfo.Epochs;
 
             double trainingTime = 0;
-            double validationTime = 0;
 
 
             foreach (var epoch in Enumerable.Range(0, epochs))
             {
-                // 2. TRAINING BENCHMARK
                 Stopwatch trainingStopwatch = Stopwatch.StartNew();
                 var trainEpochData = Train(trainLoader, model, loss, optimizer);
                 trainingStopwatch.Stop();
 
-                // 2. VALIDATION BENCHMARK
-                Stopwatch validationStopwatch = Stopwatch.StartNew();
                 var validationEpochData = Validate(testLoader, model, loss);
-                validationStopwatch.Stop();
 
                 trainingTime += trainingStopwatch.Elapsed.TotalSeconds;
-                validationTime += validationStopwatch.Elapsed.TotalSeconds;
 
                 var epochData = new LCEpochDataDto()
                 {

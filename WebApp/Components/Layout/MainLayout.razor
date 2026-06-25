@@ -14,8 +14,6 @@
     <MudSnackbarProvider />
     <MudLayout>
         <MudAppBar Elevation="1">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="MudBlazor.Color.Inherit" Edge="Edge.Start"
-            OnClick="@((e) => DrawerToggle())" />
             <MudSpacer />
             <MudIconButton Icon="@(DarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
             Color="MudBlazor.Color.Default"
@@ -25,16 +23,6 @@
                 <MudMenuItem OnClick='() => SetLanguage("bs-BA")'>@Loc.T("LCLayout_Bosnian")</MudMenuItem>
             </MudMenu>
         </MudAppBar>
-        <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
-            <MudDrawerHeader>
-                <MudText Typo="Typo.h5" Class="mt-1">C# vs Python</MudText>
-            </MudDrawerHeader>
-            <MudNavMenu>
-                <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.HealthAndSafety">
-                    @Loc.T("LCLayout_Title")
-                </MudNavLink>
-            </MudNavMenu>
-        </MudDrawer>
 
         <MudMainContent>
             @Body
@@ -49,8 +37,6 @@
 @code {
 
     private IApexChartService? apexChartService;
-
-    bool _drawerOpen = true;
 
     private bool DarkMode { get; set; } = false;
 
@@ -81,10 +67,6 @@
         }        
     }
 
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
 
     private async Task ThemeChanged()
     {
