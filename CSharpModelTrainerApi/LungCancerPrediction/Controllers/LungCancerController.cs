@@ -195,5 +195,17 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             System.IO.File.Delete(modelPath);
             return Ok();
         }
+
+        [HttpPost]
+        [Route("UpdateModelName")]
+        public async Task<IActionResult> UpdateModelName([FromQuery] int id, [FromBody] string newName)
+        {
+            var updateResult = await LungCancerModelRepository.UpdateNameAsync(id, newName);
+            if (!updateResult.IsSuccess)
+            {
+                return BadRequest(updateResult.Message);
+            }
+            return Ok();
+        }
     }
 }

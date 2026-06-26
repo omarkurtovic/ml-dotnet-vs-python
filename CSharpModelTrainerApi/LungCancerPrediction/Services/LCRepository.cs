@@ -269,5 +269,17 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             await _context.SaveChangesAsync();
             return Result.Success();
         }
+
+        public async Task<Result> UpdateNameAsync(int id, string newName)
+        {
+            var model = await _context.LCModels.FindAsync(id);
+            if (model == null)
+            {
+                return Result.Failure("Model not found");
+            }
+            model.Name = newName;
+            await _context.SaveChangesAsync();
+            return Result.Success();
+        }
     }
 }
