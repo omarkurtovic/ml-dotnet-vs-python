@@ -14,6 +14,7 @@ namespace SharedCL
         public double MacroPrecision { get; set; }
         public double MacroRecall { get; set; }
         public double MacroF1Score { get; set; }
+        public double Accuracy { get; set; }
 
     }
 }
