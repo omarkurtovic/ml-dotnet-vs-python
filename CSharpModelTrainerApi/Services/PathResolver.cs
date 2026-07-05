@@ -34,7 +34,7 @@ namespace CSharpModelTrainerApi.Services
             }
             else if (modelLanguage == ModelLanguage.Python)
             {
-                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "python", $"{modelName}.onnx");
+                return Path.Combine(repoRoot, "models", "lung-cancer-prediction", "python", $"{modelName}.dat");
             }
             else
             {
