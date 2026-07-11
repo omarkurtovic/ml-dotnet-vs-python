@@ -1,8 +1,9 @@
 using CSharpModelTrainerApi.Database;
 using CSharpModelTrainerApi.LungCancerPrediction.Services;
+using CSharpModelTrainerApi.LungCancerPrediction.Workers;
+using CSharpModelTrainerApi.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
-using CSharpModelTrainerApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,12 +19,14 @@ builder.Services.AddOpenApi();
 
 ConfigureDatabase(builder.Services, builder.Environment);
 
-builder.Services.AddSingleton<LCTrainer>();
 builder.Services.AddScoped<LCRepository>();
 builder.Services.AddSingleton<LCPredictionService>();
 
 builder.Services.AddSingleton<PathResolver>();
 builder.Services.AddSingleton<HardwareInfoService>();
+
+builder.Services.AddSingleton<TrainingQueue>();
+builder.Services.AddHostedService<TrainingWorker>();
 
 var app = builder.Build();
 

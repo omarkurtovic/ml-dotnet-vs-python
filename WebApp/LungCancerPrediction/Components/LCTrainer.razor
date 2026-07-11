@@ -104,6 +104,8 @@
 
     private LCInfo LCInfo = null!;
 
+    private bool TrainingInProgress = false;
+
     protected override void OnInitialized()
     {
         TrainingParams = new LCTrainingParamsDto()
@@ -158,14 +160,16 @@
 
     private async Task TrainCSharpModel()
     {
+        TrainingInProgress = true;
         var result = await CSharpLCApi.TrainModelAsync(TrainingParams);
+
         if (!result.IsSuccess)
         {
             Snackbar.Add(Loc.T("LCTrainer_TrainingError"), Severity.Error);
             return;
         }
 
-        Snackbar.Add(Loc.T("LCTrainer_TrainingSuccess"), Severity.Success);
+        int id = result.Data;
         ModelId = result.Data;
         await ShowModelDetails();
     }

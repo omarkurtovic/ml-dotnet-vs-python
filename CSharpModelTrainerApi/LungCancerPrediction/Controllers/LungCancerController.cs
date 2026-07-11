@@ -1,7 +1,9 @@
 ﻿using CSharpModelTrainerApi.Enums;
 using CSharpModelTrainerApi.LungCancerPrediction.Services;
+using CSharpModelTrainerApi.LungCancerPrediction.Workers;
 using CSharpModelTrainerApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.ML;
 using SharedCL;
 using System.IO;
 
@@ -10,17 +12,19 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 
     [ApiController]
     [Route("[controller]")]
-    public class LungCancerController(LCTrainer modelTrainer,
+    public class LungCancerController(
         LCRepository lungCancerModelRepository,
         LCPredictionService lungCancerPredictionService,
         PathResolver pathResolver,
-        HardwareInfoService hardwareInfoService) : ControllerBase
+        HardwareInfoService hardwareInfoService,
+        TrainingQueue trainingQueue) : ControllerBase
     {
-        private LCTrainer ModelTrainer { get; set; } = modelTrainer;
         private LCPredictionService LungCancerPredictionService { get; set; } = lungCancerPredictionService;
         private LCRepository LungCancerModelRepository { get; set; } = lungCancerModelRepository;
         private PathResolver PathResolver { get; set; } = pathResolver;
         private HardwareInfoService HardwareInfoService { get; set; } = hardwareInfoService;
+        private TrainingQueue _trainingQueue { get; set; } = trainingQueue;
+
 
         [HttpGet]
         [Route("Models")]
@@ -143,17 +147,36 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         [Route("Train")]
         public async Task<IActionResult> Train([FromBody] LCTrainingParamsDto trainParams)
         {
-            var modelRes = ModelTrainer.TrainModel(trainParams, HardwareInfoService);
-            if (!modelRes.IsSuccess)
+            if (string.IsNullOrEmpty(trainParams.Name))
             {
-                return BadRequest(modelRes.Message);
+                return BadRequest("Naziv modela ne smije biti prazan");
             }
-            var saveResult = await LungCancerModelRepository.Save(modelRes.Data!);
-            if (!saveResult.IsSuccess)
+            if (trainParams.Language != ModelLanguageDto.CSharp)
             {
-                return BadRequest(saveResult.Message);
+                return BadRequest("Jezik modela mora biti C#");
+            }
+            if (trainParams.Epochs < 1 || trainParams.Epochs > 100)
+            {
+                return BadRequest("Broj epoha mora biti između 1 i 100");
             }
 
+            var modelDB = new LCDto
+            {
+                Name = trainParams.Name,
+                Language = (ModelLanguageDto)trainParams.Language,
+                EpochData = [],
+                HardwareInfo = hardwareInfoService.GetHardwareInfo(),
+                TotalEpochs = trainParams.Epochs,
+                ModelStatusDto = ModelStatusDto.Training
+            };
+
+            var saveResult = await LungCancerModelRepository.Save(modelDB);
+            if (!saveResult.IsSuccess)
+            {
+                return BadRequest("Greška prilikom spremanja modela");
+            }
+
+            await _trainingQueue.EnqueueAsync(saveResult.Data, trainParams);
             return Ok(saveResult.Data);
         }
 

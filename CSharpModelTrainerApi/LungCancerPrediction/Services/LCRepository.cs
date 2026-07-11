@@ -93,8 +93,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
 
             query = query.Skip(options.CurrentPage * options.PageSize).Take(options.PageSize);
-
-            var models = (await query.ToListAsync()).Select(model => new LCBasicDto()
+            var models = await query.ToListAsync();
+            var modelDtos = models.Select(model => new LCBasicDto()
             {
                 Id = model.Id,
                 Name = model.Name,
@@ -107,7 +107,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             return Result<LCGridPageDataDto>.Success(new LCGridPageDataDto()
             {
-                Models = models,
+                Models = modelDtos,
                 TotalItems = totalItems
             });
         }
@@ -115,7 +115,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         public async Task<Result<LCDto>> GetModel(int id)
         {
             var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstOrDefaultAsync();
-            if(model == null)
+            if (model == null)
             {
                 return Result<LCDto>.Failure("Model not found");
             }
@@ -156,7 +156,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         public async Task<Result<LCBasicDto>> GetModelBasic(int id)
         {
             var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstAsync();
-            if(model == null)
+            if (model == null)
             {
                 return Result<LCBasicDto>.Failure("Model not found");
             }
@@ -175,36 +175,47 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         public async Task<Result<LCInfoDto>> GetModelInfo(int id)
         {
             var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstAsync();
-            if(model == null)
+            if (model == null)
             {
                 return Result<LCInfoDto>.Failure("Model not found");
             }
+            LCEpochData ed = new LCEpochData();
+            int currentEpoch = 0;
+
+            if(model.EpochData != null && model.EpochData.Count != 0)
+            {
+                ed = model.EpochData.Last();
+                currentEpoch = model.EpochData.Count;
+            }
+
             return Result<LCInfoDto>.Success(new LCInfoDto
             {
+                TotalEpochs = model.TotalEpochs,
+                ModelStatusDto = (ModelStatusDto)model.ModelStatus,
                 Name = model.Name,
-                NumberOfEpochs = model.EpochData.Count,
-                Language = (ModelLanguageDto)model.Language,
                 TrainingTimeInSeconds = model.TrainingTimeInSeconds,
                 HardwareInfo = model.HardwareInfo,
-                TrainingAccuracy = model.EpochData.Last().TrainingAccuracy,
-                TrainingLoss = model.EpochData.Last().TrainingLoss,
-                ValidationAccuracy = model.EpochData.Last().ValidationAccuracy,
-                ValidationLoss = model.EpochData.Last().ValidationLoss,
-                BenignPrecision = model.EpochData.Last().BenignPrecision,
-                BenignRecall = model.EpochData.Last().BenignRecall,
-                BenignF1Score = model.EpochData.Last().BenignF1Score,
-                MalignantPrecision = model.EpochData.Last().MalignantPrecision,
-                MalignantRecall = model.EpochData.Last().MalignantRecall,
-                MalignantF1Score = model.EpochData.Last().MalignantF1Score,
-                NormalPrecision = model.EpochData.Last().NormalPrecision,
-                NormalRecall = model.EpochData.Last().NormalRecall,
-                NormalF1Score = model.EpochData.Last().NormalF1Score,
-                MacroPrecision = model.EpochData.Last().MacroPrecision,
-                MacroRecall = model.EpochData.Last().MacroRecall,
-                MacroF1Score = model.EpochData.Last().MacroF1Score,
-                WeightedPrecision = model.EpochData.Last().WeightedPrecision,
-                WeightedRecall = model.EpochData.Last().WeightedRecall,
-                WeightedF1Score = model.EpochData.Last().WeightedF1Score
+                Language = (ModelLanguageDto)model.Language,
+                CurrentEpoch = currentEpoch ,
+                TrainingAccuracy = ed.TrainingAccuracy,
+                TrainingLoss = ed.TrainingLoss,
+                ValidationAccuracy = ed.ValidationAccuracy,
+                ValidationLoss = ed.ValidationLoss,
+                BenignPrecision = ed.BenignPrecision,
+                BenignRecall = ed.BenignRecall,
+                BenignF1Score = ed.BenignF1Score,
+                MalignantPrecision = ed.MalignantPrecision,
+                MalignantRecall = ed.MalignantRecall,
+                MalignantF1Score = ed.MalignantF1Score,
+                NormalPrecision = ed.NormalPrecision,
+                NormalRecall = ed.NormalRecall,
+                NormalF1Score = ed.NormalF1Score,
+                MacroPrecision = ed.MacroPrecision,
+                MacroRecall = ed.MacroRecall,
+                MacroF1Score = ed.MacroF1Score,
+                WeightedPrecision = ed.WeightedPrecision,
+                WeightedRecall = ed.WeightedRecall,
+                WeightedF1Score = ed.WeightedF1Score
             });
         }
 
@@ -218,6 +229,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 Language = (ModelLanguage)model.Language,
                 TrainingTimeInSeconds = model.TrainingTimeInSeconds,
                 HardwareInfo = model.HardwareInfo,
+                TotalEpochs = model.TotalEpochs,
+                ModelStatus = (ModelStatus)model.ModelStatusDto,
                 EpochData = [.. model.EpochData.Select(epoch => new LCEpochData
                 {
                     Epoch = epoch.Epoch,
@@ -268,6 +281,41 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 return Result.Failure("Model not found");
             }
             model.Name = newName;
+            await _context.SaveChangesAsync();
+            return Result.Success();
+        }
+
+        public async Task<Result> AddEpochData(int id, LCEpochDataDto epoch)
+        {
+            var model = await _context.LCModels.FindAsync(id);
+            if (model == null)
+            {
+                return Result.Failure("Model not found");
+            }
+            var newEpochData = new LCEpochData
+            {
+                Epoch = epoch.Epoch,
+                TrainingLoss = epoch.TrainingLoss,
+                TrainingAccuracy = epoch.TrainingAccuracy,
+                ValidationLoss = epoch.ValidationLoss,
+                ValidationAccuracy = epoch.ValidationAccuracy,
+                BenignPrecision = epoch.BenignPrecision,
+                BenignRecall = epoch.BenignRecall,
+                BenignF1Score = epoch.BenignF1Score,
+                MalignantPrecision = epoch.MalignantPrecision,
+                MalignantRecall = epoch.MalignantRecall,
+                MalignantF1Score = epoch.MalignantF1Score,
+                NormalPrecision = epoch.NormalPrecision,
+                NormalRecall = epoch.NormalRecall,
+                NormalF1Score = epoch.NormalF1Score,
+                MacroPrecision = epoch.MacroPrecision,
+                MacroRecall = epoch.MacroRecall,
+                MacroF1Score = epoch.MacroF1Score,
+                WeightedPrecision = epoch.WeightedPrecision,
+                WeightedRecall = epoch.WeightedRecall,
+                WeightedF1Score = epoch.WeightedF1Score
+            };
+            model.EpochData.Add(newEpochData);
             await _context.SaveChangesAsync();
             return Result.Success();
         }

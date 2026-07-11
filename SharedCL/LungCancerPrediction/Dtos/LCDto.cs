@@ -9,7 +9,9 @@ namespace SharedCL
         public int Id { get; set; }
         public string Name { get; set; } = null!;
         public ModelLanguageDto Language { get; set; }
+        public int TotalEpochs { get; set; }
         public IList<LCEpochDataDto> EpochData { get; set; } = null!;
+        public ModelStatusDto ModelStatusDto { get; set; } = ModelStatusDto.Training;
         public double TrainingTimeInSeconds { get; set; }
         public double ValidationTimeInSeconds { get; set; }
         public double DataLoadingTimeInSeconds { get; set; }

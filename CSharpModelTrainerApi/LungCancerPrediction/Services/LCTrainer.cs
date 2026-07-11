@@ -15,30 +15,18 @@ using CSharpModelTrainerApi.Services;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LCTrainer(PathResolver pathResolver)
+    public class LCTrainer(PathResolver pathResolver, LCRepository lungCancerModelRepository)
     {
-        public  Result<LCDto> TrainModel(LCTrainingParamsDto trainInfo, HardwareInfoService hardwareInfoService)
+        private LCRepository LungCancerModelRepository { get; set; } = lungCancerModelRepository;
+        public  async Task<Result<LCDto>> TrainModelAsync(int modelId, LCTrainingParamsDto trainInfo)
         {
-            if(string.IsNullOrEmpty(trainInfo.Name))
+            var modelResult = await LungCancerModelRepository.GetModel(modelId);
+            if (!modelResult.IsSuccess)
             {
-                return Result<LCDto>.Failure("Naziv modela ne smije biti prazan");
+                return Result<LCDto>.Failure("Failed to retrieve model.");
             }
-            if(trainInfo.Language != ModelLanguageDto.CSharp)
-            {
-                return Result<LCDto>.Failure("Jezik modela mora biti C#");
-            }
-            if (trainInfo.Epochs < 1 || trainInfo.Epochs > 100)
-            {
-                return Result<LCDto>.Failure("Broj epoha mora biti između 1 i 100");
-            }
+            var modelDB = modelResult.Data!;
 
-            var modelDB = new LCDto
-            {
-                Name = trainInfo.Name,
-                Language = (ModelLanguageDto)trainInfo.Language,
-                EpochData = [],
-                HardwareInfo = hardwareInfoService.GetHardwareInfo()
-            };
 
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
             torch.set_default_device(defaultDevice);
@@ -102,7 +90,11 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     WeightedF1Score = validationEpochData.WeightedF1Score,
                 };
 
-                modelDB.EpochData.Add(epochData);
+                var addEpochResult = await LungCancerModelRepository.AddEpochData(modelDB.Id, epochData);
+                if(!addEpochResult.IsSuccess)
+                {
+                    return Result<LCDto>.Failure("Greška prilikom spremanja podataka epohe");
+                }
             }
 
             modelDB.TrainingTimeInSeconds = trainingTime;
