@@ -19,7 +19,7 @@
 		<PackageReference Include="Blazor.LocalStorage" Version="10.0.0" />
 		<PackageReference Include="MudBlazor" Version="9.4.0" />
 		<PackageReference Include="MudBlazor.Translations" Version="3.3.0" />
-		<PackageReference Include="OmarDesignSystem" Version="1.0.1" />
+		<PackageReference Include="OmarDesignSystem" Version="1.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>

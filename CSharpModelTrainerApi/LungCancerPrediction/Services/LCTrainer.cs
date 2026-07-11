@@ -27,9 +27,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             {
                 return Result<LCDto>.Failure("Jezik modela mora biti C#");
             }
-            if (trainInfo.Epochs < 1 || trainInfo.Epochs > 10)
+            if (trainInfo.Epochs < 1 || trainInfo.Epochs > 100)
             {
-                return Result<LCDto>.Failure("Broj epoha mora biti između 1 i 10");
+                return Result<LCDto>.Failure("Broj epoha mora biti između 1 i 100");
             }
 
             var modelDB = new LCDto
@@ -37,21 +37,28 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 Name = trainInfo.Name,
                 Language = (ModelLanguageDto)trainInfo.Language,
                 EpochData = [],
-                HardwareInfo = hardwareInfoService.GetCpuInfo()
+                HardwareInfo = hardwareInfoService.GetHardwareInfo()
             };
 
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
             torch.set_default_device(defaultDevice);
+
+            long seed = 42; 
+            torch.manual_seed(seed);
+            if (torch.cuda.is_available())
+            {
+                torch.cuda.manual_seed(seed);
+                torch.cuda.manual_seed_all(seed);
+            }
+
+
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 
-            // 1. DATA LOADING BENCHMARK
-            var dataLoadingStopwatch = Stopwatch.StartNew();
             var trainingData = new LungCancerTrainDataset(trainInfo.WithFlips, dataDirectory); 
             var classWeights = torch.tensor(trainingData.GetClassWeights()).to(defaultDevice);
             var testData = new LungCancerTestDataset(dataDirectory);
             var trainLoader = torch.utils.data.DataLoader(trainingData, batchSize: 8, shuffle: true, device: defaultDevice);
             var testLoader = torch.utils.data.DataLoader(testData, batchSize: 8, shuffle: false, device: defaultDevice);
-            dataLoadingStopwatch.Stop();
 
             var model = new LungCancerNN().to(defaultDevice);
             var loss = nn.CrossEntropyLoss(classWeights);
@@ -59,23 +66,17 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var epochs = trainInfo.Epochs;
 
             double trainingTime = 0;
-            double validationTime = 0;
 
 
             foreach (var epoch in Enumerable.Range(0, epochs))
             {
-                // 2. TRAINING BENCHMARK
                 Stopwatch trainingStopwatch = Stopwatch.StartNew();
                 var trainEpochData = Train(trainLoader, model, loss, optimizer);
                 trainingStopwatch.Stop();
 
-                // 2. VALIDATION BENCHMARK
-                Stopwatch validationStopwatch = Stopwatch.StartNew();
                 var validationEpochData = Validate(testLoader, model, loss);
-                validationStopwatch.Stop();
 
                 trainingTime += trainingStopwatch.Elapsed.TotalSeconds;
-                validationTime += validationStopwatch.Elapsed.TotalSeconds;
 
                 var epochData = new LCEpochDataDto()
                 {
@@ -105,8 +106,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             }
 
             modelDB.TrainingTimeInSeconds = trainingTime;
-            modelDB.ValidationTimeInSeconds = validationTime;
-            modelDB.DataLoadingTimeInSeconds = dataLoadingStopwatch.Elapsed.TotalSeconds;
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 

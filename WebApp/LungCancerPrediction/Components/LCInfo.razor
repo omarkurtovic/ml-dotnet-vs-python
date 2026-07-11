@@ -30,6 +30,9 @@
 
         <MudDivider Class="my-2" />
 
+        <SectionHeading>@FormatTrainingTime(Model.TrainingTimeInSeconds)</SectionHeading>
+        <SectionHeading>@Loc.T("LCInfo_Accuracy"): @(FormatPercent(Model.ValidationAccuracy))</SectionHeading>
+
         <SectionHeading Class="mt-4">@Loc.T("LCInfo_PerformanceByClass")</SectionHeading>
         <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
             <thead>
@@ -41,11 +44,17 @@
                 </tr>
             </thead>
             <tbody>
-                <tr style="background-color: var(--mud-palette-background-grey);">
+                <tr>
                     <td><b>@Loc.T("LCInfo_MacroAverage")</b></td>
                     <td>@(FormatPercent(Model.MacroRecall))</td>
                     <td>@(FormatPercent(Model.MacroPrecision))</td>
                     <td>@(FormatPercent(Model.MacroF1Score))</td>
+                </tr>
+                <tr>
+                    <td><b>@Loc.T("LCInfo_MacroWeighted")</b></td>
+                    <td>@(FormatPercent(Model.WeightedRecall))</td>
+                    <td>@(FormatPercent(Model.WeightedPrecision))</td>
+                    <td>@(FormatPercent(Model.WeightedF1Score))</td>
                 </tr>
                 <tr>
                     <td>@Loc.T("LCInfo_NormalClass")</td>
@@ -68,56 +77,7 @@
             </tbody>
         </MudSimpleTable>
 
-        <SectionHeading>@Loc.T("LCInfo_Performance")</SectionHeading>
-        <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
-            <thead>
-                <tr>
-                    <th>@Loc.T("LCInfo_Metric")</th>
-                    <th>@Loc.T("LCInfo_Training")</th>
-                    <th>@Loc.T("LCInfo_Validation")</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><b>@Loc.T("LCInfo_Accuracy")</b></td>
-                    <td>@(FormatPercent(Model.TrainingAccuracy))</td>
-                    <td>@(FormatPercent(Model.ValidationAccuracy))</td>
-                </tr>
-                <tr>
-                    <td><b>@Loc.T("LCInfo_Loss")</b></td>
-                    <td>@(FormatPercent(Model.TrainingLoss))</td>
-                    <td>@(FormatPercent(Model.ValidationLoss))</td>
-                </tr>
-            </tbody>
-        </MudSimpleTable>
-
-        <SectionHeading>@Loc.T("LCInfo_PerformanceTimes")</SectionHeading>
-        <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
-            <thead>
-                <tr>
-                    <th>@Loc.T("LCInfo_Step")</th>
-                    <th>@Loc.T("LCInfo_TimeSeconds")</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><b>@Loc.T("LCInfo_DataLoading")</b></td>
-                    <td>@Math.Round(Model.DataLoadingTimeInSeconds, 2) @Loc.T("LCInfo_Seconds")</td>
-                </tr>
-                <tr>
-                    <td><b>@Loc.T("LCInfo_TrainingTime")</b></td>
-                    <td>@Math.Round(Model.TrainingTimeInSeconds, 2) @Loc.T("LCInfo_Seconds")</td>
-                </tr>
-                <tr>
-                    <td><b>@Loc.T("LCInfo_ValidationTime")</b></td>
-                    <td>@Math.Round(Model.ValidationTimeInSeconds, 2) @Loc.T("LCInfo_Seconds")</td>
-                </tr>
-                <tr style="border-top: 2px solid var(--mud-palette-lines-default);">
-                    <td><b>@Loc.T("LCInfo_TotalTime")</b></td>
-                    <td>@Math.Round(Model.DataLoadingTimeInSeconds + Model.TrainingTimeInSeconds + Model.ValidationTimeInSeconds, 2)  @Loc.T("LCInfo_Seconds")</td>
-                </tr>
-            </tbody>
-        </MudSimpleTable>
+        <MudText Typo="Typo.h6" Color="Color.Primary"></MudText>
     </MudStack>
 }
 
@@ -154,5 +114,17 @@
     private string FormatPercent(double? value)
     {
         return value.HasValue ? $"{Math.Round(value.Value * 100, 2)}%" : "-";
+    }
+
+    private string FormatTrainingTime(double trainingTimeInSeconds)
+    {
+        if (trainingTimeInSeconds < 60)
+        {
+            return $"{Loc.T("LCInfo_TrainingTime")}: {Math.Round(trainingTimeInSeconds, 2)} {Loc.T("LCInfo_Seconds")}";
+        }
+        else
+        {
+            return $"{Loc.T("LCInfo_TrainingTime")}: {Math.Round(trainingTimeInSeconds/60, 2)} {Loc.T("LCInfo_Minutes")}";
+        }
     }
 }

@@ -3,6 +3,7 @@ using CSharpModelTrainerApi.LungCancerPrediction.Services;
 using CSharpModelTrainerApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using SharedCL;
+using System.IO;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 {
@@ -193,6 +194,47 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return Ok();
 
             System.IO.File.Delete(modelPath);
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("UpdateModelName")]
+        public async Task<IActionResult> UpdateModelName([FromQuery] int id, [FromBody] string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                return BadRequest("New name cannot be empty.");
+            }
+
+            var modelResult = await LungCancerModelRepository.GetModelBasic(id);
+            if (!modelResult.IsSuccess)
+            {
+                return NotFound();
+            }
+            var model = modelResult.Data;
+
+
+            if(model!.Name == newName)
+            {
+                return BadRequest("New name is the same as the current name.");
+            }
+
+            var modelPath = PathResolver.GetModelPath(model);
+
+            if(!System.IO.File.Exists(modelPath))
+            {
+                return NotFound();
+            }
+
+            var updateResult = await LungCancerModelRepository.UpdateNameAsync(id, newName);
+            if (!updateResult.IsSuccess)
+            {
+                return BadRequest(updateResult.Message);
+            }
+
+            model.Name = newName;
+            var newPath = PathResolver.GetModelPath(model);
+            System.IO.File.Move(modelPath, newPath);
             return Ok();
         }
     }

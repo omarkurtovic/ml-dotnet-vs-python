@@ -57,7 +57,10 @@ class TrainingHelper:
     @staticmethod
 
     def get_optimal_device() -> torch.device:
-        return torch.device("cpu")
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        else:
+            return torch.device("cpu")
 
 
 class HardwareUntils:

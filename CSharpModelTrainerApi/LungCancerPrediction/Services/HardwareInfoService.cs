@@ -39,7 +39,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             string gpuName = gpu?.Name?.Trim() ?? "Nepoznat GPU";
             string gpuMemory = gpu != null ? $"{gpu.AdapterRAM / (1024 * 1024 * 1024)} GB" : "";
-            return $"{gpuName} (Memorija: {gpuMemory}GB)";
+            return $"{gpuName} (Memorija: {gpuMemory})";
         }
     }
 }

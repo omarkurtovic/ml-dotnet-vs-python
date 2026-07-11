@@ -36,6 +36,7 @@
                                 <MudSelect T="LCDto" Label="@Loc.T("LCComparison_ModelSelect")"
                                            MultiSelection="true"
                                            @bind-SelectedValues="SelectedModels"
+                                           @bind-SelectedValues:after="RefreshGrid"
                                            Variant="Variant.Outlined"
                                            Clearable="true">
                                     @foreach (var model in _models)
@@ -49,6 +50,7 @@
                                 <MudSelect T="string" Label="@Loc.T("LCComparison_MetricSelect")"
                                            MultiSelection="true"
                                            @bind-SelectedValues="SelectedMetrics"
+                                           @bind-SelectedValues:after="RefreshGrid"
                                            MultiSelectionTextFunc="@(new Func<IReadOnlyList<string>, string>(GetMultiSelectionMetricText))"
                                            Variant="Variant.Outlined"
                                            Clearable="true">
@@ -69,7 +71,7 @@
                             @foreach (var metric in SelectedMetrics)
                             {
                                 <MudTabPanel Text="@(GetMetricTranslations()[metric])">
-                                    <ApexChart TItem="LCEpochDataDto" Title="@((GetMetricTranslations())[metric])" Height="400">
+                                    <ApexChart @ref="Chart" TItem="LCEpochDataDto" Title="@((GetMetricTranslations())[metric])" Height="400">
                                         @foreach (var model in SelectedModels)
                                         {
                                             <ApexPointSeries TItem="LCEpochDataDto"
@@ -100,6 +102,7 @@
 </MudContainer>
 
 @code {
+    private ApexChart<LCEpochDataDto> Chart;
     private decimal GetValue(string metric, LCEpochDataDto epochData)
     {
         var value = epochData.GetType().GetProperty(metric)!.GetValue(epochData); 
@@ -114,12 +117,20 @@
     }
 
     private List<LCDto> _models = [];
-
-    private IReadOnlyCollection<LCDto> SelectedModels = [];
-
     private Dictionary<string, string> Metrics = [];
 
+    private IReadOnlyCollection<LCDto> SelectedModels = [];
     private IReadOnlyCollection<string> SelectedMetrics = [];
+
+    private async Task RefreshGrid()
+    {
+        if (Chart == null)
+        {
+            return;
+        }
+        await Chart.UpdateSeriesAsync();
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -157,10 +168,11 @@
         { nameof(LCEpochDataDto.MacroRecall), @Loc.T("LCComparison_MacroRecall") },
         { nameof(LCEpochDataDto.MacroF1Score), @Loc.T("LCComparison_MacroF1Score") },
 
-        { nameof(LCEpochDataDto.TrainingLoss), @Loc.T("LCComparison_TrainingLoss") },
-        { nameof(LCEpochDataDto.TrainingAccuracy), @Loc.T("LCComparison_TrainingPrecision") },
         { nameof(LCEpochDataDto.ValidationLoss), @Loc.T("LCComparison_ValidationLoss") },
         { nameof(LCEpochDataDto.ValidationAccuracy), @Loc.T("LCComparison_ValidationPrecision") },
+
+        { nameof(LCEpochDataDto.TrainingLoss), @Loc.T("LCComparison_TrainingLoss") },
+        { nameof(LCEpochDataDto.TrainingAccuracy), @Loc.T("LCComparison_TrainingPrecision") },
 
         { nameof(LCEpochDataDto.BenignPrecision), @Loc.T("LCComparison_BenignPrecision") },
         { nameof(LCEpochDataDto.BenignRecall), @Loc.T("LCComparison_BenignRecall") },

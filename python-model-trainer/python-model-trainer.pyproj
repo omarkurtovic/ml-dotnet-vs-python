@@ -4,7 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>eef92787-b551-46d4-87b3-acc5caa0a20c</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>LungCancerPrediction\lung_cancer_prediction_model_trainer.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -29,7 +30,6 @@
     <Compile Include="LungCancerPrediction\neural_networks.py" />
     <Compile Include="LungCancerPrediction\services.py" />
     <Compile Include="LungCancerPrediction\lc_controller.py" />
-    <Compile Include="LungCancerPrediction\lung_cancer_prediction_model_trainer.py" />
     <Compile Include="LungCancerPrediction\models.py" />
     <Compile Include="LungCancerPrediction\__init__.py" />
     <Compile Include="main.py" />

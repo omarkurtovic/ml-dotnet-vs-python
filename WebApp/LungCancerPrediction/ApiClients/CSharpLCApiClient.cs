@@ -268,6 +268,35 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 return Result<bool>.Failure(Loc.T("LCErrors_ErrorGeneric"));
             }
         }
+
+        public async Task<Result> UpdateModelNameAsync(LCDto model)
+        {
+            try
+            {
+                var url = $"LungCancer/UpdateModelName?id={model.Id}";
+                var request = new HttpRequestMessage(HttpMethod.Post, url);
+                request.Content = JsonContent.Create(model.Name);
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return Result.Success();
+                }
+                else
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
+                    return Result.Failure(Loc.T("LCErrors_ErrorGeneric"));
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
+                return Result.Failure(Loc.T("LCErrors_ErrorGeneric"));
+            }
+        }
     }
 }
 

@@ -45,6 +45,7 @@
                     <PropertyColumn Property="x => x.MacroRecall" Title="@Loc.T("LCModels_Recall")" Format="P2" Sortable="true" />
                     <PropertyColumn Property="x => x.MacroPrecision" Title="@Loc.T("LCModels_Precision")" Format="P2" Sortable="true" />
                     <PropertyColumn Property="x => x.MacroF1Score" Title="@Loc.T("LCModels_F1Score")" Format="P2" Sortable="true" />
+                    <PropertyColumn Property="x => x.Accuracy" Title="@Loc.T("LCModels_Accuracy")" Format="P2" Sortable="true" />
                     <TemplateColumn Title="" Sortable="false" Filterable="false">
                         <CellTemplate>
                             <MudMenu Icon="@Icons.Material.Filled.MoreVert"
@@ -54,6 +55,9 @@
                                      Dense="true">
                                 <MudMenuItem OnClick="@(() => ShowModelDetails(context.Item))" Icon="@Icons.Material.Filled.Info">
                                     @Loc.T("LCModels_Details")
+                                </MudMenuItem>
+                                <MudMenuItem OnClick="@(() => ShowModelEdit(context.Item))" Icon="@Icons.Material.Filled.Edit">
+                                    @Loc.T("LCModels_Edit")
                                 </MudMenuItem>
                                 <MudMenuItem OnClick="@(() => ConfirmDelete(context.Item))" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">
                                     @Loc.T("LCModels_Delete")
@@ -77,7 +81,14 @@
            Width="min(100vw, 600px)"
            Elevation="2">
     <div class="px-6 mt-6">
-        <LCInfo @ref="LCInfo" Close="CloseDrawer"></LCInfo>
+        @if (_drawerShown == DrawerShown.Info)
+        {
+            <LCInfo @ref="LCInfo" Close="CloseDrawer"></LCInfo>
+        }
+        else if(_drawerShown == DrawerShown.Edit)
+        {
+            <LCEdit @ref="LCEdit" Close="CloseDrawer" RefreshMainGrid="(async () => await DataGrid.ReloadServerData())"></LCEdit>
+        }
     </div>
 </MudDrawer>
 
@@ -100,10 +111,20 @@
     }
 
     private bool IsSideDrawerOpen = false;
+    private DrawerShown _drawerShown = DrawerShown.Info;
 
     private void CloseDrawer() => IsSideDrawerOpen = false;
 
     private LCInfo LCInfo = null!;
+
+    private LCEdit LCEdit = null!;
+
+
+    private enum DrawerShown
+    {
+        Info,
+        Edit
+    }
 
     private async Task<GridData<LCBasicDto>> ServerReload(GridState<LCBasicDto> state, CancellationToken token)
     {
@@ -141,8 +162,11 @@
 
     private async Task ShowModelDetails(LCBasicDto model)
     {
+        _drawerShown = DrawerShown.Info;
+        StateHasChanged();
         await LCInfo.ShowModelDetails(model.Id);
         IsSideDrawerOpen = true;
+
     }
 
     private async Task ConfirmDelete(LCBasicDto model)
@@ -176,6 +200,15 @@
                 await DataGrid.ReloadServerData();
             }
         }
+    }
+
+
+    private async Task ShowModelEdit(LCBasicDto model)
+    {
+        _drawerShown = DrawerShown.Edit;
+        StateHasChanged();
+        await LCEdit.EditModelAsync(model.Id);
+        IsSideDrawerOpen = true;
     }
 }
 

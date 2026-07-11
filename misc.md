@@ -12,20 +12,42 @@ could be nice to put in the presentation the exact versiosn of libtorch we are u
 what packages exactly libtorch 2.10
 
 ### word document
-1. Uvod (2-3 stranice)
-•	Objasni problem: Python je standard za ML, ali enterprise firme koriste C# i .NET.
-•	Cilj rada: Dokazati da li se C# može takmičiti sa Pythonom koristeći isti C++ engine (LibTorch) u pozadini.
-2. Teorijska osnova (5-7 stranica)
-•	Šta su Konvolutivne neuralne mreže (CNN) i kako prepoznaju slike (rak pluća)?
-•	Šta je Kaggle i kakav je dataset koristen?
-•	Objašnjenje metrika: Šta je Recall, šta je Precision, šta je Loss?
-3. Arhitektura sistema
-•	Kako je postavljen .NET Aspire da orkestrira sve?
-•	Python Backend: Keras/PyTorch i FastAPI.
-•	C# Backend: TorchSharp/ML.NET i ASP.NET Core API.
-•	Frontend & Baza: Blazor UI i SQLite 
-4. Rezultati i Uporedna 
-•	Python vrijeme treniranja vs C# vrijeme treniranja.
-•	Python Recall vs C# Recall.
-•	Uporediš vrijeme inference-a 
-5. Zaključak (1-2 stranice)
+1. Uvod
+
+    Problem statement and motivation (Python vs C# in enterprise).
+
+    Goals of the thesis.
+
+2. Teorijska pozadina
+
+    Neural Networks & CNNs.
+
+    PyTorch vs. TorchSharp (and LibTorch)
+
+    Evaluation Metrics (Recall, Precision, TP/FP/FN, Macro/Weighted). - needs some work
+
+3. Metodologija i Implementacija
+
+    The Dataset (IQ-OTH/NCCD).
+
+    Preprocesiranje slika
+
+    Razdvajanje slika na trenining i validaciju
+
+    CNN Architecture, Optimizer (Adam), and Loss Function (Cross-Entropy).
+
+    Epochs and Batching
+
+    System Architecture (.NET Aspire, Web APIs, SQLite).
+
+    User Interface (Blazor & Multi-language support).
+
+4. Testiranje i Kontrola
+
+    Hardware, Seeds, and versions
+
+5. Rezultati i Analiza
+
+    The graphs! Training time comparison, Inference latency, Validation Recall.
+
+6. Zaključak

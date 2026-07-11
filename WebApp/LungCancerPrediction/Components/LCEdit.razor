@@ -1,0 +1,97 @@
+﻿@using MudBlazor
+@using OmarDesignSystem
+@using SharedCL
+@using WebApp.LungCancerPrediction.ApiClients
+@inject ISnackbar Snackbar
+@inject CSharpLCApiClient CSharpLCApi
+
+@if (Model != null)
+{
+    <MudStack Spacing="4" Class="pa-4">
+
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            <SubHeading Class="mb-0">@Loc.T("LCEdit_Title")</SubHeading>
+            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                           Color="Color.Default"
+                           OnClick="@(async () => await Close.InvokeAsync())" />
+        </MudStack>
+        
+        <MudForm @ref="Form">
+            <MudStack Spacing="4">
+                <MudTextField @bind-Value="Model.Name"
+                              Required="true"
+                              RequiredError="@Loc.T("LCEdit_NameRequired")"
+                              Variant="Variant.Outlined"
+                              Label="@Loc.T("LCEdit_ModelName")" />
+            </MudStack>
+
+        </MudForm>
+
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <LoadingButton Color="@Color.Primary"
+                           Variant="@Variant.Filled"
+                           OnClick="SaveModelAsync"
+                           LoadingText="@Loc.T("LCEdit_LoadingText")">
+                @Loc.T("LCEdit_Save")
+            </LoadingButton>
+        </MudStack>
+    </MudStack>
+}
+
+@code {
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public EventCallback Close { get; set; }
+
+    [Parameter] public EventCallback RefreshMainGrid { get; set; }
+
+    private MudForm Form = null!;
+
+    public LCDto? Model { get; set; }
+
+    public async Task EditModelAsync(int id)
+    {
+        if (id == 0)
+        {
+            await Close.InvokeAsync();
+            return;
+        }
+
+        var result = await CSharpLCApi.GetModelAsync(id);
+        if (result.IsSuccess)
+        {
+            Model = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(Loc.T("LCEdit_GetError"), Severity.Error);
+            await Close.InvokeAsync();
+        }
+
+        StateHasChanged();
+    }
+
+
+    private async Task SaveModelAsync()
+    {
+        await Form.ValidateAsync();
+        if (!Form.IsValid)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        var result = await CSharpLCApi.UpdateModelNameAsync(Model!);
+
+        if (result.IsSuccess)
+        {
+            Snackbar.Add(Loc.T("LCEdit_SaveSuccess"), Severity.Success);
+            await RefreshMainGrid.InvokeAsync();
+        }
+        else
+        {
+            Snackbar.Add(Loc.T("LCEdit_SaveFailure"), Severity.Error);
+        }
+    }
+}

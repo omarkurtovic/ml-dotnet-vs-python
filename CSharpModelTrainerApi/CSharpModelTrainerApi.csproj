@@ -24,7 +24,7 @@
     <PackageReference Include="SkiaSharp" Version="3.119.4" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.4" />
     <PackageReference Include="TorchSharp" Version="0.107.0" />
-    <PackageReference Include="TorchSharp-cpu" Version="0.107.0" />
+    <PackageReference Include="TorchSharp-cuda-windows" Version="0.107.0" />
     <PackageReference Include="TorchVision" Version="0.107.0" />
   </ItemGroup>
 

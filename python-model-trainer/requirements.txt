@@ -14,7 +14,7 @@ matplotlib>=3.8.0
 jupyter>=1.0.0
 
 # --- PyTorch
---extra-index-url https://download.pytorch.org/whl/cpu
+--extra-index-url https://download.pytorch.org/whl/cu128
 torch==2.10.0
 torchvision
 torchaudio
