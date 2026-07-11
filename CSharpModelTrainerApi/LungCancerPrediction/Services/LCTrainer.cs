@@ -101,6 +101,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 
+            var saveResult = await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.ModelStatus.Trained);
+
             return Result<LCDto>.Success(modelDB);
         }
 

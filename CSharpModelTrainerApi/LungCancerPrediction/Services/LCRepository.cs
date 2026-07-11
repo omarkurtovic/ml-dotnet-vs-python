@@ -285,6 +285,18 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return Result.Success();
         }
 
+        public async Task<Result> UpdateStatusAsync(int id, ModelStatus newStatus)
+        {
+            var model = await _context.LCModels.FindAsync(id);
+            if (model == null)
+            {
+                return Result.Failure("Model not found");
+            }
+            model.ModelStatus = newStatus;
+            await _context.SaveChangesAsync();
+            return Result.Success();
+        }
+
         public async Task<Result> AddEpochData(int id, LCEpochDataDto epoch)
         {
             var model = await _context.LCModels.FindAsync(id);
