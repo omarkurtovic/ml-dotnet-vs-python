@@ -1,7 +1,9 @@
 ﻿using CSharpModelTrainerApi.Enums;
 using CSharpModelTrainerApi.LungCancerPrediction.Services;
+using CSharpModelTrainerApi.LungCancerPrediction.Workers;
 using CSharpModelTrainerApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.ML;
 using SharedCL;
 using System.IO;
 
@@ -10,17 +12,21 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 
     [ApiController]
     [Route("[controller]")]
-    public class LungCancerController(LCTrainer modelTrainer,
+    public class LungCancerController(
         LCRepository lungCancerModelRepository,
         LCPredictionService lungCancerPredictionService,
         PathResolver pathResolver,
-        HardwareInfoService hardwareInfoService) : ControllerBase
+        HardwareInfoService hardwareInfoService,
+        TrainingQueue trainingQueue,
+        PythonLCApiClient pythonLCApiClient) : ControllerBase
     {
-        private LCTrainer ModelTrainer { get; set; } = modelTrainer;
         private LCPredictionService LungCancerPredictionService { get; set; } = lungCancerPredictionService;
         private LCRepository LungCancerModelRepository { get; set; } = lungCancerModelRepository;
         private PathResolver PathResolver { get; set; } = pathResolver;
         private HardwareInfoService HardwareInfoService { get; set; } = hardwareInfoService;
+        private TrainingQueue _trainingQueue { get; set; } = trainingQueue;
+        private PythonLCApiClient PythonLCApi { get; set; } = pythonLCApiClient;
+
 
         [HttpGet]
         [Route("Models")]
@@ -115,6 +121,55 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             {
                 return NotFound();
             }
+
+            if (model.Language == ModelLanguageDto.Python)
+            {
+                try
+                {
+                    var pythonInfo = await PythonLCApi.GetTrainingInfoAsync(id);
+                    if (pythonInfo != null)
+                    {
+                        var persistedModelResult = await LungCancerModelRepository.GetModel(id);
+                        var persistedEpochs = persistedModelResult.Data?.EpochData?.Count ?? 0;
+                        if (pythonInfo.CurrentEpoch > persistedEpochs)
+                        {
+                            await LungCancerModelRepository.AddEpochData(id, new LCEpochDataDto
+                            {
+                                Epoch = pythonInfo.CurrentEpoch - 1,
+                                TrainingLoss = pythonInfo.TrainingLoss,
+                                TrainingAccuracy = pythonInfo.TrainingAccuracy,
+                                ValidationLoss = pythonInfo.ValidationLoss,
+                                ValidationAccuracy = pythonInfo.ValidationAccuracy,
+                                BenignPrecision = pythonInfo.BenignPrecision,
+                                BenignRecall = pythonInfo.BenignRecall,
+                                BenignF1Score = pythonInfo.BenignF1Score,
+                                MalignantPrecision = pythonInfo.MalignantPrecision,
+                                MalignantRecall = pythonInfo.MalignantRecall,
+                                MalignantF1Score = pythonInfo.MalignantF1Score,
+                                NormalPrecision = pythonInfo.NormalPrecision,
+                                NormalRecall = pythonInfo.NormalRecall,
+                                NormalF1Score = pythonInfo.NormalF1Score,
+                                MacroPrecision = pythonInfo.MacroPrecision,
+                                MacroRecall = pythonInfo.MacroRecall,
+                                MacroF1Score = pythonInfo.MacroF1Score,
+                                WeightedPrecision = pythonInfo.WeightedPrecision,
+                                WeightedRecall = pythonInfo.WeightedRecall,
+                                WeightedF1Score = pythonInfo.WeightedF1Score
+                            });
+                        }
+
+                        if (pythonInfo.ModelStatusDto != ModelStatusDto.Training)
+                        {
+                            await LungCancerModelRepository.UpdateStatusAsync(
+                                id, (ModelStatus)pythonInfo.ModelStatusDto);
+                        }
+                        return Ok(pythonInfo);
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                }
+            }
             return Ok(model);
         }
 
@@ -143,17 +198,47 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         [Route("Train")]
         public async Task<IActionResult> Train([FromBody] LCTrainingParamsDto trainParams)
         {
-            var modelRes = ModelTrainer.TrainModel(trainParams, HardwareInfoService);
-            if (!modelRes.IsSuccess)
+            if (string.IsNullOrEmpty(trainParams.Name))
             {
-                return BadRequest(modelRes.Message);
+                return BadRequest("Naziv modela ne smije biti prazan");
             }
-            var saveResult = await LungCancerModelRepository.Save(modelRes.Data!);
-            if (!saveResult.IsSuccess)
+            if (trainParams.Epochs < 1 || trainParams.Epochs > 100)
             {
-                return BadRequest(saveResult.Message);
+                return BadRequest("Broj epoha mora biti između 1 i 100");
             }
 
+            var modelDB = new LCDto
+            {
+                Name = trainParams.Name,
+                Language = (ModelLanguageDto)trainParams.Language,
+                EpochData = [],
+                HardwareInfo = hardwareInfoService.GetHardwareInfo(),
+                TotalEpochs = trainParams.Epochs,
+                ModelStatusDto = ModelStatusDto.Training
+            };
+
+            var saveResult = await LungCancerModelRepository.Save(modelDB);
+            if (!saveResult.IsSuccess)
+            {
+                return BadRequest("Greška prilikom spremanja modela");
+            }
+
+            if (trainParams.Language == ModelLanguageDto.CSharp)
+            {
+                await _trainingQueue.EnqueueAsync(saveResult.Data, trainParams);
+            }
+            else
+            {
+                try
+                {
+                    await PythonLCApi.StartTrainingAsync(saveResult.Data, trainParams);
+                }
+                catch
+                {
+                    await LungCancerModelRepository.UpdateStatusAsync(saveResult.Data, ModelStatus.Failed);
+                    return BadRequest("Greška prilikom pokretanja Python treniranja");
+                }
+            }
             return Ok(saveResult.Data);
         }
 

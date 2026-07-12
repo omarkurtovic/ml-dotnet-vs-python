@@ -70,7 +70,11 @@ public static class Loc
             ["LCInfo_BenignClass"] = "Benign",
             ["LCInfo_MalignantClass"] = "Malignant",
             ["LCInfo_Accuracy"] = "Accuracy",
+            ["LCInfo_TrainingProgress"] = "Training Progress",
+            ["LCInfo_CurrentEpoch"] = "Current Epoch",
             ["LCInfo_Error"] = "Error occurred while loading model details. Please try again.",
+            ["LCInfo_TrainingFailed"] = "Training failed. Please try again.",
+            ["LCInfo_TrainingComplete"] = "Training completed successfully!",
 
             ["LCInference_PageTitle"] = "Image Analysis",
             ["LCInference_Title"] = "Image Analysis",
@@ -218,7 +222,11 @@ public static class Loc
             ["LCInfo_BenignClass"] = "Benigno",
             ["LCInfo_MalignantClass"] = "Maligno",
             ["LCInfo_Accuracy"] = "Tačnost",
+            ["LCInfo_TrainingProgress"] = "Napredak Treniranja",
+            ["LCInfo_CurrentEpoch"] = "Trenutna Epoha",
             ["LCInfo_Error"] = "Greška prlikom učitavanja detalja modela. Molimo pokušajte ponovo.",
+            ["LCInfo_TrainingFailed"] = "Treniranje nije uspjelo. Molimo pokušajte ponovo.",
+            ["LCInfo_TrainingComplete"] = "Treniranje uspješno završeno!",
 
             ["LCInference_PageTitle"] = "Analiza Slike",
             ["LCInference_Title"] = "Analiza Slike",

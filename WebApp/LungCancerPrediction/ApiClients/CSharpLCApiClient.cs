@@ -297,6 +297,32 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 return Result.Failure(Loc.T("LCErrors_ErrorGeneric"));
             }
         }
+
+
+
+        public async Task<Result<LCInfoDto>> GetTrainingStatus(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"LungCancer/Models/Status/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var model = await response.Content.ReadFromJsonAsync<LCInfoDto>();
+                    return Result<LCInfoDto>.Success(model!);
+                }
+                else
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API FAILURE: {errorDetails}");
+                    return Result<LCInfoDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"API FAILURE: {ex.Message}");
+                return Result<LCInfoDto>.Failure(Loc.T("LCErrors_ErrorFetchingData"));
+            }
+        }
     }
 }
 

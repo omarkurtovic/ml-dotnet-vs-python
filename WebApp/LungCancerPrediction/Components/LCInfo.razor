@@ -4,6 +4,7 @@
 @using WebApp.LungCancerPrediction.ApiClients
 @inject ISnackbar Snackbar
 @inject CSharpLCApiClient CSharpLCApi
+@implements IDisposable
 
 @if(Model != null)
 {
@@ -16,12 +17,13 @@
                            OnClick="@(async () => await Close.InvokeAsync())" />
         </MudStack>
 
+
         <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
             <MudChip T="string" Color="@(Model.Language == ModelLanguageDto.CSharp ? Color.Primary : Color.Secondary)" Size="Size.Small">
                 @Model.Language
             </MudChip>
             <MudChip T="string" Icon="@Icons.Material.Filled.Autorenew" Size="Size.Small">
-                @Model.NumberOfEpochs @Loc.T("LCInfo_Epochs")
+                @Model.TotalEpochs @Loc.T("LCInfo_Epochs")
             </MudChip>
             <MudChip T="string" Icon="@Icons.Material.Filled.Memory" Size="Size.Small" Variant="Variant.Outlined">
                 @Model.HardwareInfo
@@ -29,6 +31,23 @@
         </MudStack>
 
         <MudDivider Class="my-2" />
+
+        
+        @if (Model.ModelStatusDto == ModelStatusDto.Training)
+        {
+            <SectionHeading>@Loc.T("LCInfo_TrainingProgress")</SectionHeading>
+            <SectionHeading>@Loc.T("LCInfo_CurrentEpoch"): @Model.CurrentEpoch / @Model.TotalEpochs</SectionHeading>
+            <MudProgressLinear Value="Model.CurrentEpoch"
+                               Max="Model.TotalEpochs"
+                               Color="Color.Primary" />
+        }
+
+        @if (Model.ModelStatusDto == ModelStatusDto.Failed)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="my-2">
+                @Loc.T("LCInfo_TrainingFailed")
+            </MudAlert>
+        }
 
         <SectionHeading>@FormatTrainingTime(Model.TrainingTimeInSeconds)</SectionHeading>
         <SectionHeading>@Loc.T("LCInfo_Accuracy"): @(FormatPercent(Model.ValidationAccuracy))</SectionHeading>
@@ -89,6 +108,10 @@
 
     public LCInfoDto? Model { get; set; }
 
+    private PeriodicTimer? _timer;
+
+    private CancellationTokenSource? _cts;
+
     public async Task ShowModelDetails(int id)
     {
         if (id == 0)
@@ -98,17 +121,63 @@
         }
 
         var result = await CSharpLCApi.GetModelInfoAsync(id);
-        if (result.IsSuccess)
-        {
-            Model = result.Data;
-        }
-        else
+        if (!result.IsSuccess)
         {
             Snackbar.Add(Loc.T("LCInfo_Error"), Severity.Error);
             await Close.InvokeAsync();
+            return;
         }
 
+        Model = result.Data;
         StateHasChanged();
+
+        if (Model!.ModelStatusDto == ModelStatusDto.Training)
+        {
+            StartPolling(id);
+        }
+    }
+
+    private void StartPolling(int id)
+    {
+        _cts = new CancellationTokenSource();
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+
+        _ = PollLoop(id, _cts.Token);
+    }
+
+    private async Task PollLoop(int id, CancellationToken ct)
+    {
+        try
+        {
+            while (await _timer!.WaitForNextTickAsync(ct))
+            {
+                var result = await CSharpLCApi.GetModelInfoAsync(id);
+                if (!result.IsSuccess) continue;
+
+                Model = result.Data;
+
+                await InvokeAsync(StateHasChanged);
+
+                if (Model!.ModelStatusDto != ModelStatusDto.Training)
+                {
+                    _timer.Dispose();
+
+                    if (Model.ModelStatusDto == ModelStatusDto.Trained)
+                    {
+                        Snackbar.Add(Loc.T("LCInfo_TrainingComplete"), Severity.Success);
+                    }
+                    else if (Model.ModelStatusDto == ModelStatusDto.Failed)
+                    {
+                        Snackbar.Add(Loc.T("LCInfo_TrainingFailed"), Severity.Error);
+                    }
+
+                    break;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     private string FormatPercent(double? value)
@@ -126,5 +195,11 @@
         {
             return $"{Loc.T("LCInfo_TrainingTime")}: {Math.Round(trainingTimeInSeconds/60, 2)} {Loc.T("LCInfo_Minutes")}";
         }
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _timer?.Dispose();
     }
 }
