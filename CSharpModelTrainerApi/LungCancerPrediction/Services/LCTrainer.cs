@@ -27,7 +27,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             }
             var modelDB = modelResult.Data!;
 
-
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
             torch.set_default_device(defaultDevice);
 
@@ -54,7 +53,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var epochs = trainInfo.Epochs;
 
             double trainingTime = 0;
-
 
             foreach (var epoch in Enumerable.Range(0, epochs))
             {
@@ -93,15 +91,19 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 var addEpochResult = await LungCancerModelRepository.AddEpochData(modelDB.Id, epochData);
                 if(!addEpochResult.IsSuccess)
                 {
+                    await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.ModelStatus.Failed);
                     return Result<LCDto>.Failure("Greška prilikom spremanja podataka epohe");
                 }
+
+                await LungCancerModelRepository.UpdateTrainingTimeAsync(modelId, trainingTime);
+
             }
 
             modelDB.TrainingTimeInSeconds = trainingTime;
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 
-            var saveResult = await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.ModelStatus.Trained);
+           await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.ModelStatus.Trained);
 
             return Result<LCDto>.Success(modelDB);
         }

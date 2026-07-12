@@ -42,6 +42,13 @@
                                Color="Color.Primary" />
         }
 
+        @if (Model.ModelStatusDto == ModelStatusDto.Failed)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="my-2">
+                @Loc.T("LCInfo_TrainingFailed")
+            </MudAlert>
+        }
+
         <SectionHeading>@FormatTrainingTime(Model.TrainingTimeInSeconds)</SectionHeading>
         <SectionHeading>@Loc.T("LCInfo_Accuracy"): @(FormatPercent(Model.ValidationAccuracy))</SectionHeading>
 
@@ -149,13 +156,23 @@
 
                 Model = result.Data;
 
+                await InvokeAsync(StateHasChanged);
+
                 if (Model!.ModelStatusDto != ModelStatusDto.Training)
                 {
                     _timer.Dispose();
+
+                    if (Model.ModelStatusDto == ModelStatusDto.Trained)
+                    {
+                        Snackbar.Add(Loc.T("LCInfo_TrainingComplete"), Severity.Success);
+                    }
+                    else if (Model.ModelStatusDto == ModelStatusDto.Failed)
+                    {
+                        Snackbar.Add(Loc.T("LCInfo_TrainingFailed"), Severity.Error);
+                    }
+
                     break;
                 }
-
-                await InvokeAsync(StateHasChanged);
             }
         }
         catch (OperationCanceledException)
