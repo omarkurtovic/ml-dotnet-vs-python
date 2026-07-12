@@ -8,6 +8,8 @@ import os
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, UploadFile, File
 import time
+import asyncio
+import threading
 
 import torch
 from torch.utils.data import DataLoader
@@ -19,6 +21,9 @@ from .services import HardwareUntils, TrainingHelper, PathResolver, PredictionSe
 
 
 router = APIRouter()
+
+_training_state: dict[int, dict] = {}
+_state_lock = threading.Lock()
 
 repo_root = Path("..")
 directory = repo_root.joinpath('data/lung-cancer-prediction')
@@ -33,7 +38,7 @@ async def predict(model_name: str, file: UploadFile = File(...)) -> LCPrediction
 
 
 @router.post("/Python/LungCancer/Train")
-def train(train_data: LCTrainingParamsDto):
+async def start_training(model_id: int, train_data: LCTrainingParamsDto):
     if train_data.name == "" :
         raise HTTPException(status_code=400, detail="Naziv modela ne smije biti prazan")
     
@@ -43,12 +48,36 @@ def train(train_data: LCTrainingParamsDto):
     if train_data.epochs < 1 or train_data.epochs > 100:
         raise HTTPException(status_code=400, detail="Broj epoha mora biti između 1 i 100")
 
+    with _state_lock:
+        _training_state[model_id] = {
+            "totalEpochs": train_data.epochs,
+            "modelStatusDto": 0,
+            "name": train_data.name,
+            "language": ModelLanguageDto.Python,
+            "trainingTimeInSeconds": 0.0,
+            "hardwareInfo": HardwareUntils.get_optimal_hardware_info(),
+            "currentEpoch": 0,
+        }
+
+    asyncio.create_task(asyncio.to_thread(_run_training, model_id, train_data))
+    return {"modelId": model_id}
+
+
+@router.get("/Python/LungCancer/Train/{model_id}")
+def get_training_info(model_id: int):
+    with _state_lock:
+        state = _training_state.get(model_id)
+        return dict(state) if state is not None else None
+
+
+def _run_training(model_id: int, train_data: LCTrainingParamsDto):
+  try:
     model_db = LCDto(
-    name = train_data.name,
-    language = ModelLanguageDto.Python,
-    hardwareInfo = HardwareUntils.get_optimal_hardware_info(),
-    trainingTimeInSeconds = 0, 
-    epochData = [])
+        name=train_data.name,
+        language=ModelLanguageDto.Python,
+        hardwareInfo=HardwareUntils.get_optimal_hardware_info(),
+        trainingTimeInSeconds=0,
+        epochData=[])
 
     default_device = TrainingHelper.get_optimal_device()
     torch.set_default_device(default_device)
@@ -111,13 +140,46 @@ def train(train_data: LCTrainingParamsDto):
         epoch_data.weightedF1Score = validation_epoch_data.weightedF1Score
 
         model_db.epochData.append(epoch_data)
+        with _state_lock:
+            _training_state[model_id].update({
+                "currentEpoch": epoch + 1,
+                "trainingTimeInSeconds": total_training_time,
+                "trainingAccuracy": epoch_data.trainingAccuracy,
+                "trainingLoss": epoch_data.trainingLoss,
+                "validationAccuracy": epoch_data.validationAccuracy,
+                "validationLoss": epoch_data.validationLoss,
+                "benignPrecision": epoch_data.benignPrecision,
+                "benignRecall": epoch_data.benignRecall,
+                "benignF1Score": epoch_data.benignF1Score,
+                "malignantPrecision": epoch_data.malignantPrecision,
+                "malignantRecall": epoch_data.malignantRecall,
+                "malignantF1Score": epoch_data.malignantF1Score,
+                "normalPrecision": epoch_data.normalPrecision,
+                "normalRecall": epoch_data.normalRecall,
+                "normalF1Score": epoch_data.normalF1Score,
+                "macroPrecision": epoch_data.macroPrecision,
+                "macroRecall": epoch_data.macroRecall,
+                "macroF1Score": epoch_data.macroF1Score,
+                "weightedPrecision": epoch_data.weightedPrecision,
+                "weightedRecall": epoch_data.weightedRecall,
+                "weightedF1Score": epoch_data.weightedF1Score,
+            })
 
     model_db.trainingTimeInSeconds = total_training_time
 
     model_path = PathResolver.get_model_path(train_data)
     torch.save(model.state_dict(), model_path)
 
-    return model_db
+    with _state_lock:
+        _training_state[model_id].update({
+            "modelStatusDto": 1,
+            "trainingTimeInSeconds": total_training_time,
+        })
+  except Exception:
+    with _state_lock:
+        if model_id in _training_state:
+            _training_state[model_id]["modelStatusDto"] = 2
+    raise
 
 
 

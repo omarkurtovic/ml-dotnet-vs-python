@@ -6,7 +6,6 @@
 @using WebApp.LungCancerPrediction.ApiClients
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject CSharpLCApiClient CSharpLCApi
-@inject PythonLCApiClient PythonLCApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @rendermode InteractiveServer
@@ -104,8 +103,6 @@
 
     private LCInfo LCInfo = null!;
 
-    private bool TrainingInProgress = false;
-
     protected override void OnInitialized()
     {
         TrainingParams = new LCTrainingParamsDto()
@@ -125,42 +122,6 @@
             return;
 
 
-        if (TrainingParams.Language == ModelLanguageDto.CSharp)
-        {
-            await TrainCSharpModel();
-        }
-        else
-        {
-            await TrainPythonModel();
-        }
-
-    }
-
-    private async Task TrainPythonModel()
-    {
-        var trainingResult = await PythonLCApi.TrainModelAsync(TrainingParams);
-        if (!trainingResult.IsSuccess)
-        {
-            Snackbar.Add(Loc.T("LCTrainer_TrainingError"), Severity.Error);
-            return;
-        }
-
-        var modelDto = trainingResult.Data!;
-        var saveResult = await CSharpLCApi.SaveModelAsync(modelDto);
-        if (!saveResult.IsSuccess)
-        {
-            Snackbar.Add(Loc.T("LC_SavingError"), Severity.Error);
-            return;
-        }
-
-        Snackbar.Add(Loc.T("LCTrainer_TrainingSuccess"), Severity.Success);
-        ModelId = saveResult.Data;
-        await ShowModelDetails();
-    }
-
-    private async Task TrainCSharpModel()
-    {
-        TrainingInProgress = true;
         var result = await CSharpLCApi.TrainModelAsync(TrainingParams);
 
         if (!result.IsSuccess)
