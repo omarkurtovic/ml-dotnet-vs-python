@@ -6,14 +6,10 @@ using SharedCL;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LCRepository
+    public class LCRepository(AppDbContext context)
     {
-        private readonly AppDbContext _context;
+        private readonly AppDbContext _context = context;
 
-        public LCRepository(AppDbContext context)
-        {
-            _context = context;
-        }
         public async Task<Result<List<LCDto>>> GetModels()
         {
             var models = await _context.LCModels.Include(m => m.EpochData).ToListAsync();
@@ -65,44 +61,37 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
         public async Task<Result<LCGridPageDataDto>> GetModelsSearch(LCGridOptionsDto options)
         {
-            var query = _context.LCModels.Include(m => m.EpochData).Where(m => 1 == 1);
+            var query = _context.LCModels.Include(m => m.EpochData).AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(options.Search))
             {
                 query = query.Where(m => m.Name.Contains(options.Search));
             }
 
-            int totalItems = await query.CountAsync();
+            int totalItems = query.Count();
 
-            if (!string.IsNullOrWhiteSpace(options.SortBy))
+            query = options.SortBy switch
             {
-                query = options.SortBy switch
-                {
-                    nameof(LCBasicDto.Name) => options.SortDescending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name),
-                    nameof(LCBasicDto.Language) => options.SortDescending ? query.OrderByDescending(t => t.Language) : query.OrderBy(t => t.Language),
-                    nameof(LCBasicDto.MacroPrecision) => options.SortDescending ? query.OrderByDescending(t => t.EpochData.OrderBy(ed => ed.Epoch).Last().MacroPrecision) : query.OrderBy(t => t.EpochData.OrderBy(ed => ed.Epoch).Last().MacroPrecision),
-                    nameof(LCBasicDto.MacroRecall) => options.SortDescending ? query.OrderByDescending(t => t.EpochData.OrderBy(ed => ed.Epoch).Last().MacroRecall) : query.OrderBy(t => t.EpochData.OrderBy(ed => ed.Epoch).Last().MacroRecall),
-                    nameof(LCBasicDto.MacroF1Score) => options.SortDescending ? query.OrderByDescending(t => t.EpochData.OrderBy(ed => ed.Epoch).Last().MacroF1Score) : query.OrderBy(t => t.EpochData.OrderBy(ed => ed.Epoch).Last().MacroF1Score),
-                    _ => query.OrderByDescending(t => t.Name),
-                };
-            }
-            else
-            {
-                query = query.OrderByDescending(t => t.Name);
-            }
+                nameof(LCBasicDto.Name) => options.SortDescending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name),
+                nameof(LCBasicDto.Language) => options.SortDescending ? query.OrderByDescending(t => t.Language) : query.OrderBy(t => t.Language),
+                nameof(LCBasicDto.MacroPrecision) => options.SortDescending ? query.OrderByDescending(t => t.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroPrecision ?? 0) : query.OrderBy(t => t.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroPrecision ?? 0),
+                nameof(LCBasicDto.MacroRecall) => options.SortDescending ? query.OrderByDescending(t => t.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroRecall ?? 0) : query.OrderBy(t => t.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroRecall ?? 0),
+                nameof(LCBasicDto.MacroF1Score) => options.SortDescending ? query.OrderByDescending(t => t.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroF1Score ?? 0) : query.OrderBy(t => t.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroF1Score ?? 0),
+                _ => query.OrderByDescending(t => t.Name),
+            };
 
 
             query = query.Skip(options.CurrentPage * options.PageSize).Take(options.PageSize);
-            var models = await query.ToListAsync();
+            var models = query.ToList();
             var modelDtos = models.Select(model => new LCBasicDto()
             {
                 Id = model.Id,
                 Name = model.Name,
                 Language = (ModelLanguageDto)model.Language,
-                MacroPrecision = model.EpochData.OrderBy(ed => ed.Epoch).Last().MacroPrecision,
-                MacroRecall = model.EpochData.OrderBy(ed => ed.Epoch).Last().MacroRecall,
-                MacroF1Score = model.EpochData.OrderBy(ed => ed.Epoch).Last().MacroF1Score,
-                Accuracy = model.EpochData.OrderBy(ed => ed.Epoch).Last().ValidationAccuracy,
+                MacroPrecision = model.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroPrecision ?? 0,
+                MacroRecall = model.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroRecall ?? 0,
+                MacroF1Score = model.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroF1Score ?? 0,
+                Accuracy = model.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.ValidationAccuracy ?? 0,
             }).ToList();
 
             return Result<LCGridPageDataDto>.Success(new LCGridPageDataDto()
@@ -161,14 +150,25 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 return Result<LCBasicDto>.Failure("Model not found");
             }
 
+            if (model.EpochData == null || model.EpochData.Count == 0)
+            {
+                return Result<LCBasicDto>.Success(new LCBasicDto
+                {
+                    Id = model.Id,
+                    Name = model.Name,
+                    Language = (ModelLanguageDto)model.Language,
+                });
+            }
+
+            var lastEpoch = model.EpochData.OrderBy(ed => ed.Epoch).Last();
             return Result<LCBasicDto>.Success(new LCBasicDto
             {
                 Id = model.Id,
                 Name = model.Name,
                 Language = (ModelLanguageDto)model.Language,
-                MacroPrecision = model.EpochData.Last().MacroPrecision,
-                MacroRecall = model.EpochData.Last().MacroRecall,
-                MacroF1Score = model.EpochData.Last().MacroF1Score,
+                MacroPrecision = lastEpoch.MacroPrecision,
+                MacroRecall = lastEpoch.MacroRecall,
+                MacroF1Score = lastEpoch.MacroF1Score,
             });
         }
 
@@ -179,7 +179,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             {
                 return Result<LCInfoDto>.Failure("Model not found");
             }
-            LCEpochData ed = new LCEpochData();
+            LCEpochData ed = new();
             int currentEpoch = 0;
 
             if(model.EpochData != null && model.EpochData.Count != 0)
