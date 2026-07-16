@@ -1,47 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="13.3.5" />
-    <PackageReference Include="Azure.Identity" Version="1.21.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.28.0" />
-    <PackageReference Include="Hardware.Info" Version="110.0.0.1" />
-    <PackageReference Include="libtorch-cpu-linux-x64" Version="2.10.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.8" />
-    <PackageReference Include="Microsoft.ML.FastTree" Version="5.0.0" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.26.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
-    <PackageReference Include="SkiaSharp" Version="3.119.4" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.4" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Aspire.Azure.Storage.Blobs" Version="13.3.5" />
+		<PackageReference Include="Azure.Identity" Version="1.21.0" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.28.0" />
+		<PackageReference Include="Hardware.Info" Version="110.0.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.8" />
+		<PackageReference Include="Microsoft.ML.FastTree" Version="5.0.0" />
+		<PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.26.0" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+		<PackageReference Include="SkiaSharp" Version="3.119.4" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.4" />
+	</ItemGroup>
 
-<ItemGroup>
-	<PackageReference Include="TorchSharp" Version="0.107.0" />
-	<PackageReference Include="TorchVision" Version="0.107.0" />
-</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="TorchSharp" Version="0.107.0" />
+		<PackageReference Include="TorchVision" Version="0.107.0" />
+	</ItemGroup>
 
-<ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-	<PackageReference Include="TorchSharp-cuda-windows" Version="0.107.0" />
-</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' == 'win-x64'">
+		<PackageReference Include="TorchSharp-cuda-windows" Version="0.107.0" />
+	</ItemGroup>
 
-<ItemGroup Condition="'$(OS)' == 'Unix'">
-	<PackageReference Include="TorchSharp-cpu" Version="0.107.0" />
-</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+		<PackageReference Include="TorchSharp-cpu" Version="0.107.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\SharedCL\SharedCL.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ml-dotnet-vs-python.ServiceDefaults\ml-dotnet-vs-python.ServiceDefaults.csproj" />
+		<ProjectReference Include="..\SharedCL\SharedCL.csproj" />
+	</ItemGroup>
 
 </Project>
