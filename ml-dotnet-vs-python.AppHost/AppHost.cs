@@ -1,16 +1,16 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-
-// py -3.12 -m venv .venv
-// .venv\Scripts\pip.exe install -r .\requirements.txt
+var storageRoot = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "storage"));
 
 var pythonApi = builder.AddUvicornApp(
     name: "pythonapi",
     appDirectory: @"..\python-model-trainer",
-    app: "main:app");
+    app: "main:app")
+    .WithEnvironment("ML_STORAGE_ROOT", storageRoot);
 
 var apiService = builder.AddProject<Projects.CSharpModelTrainerApi>("apiservice")
     .WithHttpHealthCheck("/health")
+    .WithEnvironment("ML_STORAGE_ROOT", storageRoot)
     .WithReference(pythonApi);
 
 builder.AddProject<Projects.WebApp>("webfrontend")

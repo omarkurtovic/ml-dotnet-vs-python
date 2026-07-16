@@ -37,6 +37,8 @@ builder.Services.AddHostedService<TrainingWorker>();
 
 var app = builder.Build();
 
+app.Services.GetRequiredService<PathResolver>().InitializeStorage();
+
 app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.

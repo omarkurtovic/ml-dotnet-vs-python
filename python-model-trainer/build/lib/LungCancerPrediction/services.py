@@ -1,5 +1,6 @@
 
 import io
+import os
 import torch
 import time
 from PIL import Image
@@ -39,9 +40,22 @@ class ImageLoader:
 
 class PathResolver:
     @staticmethod
+    def get_storage_root() -> Path:
+        storage_root = os.environ.get("ML_STORAGE_ROOT")
+        if not storage_root:
+            raise RuntimeError("ML_STORAGE_ROOT is not configured.")
+        return Path(storage_root)
+
+    @staticmethod
+    def initialize_storage() -> None:
+        storage_root = PathResolver.get_storage_root()
+        (storage_root / 'data' / 'lung-cancer-prediction').mkdir(parents=True, exist_ok=True)
+        (storage_root / 'models' / 'lung-cancer-prediction' / 'csharp').mkdir(parents=True, exist_ok=True)
+        (storage_root / 'models' / 'lung-cancer-prediction' / 'python').mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
     def get_lung_cancer_data_path() -> Path:
-        repo_root = Path("..")
-        return repo_root.joinpath('data/lung-cancer-prediction')
+        return PathResolver.get_storage_root().joinpath('data/lung-cancer-prediction')
 
     @staticmethod
     def get_model_path(dto: LCTrainingParamsDto) -> Path:
@@ -49,8 +63,9 @@ class PathResolver:
 
     @staticmethod
     def get_lc_model_path(model_name: str, language: ModelLanguageDto) -> Path:
-        repo_root = Path("..")
-        return repo_root.joinpath('models', 'lung-cancer-prediction', 'python',  f'{model_name}.dat')
+        model_directory = PathResolver.get_storage_root().joinpath('models', 'lung-cancer-prediction', 'python')
+        model_directory.mkdir(parents=True, exist_ok=True)
+        return model_directory.joinpath(f'{model_name}.dat')
 
 
 class TrainingHelper:

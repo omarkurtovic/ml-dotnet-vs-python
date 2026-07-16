@@ -3,6 +3,7 @@
 /.vscode
 /models
 /data
+/storage
 
 # python
 .venv/
@@ -18,6 +19,8 @@ bin/
 obj/
 appsettings.json
 appsettings.Development.json
+!/CSharpModelTrainerApi/appsettings.json
+!/CSharpModelTrainerApi/appsettings.Development.json
 *.user
 /.vs
 UpgradeLog.htm

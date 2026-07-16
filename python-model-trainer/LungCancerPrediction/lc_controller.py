@@ -4,8 +4,6 @@
 import numpy as np 
 import cv2
 import random
-import os
-from pathlib import Path
 from fastapi import APIRouter, HTTPException, UploadFile, File
 import time
 import asyncio
@@ -24,10 +22,6 @@ router = APIRouter()
 
 _training_state: dict[int, dict] = {}
 _state_lock = threading.Lock()
-
-repo_root = Path("..")
-directory = repo_root.joinpath('data/lung-cancer-prediction')
-
 
 @router.post("/Python/LungCancer/Predict")
 async def predict(model_name: str, file: UploadFile = File(...)) -> LCPredictionDto:

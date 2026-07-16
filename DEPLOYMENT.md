@@ -41,11 +41,8 @@ cd ml-dotnet-vs-python
 ## 2. Transfer Data, Models
 
 ```powershell
-# data folder
-scp -r C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\data root@<ip>:/opt/app/data
-
-# models folder
-scp -r C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\models root@<ip>:/opt/app/models
+# data and models folder
+scp -r C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\storage root@<ip>:/opt/app/storage
 
 ```
 
@@ -88,6 +85,9 @@ cat > /opt/app/publish/api/appsettings.json << 'EOF'
       "Default": "Information",
       "Microsoft.AspNetCore": "Warning"
     }
+  },
+  "Storage": {
+    "Root": "/opt/app/storage"
   },
   "AllowedHosts": "*"
 }
@@ -135,7 +135,7 @@ Restart=always
 RestartSec=10
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=ASPNETCORE_URLS=http://localhost:5000
-Environment=REPO_ROOT=/opt/app
+Environment=ML_STORAGE_ROOT=/opt/app/storage
 
 [Install]
 WantedBy=multi-user.target
@@ -154,6 +154,7 @@ WorkingDirectory=/opt/app/ml-dotnet-vs-python/python-model-trainer
 ExecStart=/opt/app/ml-dotnet-vs-python/python-model-trainer/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=10
+Environment=ML_STORAGE_ROOT=/opt/app/storage
 
 [Install]
 WantedBy=multi-user.target
