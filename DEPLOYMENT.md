@@ -67,13 +67,6 @@ dotnet publish CSharpModelTrainerApi/CSharpModelTrainerApi.csproj -c Release -o 
 dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web
 ```
 
-Copy the database into shared storage
-```sh
-scp C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\CSharpModelTrainerApi\bin\Debug\net10.0\app.db root@<ip>:/opt/app/storage/app.db
-```
-
----
-
 ## 5. Create Configuration Files (on server)
 
 ### CSharpModelTrainerApi
@@ -253,6 +246,13 @@ For Python:
 systemctl restart ml-python
 ```
 
+To sync just the models and database (not the dataset in `storage/data`):
+```powershell
+scp C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\storage\app.db root@<ip>:/opt/app/storage/app.db
+scp -r C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\storage\models root@<ip>:/opt/app/storage/
+systemctl restart ml-api
+```
+
 ---
 
 ## Checking Logs
@@ -262,6 +262,36 @@ journalctl -u ml-api -f
 journalctl -u ml-python -f
 journalctl -u ml-web -f
 ```
+
+---
+
+## Troubleshooting
+
+### Edited a systemd unit file? Run `daemon-reload` before restarting
+
+systemd caches unit files at load time. If you hand-edit `/etc/systemd/system/ml-api.service` (or any other unit) — e.g. to change `ML_STORAGE_ROOT` — a plain `systemctl restart ml-api` reuses the *previously loaded* definition, env vars included. The service comes back up fine, with no error, just with the old (or no) environment variable. You must reload first:
+
+```sh
+systemctl daemon-reload
+systemctl restart ml-api
+```
+
+### Models/data not showing up in the app
+
+The C# API creates an empty SQLite DB with an applied schema wherever `ML_STORAGE_ROOT` happens to resolve to, if nothing exists there yet (`db.Database.Migrate()` runs unconditionally at startup). So a misconfigured storage path doesn't throw — it just silently serves an empty database. To confirm what a running service is actually using:
+
+```sh
+# What env var does the process actually have?
+systemctl show ml-api -p Environment
+
+# Which app.db file does it actually have open?
+lsof -p $(pgrep -f CSharpModelTrainerApi.dll) | grep app.db
+
+# Does the DB on disk actually have rows?
+sqlite3 /opt/app/storage/app.db "SELECT COUNT(*) FROM LCModels;"
+```
+
+If the WebApp shows no models but `curl -s http://localhost:5000/LungCancer/Models` (run on the server) returns your data, the problem is downstream of the API — check the WebApp's `appsettings.json` `Services:apiservice`/`Services:pythonapi` URLs and `journalctl -u ml-web` instead.
 
 ---
 

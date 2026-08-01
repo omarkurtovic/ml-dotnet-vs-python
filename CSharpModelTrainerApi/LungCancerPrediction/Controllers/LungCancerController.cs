@@ -122,13 +122,15 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return NotFound();
             }
 
-            if (model.Language == ModelLanguageDto.Python)
+            if (model.Language == ModelLanguageDto.Python && model.ModelStatusDto == ModelStatusDto.Training)
             {
                 try
                 {
                     var pythonInfo = await PythonLCApi.GetTrainingInfoAsync(id);
                     if (pythonInfo != null)
                     {
+                        await LungCancerModelRepository.UpdateTrainingTimeAsync(id, pythonInfo.TrainingTimeInSeconds);
+
                         var persistedModelResult = await LungCancerModelRepository.GetModel(id);
                         var persistedEpochs = persistedModelResult.Data?.EpochData?.Count ?? 0;
                         if (pythonInfo.CurrentEpoch > persistedEpochs)

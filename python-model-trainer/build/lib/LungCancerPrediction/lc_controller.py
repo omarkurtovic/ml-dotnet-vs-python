@@ -1,6 +1,3 @@
-
-# https://www.kaggle.com/code/adityamahimkar/lung-cancer-prediction-on-image-data/notebook
-
 import numpy as np 
 import cv2
 import random
