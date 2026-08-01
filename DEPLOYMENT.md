@@ -67,9 +67,9 @@ dotnet publish CSharpModelTrainerApi/CSharpModelTrainerApi.csproj -c Release -o 
 dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web
 ```
 
-Copy the database
+Copy the database into shared storage
 ```sh
-scp C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\CSharpModelTrainerApi\bin\Debug\net10.0\app.db root@<ip>:/opt/app/publish/api/app.db
+scp C:\Users\Administrator\source\repos\omarkurtovic\ml-dotnet-vs-python\CSharpModelTrainerApi\bin\Debug\net10.0\app.db root@<ip>:/opt/app/storage/app.db
 ```
 
 ---

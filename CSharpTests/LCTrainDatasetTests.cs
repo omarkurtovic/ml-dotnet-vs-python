@@ -25,7 +25,7 @@ namespace CSharpTests
         [Test]
         public void GetClassWeights_ZeroClasses_SomeLabels_ReturnsCorrectWeights()
         {
-            var dataset = new LungCancerTrainDataset([], [0,1,2], []);
+            var dataset = new LungCancerTrainDataset([], [0, 1, 2], []);
 
             var result = dataset.GetClassWeights();
 

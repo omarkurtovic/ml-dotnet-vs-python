@@ -1,6 +1,3 @@
-
-# https://www.kaggle.com/code/adityamahimkar/lung-cancer-prediction-on-image-data/notebook
-
 import numpy as np 
 import cv2
 import random
@@ -85,7 +82,6 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
 
     data_directory = PathResolver.get_lung_cancer_data_path()
     
-    # 1. DATA LOADING BENCHMARK
     device_generator = torch.Generator(device=default_device)
     training_data = LungCancerTrainDataset(with_flips=train_data.withFlips, data_directory=data_directory)
     class_weights = torch.tensor(training_data.get_class_weights(), dtype=torch.float32).to(default_device)
@@ -101,12 +97,10 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
     total_training_time = 0.0
 
     for epoch in range(epochs):
-        # 2. TRAINING BENCHMARK
         training_start = time.perf_counter()
         train_epoch_data = train(train_loader, model, loss, optimizer)
         training_end = time.perf_counter()
 
-        # 3. VALIDATION BENCHMARK 
         validation_epoch_data = validate(test_loader, model, loss)
 
         total_training_time += (training_end - training_start)

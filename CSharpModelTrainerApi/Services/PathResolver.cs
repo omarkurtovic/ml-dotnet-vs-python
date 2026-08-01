@@ -20,7 +20,7 @@ namespace CSharpModelTrainerApi.Services
         }
 
         public string GetModelPath(LCDto dto) => GetLCModelPath(dto.Name, (ModelLanguage)dto.Language);
-        
+
         public string GetModelPath(LCBasicDto dto) => GetLCModelPath(dto.Name, (ModelLanguage)dto.Language);
 
         public string GetModelPath(LCTrainingParamsDto dto) => GetLCModelPath(dto.Name, (ModelLanguage)dto.Language);

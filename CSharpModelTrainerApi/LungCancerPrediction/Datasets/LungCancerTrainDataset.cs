@@ -79,9 +79,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
             int totalLabels = Labels.Count;
             float[] classWeights = new float[Categories.Length];
 
-            for(int i = 0; i < classWeights.Length; ++i)
+            for (int i = 0; i < classWeights.Length; ++i)
             {
-                int classCount = Labels.Count(l => l == i); 
+                int classCount = Labels.Count(l => l == i);
                 if (classCount == 0)
                 {
                     classWeights[i] = 0f;

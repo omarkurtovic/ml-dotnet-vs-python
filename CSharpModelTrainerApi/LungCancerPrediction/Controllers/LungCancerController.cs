@@ -299,14 +299,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             var model = modelResult.Data;
 
 
-            if(model!.Name == newName)
+            if (model!.Name == newName)
             {
                 return BadRequest("New name is the same as the current name.");
             }
 
             var modelPath = PathResolver.GetModelPath(model);
 
-            if(!System.IO.File.Exists(modelPath))
+            if (!System.IO.File.Exists(modelPath))
             {
                 return NotFound();
             }

@@ -18,7 +18,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
     public class LCTrainer(PathResolver pathResolver, LCRepository lungCancerModelRepository)
     {
         private LCRepository LungCancerModelRepository { get; set; } = lungCancerModelRepository;
-        public  async Task<Result<LCDto>> TrainModelAsync(int modelId, LCTrainingParamsDto trainInfo)
+        public async Task<Result<LCDto>> TrainModelAsync(int modelId, LCTrainingParamsDto trainInfo)
         {
             var modelResult = await LungCancerModelRepository.GetModel(modelId);
             if (!modelResult.IsSuccess)
@@ -30,7 +30,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             Device defaultDevice = TrainingHelper.GetOptimalDevice();
             torch.set_default_device(defaultDevice);
 
-            long seed = 42; 
+            long seed = 42;
             torch.manual_seed(seed);
             if (torch.cuda.is_available())
             {
@@ -41,7 +41,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 
-            var trainingData = new LungCancerTrainDataset(trainInfo.WithFlips, dataDirectory); 
+            var trainingData = new LungCancerTrainDataset(trainInfo.WithFlips, dataDirectory);
             var classWeights = torch.tensor(trainingData.GetClassWeights()).to(defaultDevice);
             var testData = new LungCancerTestDataset(dataDirectory);
             var trainLoader = torch.utils.data.DataLoader(trainingData, batchSize: 8, shuffle: true, device: defaultDevice);
@@ -89,7 +89,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 };
 
                 var addEpochResult = await LungCancerModelRepository.AddEpochData(modelDB.Id, epochData);
-                if(!addEpochResult.IsSuccess)
+                if (!addEpochResult.IsSuccess)
                 {
                     await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.ModelStatus.Failed);
                     return Result<LCDto>.Failure("Greška prilikom spremanja podataka epohe");
@@ -103,7 +103,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 
-           await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.ModelStatus.Trained);
+            await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.ModelStatus.Trained);
 
             return Result<LCDto>.Success(modelDB);
         }
@@ -173,7 +173,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     var images = item["image"];
                     var correctIndicies = item["label"];
 
-                    var predictions = model.call(images); 
+                    var predictions = model.call(images);
                     var loss = loss_fn.call(predictions, correctIndicies);
                     totalLoss += loss.item<float>();
                     batchCount++;
@@ -183,7 +183,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     long[] predArray = [.. winningIndices.cpu().data<long>()];
                     long[] labelArray = [.. correctIndicies.cpu().data<long>()];
 
-                    for(int i = 0; i < predArray.Length; ++i)
+                    for (int i = 0; i < predArray.Length; ++i)
                     {
                         confusionMatrix[labelArray[i], predArray[i]]++;
                     }
@@ -253,13 +253,13 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     result.BenignRecall = recall;
                     result.BenignF1Score = F1;
                 }
-                else if(i == 1)
+                else if (i == 1)
                 {
                     result.MalignantPrecision = precision;
                     result.MalignantRecall = recall;
                     result.MalignantF1Score = F1;
                 }
-                else if(i == 2)
+                else if (i == 2)
                 {
                     result.NormalPrecision = precision;
                     result.NormalRecall = recall;

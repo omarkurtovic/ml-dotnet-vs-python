@@ -17,7 +17,7 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-ConfigureDatabase(builder.Services, builder.Environment);
+ConfigureDatabase(builder.Services, builder.Configuration);
 
 builder.Services.AddScoped<LCRepository>();
 builder.Services.AddSingleton<LCPredictionService>();
@@ -57,9 +57,18 @@ app.Run();
 
 
 
-void ConfigureDatabase(IServiceCollection services, IWebHostEnvironment env)
+void ConfigureDatabase(IServiceCollection services, IConfiguration configuration)
 {
-    var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app.db");
+    var storageRoot = Environment.GetEnvironmentVariable("ML_STORAGE_ROOT")
+        ?? configuration["Storage:Root"];
+
+    if (string.IsNullOrWhiteSpace(storageRoot))
+        throw new InvalidOperationException("ML_STORAGE_ROOT is not configured.");
+
+    storageRoot = Path.GetFullPath(storageRoot);
+    Directory.CreateDirectory(storageRoot);
+
+    var dbPath = Path.Combine(storageRoot, "app.db");
     services.AddDbContext<AppDbContext>(options =>
         options.UseSqlite($"Data Source={dbPath}"));
 }

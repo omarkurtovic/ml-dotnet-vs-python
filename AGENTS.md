@@ -41,6 +41,6 @@ PyTorch installs from CUDA index (`cu128`). On Linux, also `apt-get install -y l
 ## Key Conventions
 
 - `storage/` contains large data and model files; it is deployed via `scp`, not committed
-- DB file: `app.db` in CSharpModelTrainerApi output (`bin/Debug/net10.0/`)
+- DB file: `app.db` inside `ML_STORAGE_ROOT`
 - `ML_STORAGE_ROOT` points both services to the shared data/model storage; Aspire sets it locally and systemd sets it in production
 - No linter/formatter/typecheck config exists; no CI workflows yet

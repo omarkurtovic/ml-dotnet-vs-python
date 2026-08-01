@@ -182,7 +182,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             LCEpochData ed = new();
             int currentEpoch = 0;
 
-            if(model.EpochData != null && model.EpochData.Count != 0)
+            if (model.EpochData != null && model.EpochData.Count != 0)
             {
                 ed = model.EpochData.Last();
                 currentEpoch = model.EpochData.Count;
@@ -196,7 +196,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 TrainingTimeInSeconds = model.TrainingTimeInSeconds,
                 HardwareInfo = model.HardwareInfo,
                 Language = (ModelLanguageDto)model.Language,
-                CurrentEpoch = currentEpoch ,
+                CurrentEpoch = currentEpoch,
                 TrainingAccuracy = ed.TrainingAccuracy,
                 TrainingLoss = ed.TrainingLoss,
                 ValidationAccuracy = ed.ValidationAccuracy,

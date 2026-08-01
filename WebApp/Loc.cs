@@ -108,7 +108,7 @@ public static class Loc
             ["LCModels_Precision"] = "Macro Precision",
             ["LCModels_F1Score"] = "Macro F1 Score",
             ["LCModels_Accuracy"] = "Accuracy",
-            ["LCModels_Edit"] = "Edit", 
+            ["LCModels_Edit"] = "Edit",
             ["LCModels_Details"] = "Details",
             ["LCModels_Delete"] = "Delete",
             ["LCModels_Error"] = "Error occurred while loading the model. Please try again.",
