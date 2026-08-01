@@ -114,7 +114,7 @@ class PredictionService:
         model = LungCancerNN().to(default_device)
         model_path = PathResolver.get_lc_model_path(model_name, ModelLanguageDto.Python)
 
-        model.load_state_dict(torch.load(model_path, weights_only=True))
+        model.load_state_dict(torch.load(model_path, weights_only=True, map_location=default_device))
         model.eval()
 
         image = await ImageLoader.form_file_image_to_tensor(file)
