@@ -63,7 +63,7 @@ python3 -m venv .venv
 
 ```sh
 cd /opt/app/ml-dotnet-vs-python
-dotnet publish CSharpModelTrainerApi/CSharpModelTrainerApi.csproj -c Release -o /opt/app/publish/api
+dotnet publish CSharpModelTrainerApi/CSharpModelTrainerApi.csproj -c Release -r linux-x64 --self-contained false -o /opt/app/publish/api
 dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web
 ```
 
@@ -236,7 +236,7 @@ The app should now be accessible at `http://<your-server-ip>`.
 ```sh
 cd /opt/app/ml-dotnet-vs-python
 git pull
-dotnet publish CSharpModelTrainerApi/CSharpModelTrainerApi.csproj -c Release -o /opt/app/publish/api
+dotnet publish CSharpModelTrainerApi/CSharpModelTrainerApi.csproj -c Release -r linux-x64 --self-contained false -o /opt/app/publish/api
 dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web
 systemctl restart ml-api ml-web
 ```
