@@ -268,17 +268,21 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return NotFound();
             }
 
-            var deleteResult = await LungCancerModelRepository.Delete(model.Id);
+            var modelPath = PathResolver.GetModelPath(model);
+
+            var deleteResult = await LungCancerModelRepository.Delete(model.Id, () =>
+            {
+                if (System.IO.File.Exists(modelPath))
+                {
+                    System.IO.File.Delete(modelPath);
+                }
+            });
+
             if (!deleteResult.IsSuccess)
             {
-                return BadRequest();
+                return BadRequest(deleteResult.Message);
             }
 
-            var modelPath = PathResolver.GetModelPath(model);
-            if (!System.IO.File.Exists(modelPath))
-                return Ok();
-
-            System.IO.File.Delete(modelPath);
             return Ok();
         }
 
@@ -311,6 +315,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return NotFound();
             }
 
+            var originalName = model.Name;
             var updateResult = await LungCancerModelRepository.UpdateNameAsync(id, newName);
             if (!updateResult.IsSuccess)
             {
@@ -319,7 +324,17 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 
             model.Name = newName;
             var newPath = PathResolver.GetModelPath(model);
-            System.IO.File.Move(modelPath, newPath);
+
+            try
+            {
+                System.IO.File.Move(modelPath, newPath);
+            }
+            catch (IOException)
+            {
+                await LungCancerModelRepository.UpdateNameAsync(id, originalName);
+                return StatusCode(500, "Greška prilikom premještanja fajla modela; naziv je vraćen na prethodni.");
+            }
+
             return Ok();
         }
     }

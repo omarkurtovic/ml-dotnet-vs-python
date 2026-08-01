@@ -144,7 +144,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
         public async Task<Result<LCBasicDto>> GetModelBasic(int id)
         {
-            var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstAsync();
+            var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstOrDefaultAsync();
             if (model == null)
             {
                 return Result<LCBasicDto>.Failure("Model not found");
@@ -261,16 +261,30 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return Result<int>.Success(dbModel.Id);
         }
 
-        public async Task<Result> Delete(int id)
+        public async Task<Result> Delete(int id, Action deleteModelFile)
         {
             var model = await _context.LCModels.FindAsync(id);
             if (model == null)
             {
                 return Result.Failure("Model not found");
             }
-            _context.LCModels.Remove(model);
-            await _context.SaveChangesAsync();
-            return Result.Success();
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                _context.LCModels.Remove(model);
+                await _context.SaveChangesAsync();
+
+                deleteModelFile();
+
+                await transaction.CommitAsync();
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Result.Failure($"Greška prilikom brisanja modela: {ex.Message}");
+            }
         }
 
         public async Task<Result> UpdateNameAsync(int id, string newName)
