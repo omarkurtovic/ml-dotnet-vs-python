@@ -15,7 +15,7 @@ Developed as part of a Bachelor's Thesis focusing on Computer Vision. The progra
 
 #### Live Demo
 
-Check out the live demo here: [ml-dotnet-vs-python](http://49.13.166.156)
+Check out the live demo here: [ml-dotnet-vs-python](http://omarlungcanceranalysis.duckdns.org/)
 
 #### Screenshots
 
