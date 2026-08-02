@@ -69,7 +69,7 @@ dotnet publish WebApp/WebApp.csproj -c Release -o /opt/app/publish/web
 
 ## 5. Create Configuration Files (on server)
 
-### CSharpModelTrainerApi
+### CSharpModelTrainerApi - tell it where the Python API is running and where to store models/data
 ```sh
 cat > /opt/app/publish/api/appsettings.json << 'EOF'
 {
@@ -81,6 +81,11 @@ cat > /opt/app/publish/api/appsettings.json << 'EOF'
   },
   "Storage": {
     "Root": "/opt/app/storage"
+  },
+  "Services": {
+    "pythonapi": {
+      "http": ["http://localhost:8000"]
+    }
   },
   "AllowedHosts": "*"
 }
