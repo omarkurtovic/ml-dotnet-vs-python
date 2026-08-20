@@ -1,10 +1,13 @@
-A little file that can be used for keeping track of what you want to do next.
-This lowers the barrier of starting a new task.
+
+1. Read about ROC and AUC curves and include them in the analysis.
+
+2. Add more data augmentation techniques. Rotation, translation, zoom, brightness adjustment, Gaussian noise.
+
+3. Show confusion matrix. (save to database and show in web interface)
+
+4. Include comparison of macro precision between models.
+
+5. Describe the architecture of the model in detail. Create a diagram of the model architecture.
 
 
-We are working on the presentation.
-Slides in progress are for the data.
-General data and prepreocessing slides are done.
 
-
-Next up is the split of the data between training and validation sets.
