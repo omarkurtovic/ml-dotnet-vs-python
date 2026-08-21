@@ -323,6 +323,18 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return Result.Success();
         }
 
+        public async Task<Result> AddEpochData(int id, LCEpochData epoch)
+        {
+            var model = await _context.LCModels.FindAsync(id);
+            if (model == null)
+            {
+                return Result.Failure("Model not found");
+            }
+            model.EpochData.Add(epoch);
+            await _context.SaveChangesAsync();
+            return Result.Success();
+        }
+
         public async Task<Result> AddEpochData(int id, LCEpochDataDto epoch)
         {
             var model = await _context.LCModels.FindAsync(id);

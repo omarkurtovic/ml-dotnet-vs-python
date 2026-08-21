@@ -19,6 +19,11 @@ namespace CSharpModelTrainerApi.Database
                 .HasMany(l => l.EpochData)
                 .WithOne(e => e.LCModel)
                 .HasForeignKey(e => e.LCModelId);
+
+            modelBuilder.Entity<LCEpochData>()
+                .HasMany(l => l.LCPredictions)
+                .WithOne(p => p.LCEpochData)
+                .HasForeignKey(p => p.LCEpochDataId);
         }
     }
 }

@@ -8,6 +8,8 @@
         public int Epoch { get; set; }
         public double TrainingLoss { get; set; }
         public double TrainingAccuracy { get; set; }
+
+
         public double ValidationAccuracy { get; set; }
         public double ValidationLoss { get; set; }
         public double BenignPrecision { get; set; }
@@ -25,5 +27,6 @@
         public double WeightedPrecision { get; set; }
         public double WeightedRecall { get; set; }
         public double WeightedF1Score { get; set; }
+        public List<LCPredictions> LCPredictions { get; set; } = new List<LCPredictions>();
     }
 }

@@ -9,5 +9,9 @@
 
 5. Describe the architecture of the model in detail. Create a diagram of the model architecture.
 
+6. Save predictions per class (Validate method) + true label into LCPredictions, for both C# and Python. Needed for ROC/AUC and confusion matrix in web app.
+
+7. Reconsider LCEpochData - feels bloated/oddly shaped (loss + precision + everything crammed together). Maybe split into two classes: one for training classification report, one for validation classification report. Validation one could hold LCPredictions. Just an idea, think it through before touching anything.
+
 
 
