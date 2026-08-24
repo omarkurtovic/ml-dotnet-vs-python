@@ -8,8 +8,6 @@
         public int Epoch { get; set; }
         public double TrainingLoss { get; set; }
         public double TrainingAccuracy { get; set; }
-
-
         public double ValidationAccuracy { get; set; }
         public double ValidationLoss { get; set; }
         public double BenignPrecision { get; set; }

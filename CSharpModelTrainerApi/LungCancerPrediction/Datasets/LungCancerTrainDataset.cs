@@ -9,11 +9,20 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
     {
         private readonly List<Tensor> Images = [];
         private readonly List<long> Labels = [];
-
+        private readonly torchvision.ITransform? transformPipeline = null;
         private readonly string[] Categories = ["Bengin cases", "Malignant cases", "Normal cases"];
 
-        public LungCancerTrainDataset(bool withFlips, string dataDirectory, int? maxImagesPerCategory = null)
+        public LungCancerTrainDataset(string dataDirectory, int? maxImagesPerCategory = null, bool withTransforms = false)
         {
+            this.transformPipeline = withTransforms ? torchvision.transforms.Compose(
+            [
+                torchvision.transforms.RandomHorizontalFlip(),
+                torchvision.transforms.RandomVerticalFlip(),
+                torchvision.transforms.RandomResizedCrop(256, scaleMin: 0.8f, scaleMax: 1.0f),
+                torchvision.transforms.RandomRotation(15),
+                torchvision.transforms.ColorJitter(brightness: 0.2f, contrast: 0.2f, saturation: 0, hue: 0),
+            ]) : null;
+
             for (int i = 0; i < Categories.Length; ++i)
             {
                 var path = Path.Join(dataDirectory, Categories[i]);
@@ -30,15 +39,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
                     var tensor = ImageLoader.ImagePathToTensor(files[j]);
                     Images.Add(tensor);
                     Labels.Add(i);
-
-                    if (withFlips)
-                    {
-                        Images.Add(tensor.flip([2]).clone());
-                        Labels.Add(i);
-
-                        Images.Add(tensor.flip([1]).clone());
-                        Labels.Add(i);
-                    }
                 }
             }
         }
@@ -52,6 +52,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
 
         public override long Count => Images.Count;
 
+
         public override Dictionary<string, Tensor> GetTensor(long index)
         {
             var image = Images[(int)index];
@@ -59,7 +60,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
 
             return new Dictionary<string, Tensor>
             {
-                ["image"] = image,
+                ["image"] = transformPipeline?.call(image) ?? image,
                 ["label"] = torch.tensor(label)
             };
         }

@@ -9,6 +9,6 @@ namespace SharedCL
         public string Name { get; set; } = null!;
         public ModelLanguageDto Language { get; set; }
         public int Epochs { get; set; }
-        public bool WithFlips { get; set; } = true;
+        public bool WithTrasforms { get; set; } = true;
     }
 }

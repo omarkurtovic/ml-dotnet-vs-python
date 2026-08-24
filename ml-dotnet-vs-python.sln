@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpModelTrainerApi", "CS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpTests", "CSharpTests\CSharpTests.csproj", "{57BC3592-AA3C-475C-AC36-1533012D83C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCHelper", "LCHelper\LCHelper.csproj", "{F0B5ED35-A4BA-4180-8F2E-A9C165C00115}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{57BC3592-AA3C-475C-AC36-1533012D83C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57BC3592-AA3C-475C-AC36-1533012D83C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57BC3592-AA3C-475C-AC36-1533012D83C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0B5ED35-A4BA-4180-8F2E-A9C165C00115}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0B5ED35-A4BA-4180-8F2E-A9C165C00115}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0B5ED35-A4BA-4180-8F2E-A9C165C00115}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0B5ED35-A4BA-4180-8F2E-A9C165C00115}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
