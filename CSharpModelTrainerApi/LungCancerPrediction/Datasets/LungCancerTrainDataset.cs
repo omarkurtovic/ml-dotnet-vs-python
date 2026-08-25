@@ -16,10 +16,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
         {
             this.transformPipeline = withTransforms ? torchvision.transforms.Compose(
             [
-                torchvision.transforms.RandomHorizontalFlip(),
-                torchvision.transforms.RandomVerticalFlip(),
-                torchvision.transforms.RandomResizedCrop(256, scaleMin: 0.8f, scaleMax: 1.0f),
-                torchvision.transforms.RandomRotation(15),
+                new Transforms.AffineTransform(),
                 torchvision.transforms.ColorJitter(brightness: 0.2f, contrast: 0.2f, saturation: 0, hue: 0),
             ]) : null;
 
