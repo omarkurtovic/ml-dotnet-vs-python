@@ -6,6 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		DEPLOYMENT.md = DEPLOYMENT.md
+		Differences.md = Differences.md
 		NextUp.md = NextUp.md
 		README.md = README.md
 		SOURCES.md = SOURCES.md

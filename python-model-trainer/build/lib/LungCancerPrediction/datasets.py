@@ -1,9 +1,11 @@
 import os
 import torch
+import torchvision
 from torch.utils.data import Dataset
 import torchvision.transforms.functional as TF
 from PIL import Image
 from .services import ImageLoader
+from .transforms import AffineTransform
 
 class LungCancerTestDataset(Dataset):
     def __init__(self, data_directory):
@@ -46,10 +48,17 @@ class LungCancerTestDataset(Dataset):
 
 
 class LungCancerTrainDataset(Dataset):
-    def __init__(self, with_flips, data_directory, max_images_per_category=None):
+    def __init__(self, with_transforms, data_directory, max_images_per_category=None):
         self.images = []
         self.labels = []
         self.categories = ["Bengin cases", "Malignant cases", "Normal cases"]
+        if with_transforms:
+            self.transform_pipeline = torchvision.transforms.Compose([
+                AffineTransform(),
+                torchvision.transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0, hue=0)
+            ])
+        else:
+            self.transform_pipeline = None
 
         if data_directory is None or not os.path.exists(data_directory):
             return
@@ -68,17 +77,10 @@ class LungCancerTrainDataset(Dataset):
                 tensor = ImageLoader.image_path_to_tensor(os.path.join(path, files[j]))
                 self.images.append(tensor)
                 self.labels.append(i)
-                
-                if with_flips:
-                    self.images.append(TF.hflip(tensor).clone())
-                    self.labels.append(i)
-                    
-                    self.images.append(TF.vflip(tensor).clone())
-                    self.labels.append(i)
 
     @staticmethod
     def from_params(images, labels, categories):
-        dataset = LungCancerTrainDataset(with_flips=False, data_directory="")
+        dataset = LungCancerTrainDataset(with_transforms=False, data_directory="")
         dataset.images = images
         dataset.labels = labels
         dataset.categories = categories
@@ -92,7 +94,7 @@ class LungCancerTrainDataset(Dataset):
         label = self.labels[idx]
         
         return {
-            "image": image,
+            "image": image if self.transform_pipeline is None else self.transform_pipeline(image),
             "label": torch.tensor(label, dtype=torch.long)
         }
 

@@ -27,10 +27,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="LungCancerPrediction\datasets.py" />
+    <Compile Include="LungCancerPrediction\helper.py" />
     <Compile Include="LungCancerPrediction\neural_networks.py" />
     <Compile Include="LungCancerPrediction\services.py" />
     <Compile Include="LungCancerPrediction\lc_controller.py" />
     <Compile Include="LungCancerPrediction\models.py" />
+    <Compile Include="LungCancerPrediction\transforms.py" />
     <Compile Include="LungCancerPrediction\__init__.py" />
     <Compile Include="main.py" />
     <Compile Include="tests\test_datasets.py" />
