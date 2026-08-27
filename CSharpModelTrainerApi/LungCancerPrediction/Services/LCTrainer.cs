@@ -1,5 +1,9 @@
 ﻿using CSharpModelTrainerApi.LungCancerPrediction.Datasets;
+using CSharpModelTrainerApi.LungCancerPrediction.Models;
 using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
+using CSharpModelTrainerApi.Services;
+using SharedCL;
+using System.Diagnostics;
 using TorchSharp;
 using TorchSharp.Modules;
 using static TorchSharp.TensorExtensionMethods;
@@ -9,9 +13,6 @@ using static TorchSharp.torch.nn;
 using static TorchSharp.torch.nn.functional;
 using static TorchSharp.torch.utils;
 using static TorchSharp.torch.utils.data;
-using System.Diagnostics;
-using SharedCL;
-using CSharpModelTrainerApi.Services;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
@@ -60,11 +61,11 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 var trainEpochData = Train(trainLoader, model, loss, optimizer);
                 trainingStopwatch.Stop();
 
-                var validationEpochData = Validate(testLoader, model, loss);
+                var validationEpochData = Validate(testLoader, model, loss, epoch == epochs - 1);
 
                 trainingTime += trainingStopwatch.Elapsed.TotalSeconds;
 
-                var epochData = new LCEpochDataDto()
+                var epochData = new LCEpochData()
                 {
                     Epoch = epoch,
                     TrainingLoss = trainEpochData.Loss,
@@ -86,6 +87,13 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     WeightedPrecision = validationEpochData.WeightedPrecision,
                     WeightedRecall = validationEpochData.WeightedRecall,
                     WeightedF1Score = validationEpochData.WeightedF1Score,
+                    LCPredictions = [.. validationEpochData.Predictions.Select(p => new LCPredictions
+                    {
+                        BenignProbability = p.BenignProbability,
+                        MalignantProbability = p.MalignantProbability,
+                        NormalProbability = p.NormalProbability,
+                        TrueLabel = p.TrueLabel
+                    })]
                 };
 
                 var addEpochResult = await LungCancerModelRepository.AddEpochData(modelDB.Id, epochData);
@@ -109,8 +117,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         }
 
 
-        private static EpochData Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
+        private static SegmentEpochData Train(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, Adam optimizer)
         {
+            var epochData = new SegmentEpochData();
             var size = dataloader.dataset.Count;
             model.train();
 
@@ -154,11 +163,13 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             }
 
             float averageTrainLoss = totalLoss / batchCount;
-            return ClassificationReport(confusionMatrix, 3, size, averageTrainLoss);
+            ClassificationReport(ref epochData, confusionMatrix, 3, size, averageTrainLoss);
+            return epochData;
         }
 
-        private static EpochData Validate(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn)
+        private static SegmentEpochData Validate(DataLoader dataloader, LungCancerNN model, CrossEntropyLoss loss_fn, bool isLastEpoch = false)
         {
+            var epochData = new SegmentEpochData();
             model.eval();
 
             float totalLoss = 0f;
@@ -178,10 +189,28 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     totalLoss += loss.item<float>();
                     batchCount++;
 
-                    var winningIndices = predictions.argmax(1);
-
-                    long[] predArray = [.. winningIndices.cpu().data<long>()];
                     long[] labelArray = [.. correctIndicies.cpu().data<long>()];
+
+                    if (isLastEpoch)
+                    {
+                        var probs = torch.nn.functional.softmax(predictions, dim: 1).cpu();
+                        for (int i = 0; i < predictions.shape[0]; ++i)
+                        {
+                            var benign = probs[i][0].item<float>();
+                            var malignant = probs[i][1].item<float>();
+                            var normal = probs[i][2].item<float>();
+                            epochData.Predictions.Add(new LCEpochPredictionDto
+                            {
+                                BenignProbability = benign,
+                                MalignantProbability = malignant,
+                                NormalProbability = normal,
+                                TrueLabel = (int)labelArray[i]
+                            });
+                        }
+                    }
+
+                    var winningIndices = predictions.argmax(1);
+                    long[] predArray = [.. winningIndices.cpu().data<long>()];
 
                     for (int i = 0; i < predArray.Length; ++i)
                     {
@@ -191,14 +220,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             }
 
             float averageValidationLoss = totalLoss / batchCount;
-            return ClassificationReport(confusionMatrix, 3, total, averageValidationLoss);
+            ClassificationReport(ref epochData, confusionMatrix, 3, total, averageValidationLoss);
+            return epochData;
         }
 
 
-        private static EpochData ClassificationReport(int[,] confusionMatrix, int numClasses, long total, float averageLoss)
+        private static void ClassificationReport(ref SegmentEpochData epochData, int[,] confusionMatrix, int numClasses, long total, float averageLoss)
         {
-            EpochData result = new();
-            result.Loss = averageLoss;
+            epochData.Loss = averageLoss;
 
             float macroPrecision = 0f, macroRecall = 0f, macroF1 = 0f;
             float weightedPrecision = 0f, weightedRecall = 0f, weightedF1 = 0f;
@@ -249,39 +278,37 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
                 if (i == 0)
                 {
-                    result.BenignPrecision = precision;
-                    result.BenignRecall = recall;
-                    result.BenignF1Score = F1;
+                    epochData.BenignPrecision = precision;
+                    epochData.BenignRecall = recall;
+                    epochData.BenignF1Score = F1;
                 }
                 else if (i == 1)
                 {
-                    result.MalignantPrecision = precision;
-                    result.MalignantRecall = recall;
-                    result.MalignantF1Score = F1;
+                    epochData.MalignantPrecision = precision;
+                    epochData.MalignantRecall = recall;
+                    epochData.MalignantF1Score = F1;
                 }
                 else if (i == 2)
                 {
-                    result.NormalPrecision = precision;
-                    result.NormalRecall = recall;
-                    result.NormalF1Score = F1;
+                    epochData.NormalPrecision = precision;
+                    epochData.NormalRecall = recall;
+                    epochData.NormalF1Score = F1;
                 }
             }
 
-            result.Accuracy = correct / (float)total;
+            epochData.Accuracy = correct / (float)total;
 
 
-            result.MacroPrecision = macroPrecision / numClasses;
-            result.MacroRecall = macroRecall / numClasses;
-            result.MacroF1Score = macroF1 / numClasses;
+            epochData.MacroPrecision = macroPrecision / numClasses;
+            epochData.MacroRecall = macroRecall / numClasses;
+            epochData.MacroF1Score = macroF1 / numClasses;
 
-            result.WeightedPrecision = weightedPrecision / totalSupport;
-            result.WeightedRecall = weightedRecall / totalSupport;
-            result.WeightedF1Score = weightedF1 / totalSupport;
-
-            return result;
+            epochData.WeightedPrecision = weightedPrecision / totalSupport;
+            epochData.WeightedRecall = weightedRecall / totalSupport;
+            epochData.WeightedF1Score = weightedF1 / totalSupport;
         }
 
-        public class EpochData
+        public class SegmentEpochData
         {
             public float Accuracy { get; set; }
             public float Loss { get; set; }
@@ -300,6 +327,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             public float WeightedPrecision { get; set; }
             public float WeightedRecall { get; set; }
             public float WeightedF1Score { get; set; }
+            public List<LCEpochPredictionDto> Predictions { get; set; } = [];
         }
     }
 }

@@ -34,5 +34,6 @@ namespace SharedCL
         public double WeightedPrecision { get; set; }
         public double WeightedRecall { get; set; }
         public double WeightedF1Score { get; set; }
+        public List<LCRocDto> RocData { get; set; } = new List<LCRocDto>();
     }
 }

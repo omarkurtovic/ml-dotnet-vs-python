@@ -174,7 +174,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
         public async Task<Result<LCInfoDto>> GetModelInfo(int id)
         {
-            var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData).FirstAsync();
+            var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData)
+                .ThenInclude(m => m.LCPredictions).FirstOrDefaultAsync();
             if (model == null)
             {
                 return Result<LCInfoDto>.Failure("Model not found");
@@ -215,7 +216,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 MacroF1Score = ed.MacroF1Score,
                 WeightedPrecision = ed.WeightedPrecision,
                 WeightedRecall = ed.WeightedRecall,
-                WeightedF1Score = ed.WeightedF1Score
+                WeightedF1Score = ed.WeightedF1Score,
+                Pr
             });
         }
 

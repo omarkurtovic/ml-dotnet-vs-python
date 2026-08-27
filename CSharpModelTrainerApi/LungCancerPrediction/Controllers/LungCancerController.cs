@@ -18,7 +18,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         PathResolver pathResolver,
         HardwareInfoService hardwareInfoService,
         TrainingQueue trainingQueue,
-        PythonLCApiClient pythonLCApiClient) : ControllerBase
+        PythonLCApiClient pythonLCApiClient,
+        ROCService rocService) : ControllerBase
     {
         private LCPredictionService LungCancerPredictionService { get; set; } = lungCancerPredictionService;
         private LCRepository LungCancerModelRepository { get; set; } = lungCancerModelRepository;
@@ -26,6 +27,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         private HardwareInfoService HardwareInfoService { get; set; } = hardwareInfoService;
         private TrainingQueue _trainingQueue { get; set; } = trainingQueue;
         private PythonLCApiClient PythonLCApi { get; set; } = pythonLCApiClient;
+        private readonly ROCService _rocService = rocService;
 
 
         [HttpGet]
@@ -117,6 +119,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return BadRequest();
             }
             var model = modelResult.Data;
+            model.RocData = _rocService.CalculateROC(model.CurrentEpoch.)
             if (model == null)
             {
                 return NotFound();
