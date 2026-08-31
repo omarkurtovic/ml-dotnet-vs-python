@@ -75,6 +75,7 @@ public static class Loc
             ["LCInfo_Error"] = "Error occurred while loading model details. Please try again.",
             ["LCInfo_TrainingFailed"] = "Training failed. Please try again.",
             ["LCInfo_TrainingComplete"] = "Training completed successfully!",
+            ["LCInfo_RocGraph"] = "ROC Graph",
 
             ["LCInference_PageTitle"] = "Image Analysis",
             ["LCInference_Title"] = "Image Analysis",
@@ -227,6 +228,7 @@ public static class Loc
             ["LCInfo_Error"] = "Greška prlikom učitavanja detalja modela. Molimo pokušajte ponovo.",
             ["LCInfo_TrainingFailed"] = "Treniranje nije uspjelo. Molimo pokušajte ponovo.",
             ["LCInfo_TrainingComplete"] = "Treniranje uspješno završeno!",
+            ["LCInfo_RocGraph"] = "ROC Graf",
 
             ["LCInference_PageTitle"] = "Analiza Slike",
             ["LCInference_Title"] = "Analiza Slike",

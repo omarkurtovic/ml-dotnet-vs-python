@@ -119,7 +119,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return BadRequest();
             }
             var model = modelResult.Data;
-            model.RocData = _rocService.CalculateROC(model.CurrentEpoch.)
             if (model == null)
             {
                 return NotFound();

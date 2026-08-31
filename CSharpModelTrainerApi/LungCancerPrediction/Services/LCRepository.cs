@@ -6,9 +6,10 @@ using SharedCL;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
-    public class LCRepository(AppDbContext context)
+    public class LCRepository(AppDbContext context, ROCService rocService)
     {
         private readonly AppDbContext _context = context;
+        private readonly ROCService _rocService = rocService;
 
         public async Task<Result<List<LCDto>>> GetModels()
         {
@@ -217,7 +218,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 WeightedPrecision = ed.WeightedPrecision,
                 WeightedRecall = ed.WeightedRecall,
                 WeightedF1Score = ed.WeightedF1Score,
-                Pr
+                RocData = _rocService.CalculateROC(ed.LCPredictions)
             });
         }
 

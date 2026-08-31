@@ -8,5 +8,6 @@ namespace SharedCL
     {
         public double TruePositiveRate { get; set; }
         public double FalsePositiveRate { get; set; }
+        public double Threshold { get; set; }
     }
 }

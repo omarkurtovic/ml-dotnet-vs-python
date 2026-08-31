@@ -1,4 +1,5 @@
-﻿@using MudBlazor
+﻿@using ApexCharts
+@using MudBlazor
 @using OmarDesignSystem
 @using SharedCL
 @using WebApp.LungCancerPrediction.ApiClients
@@ -13,19 +14,19 @@
         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
             <SubHeading Class="mb-0">@Loc.T("LCInfo_Title")</SubHeading>
             <MudIconButton Icon="@Icons.Material.Filled.Close"
-                           Color="Color.Default"
+                           Color="MudBlazor.Color.Default"
                            OnClick="@(async () => await Close.InvokeAsync())" />
         </MudStack>
 
 
         <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
-            <MudChip T="string" Color="@(Model.Language == ModelLanguageDto.CSharp ? Color.Primary : Color.Secondary)" Size="Size.Small">
+            <MudChip T="string" Color="@(Model.Language == ModelLanguageDto.CSharp ? MudBlazor.Color.Primary : MudBlazor.Color.Secondary)" Size="MudBlazor.Size.Small">
                 @Model.Language
             </MudChip>
-            <MudChip T="string" Icon="@Icons.Material.Filled.Autorenew" Size="Size.Small">
+            <MudChip T="string" Icon="@Icons.Material.Filled.Autorenew" Size="MudBlazor.Size.Small">
                 @Model.TotalEpochs @Loc.T("LCInfo_Epochs")
             </MudChip>
-            <MudChip T="string" Icon="@Icons.Material.Filled.Memory" Size="Size.Small" Variant="Variant.Outlined">
+            <MudChip T="string" Icon="@Icons.Material.Filled.Memory" Size="MudBlazor.Size.Small" Variant="MudBlazor.Variant.Outlined">
                 @Model.HardwareInfo
             </MudChip>
         </MudStack>
@@ -39,7 +40,7 @@
             <SectionHeading>@Loc.T("LCInfo_CurrentEpoch"): @Model.CurrentEpoch / @Model.TotalEpochs</SectionHeading>
             <MudProgressLinear Value="Model.CurrentEpoch"
                                Max="Model.TotalEpochs"
-                               Color="Color.Primary" />
+                               Color="MudBlazor.Color.Primary" />
         }
 
         @if (Model.ModelStatusDto == ModelStatusDto.Failed)
@@ -96,8 +97,15 @@
             </tbody>
         </MudSimpleTable>
 
-        <SectionHeading Class="mt-4">@Loc.T("LCInfo_PerformanceByClass")</SectionHeading>
-
+        <ApexChart TItem="LCRocDto" Title="@Loc.T("LCInfo_RocGraph")" Height="400" Options="options">
+            <ApexPointSeries TItem="LCRocDto"
+                Items="Model.RocData"
+                Name="@Loc.T("LCInfo_RocGraph")"
+                SeriesType="SeriesType.Scatter" 
+                XValue="@(ed => ed.FalsePositiveRate)"
+                YValue="@(ed => (decimal)ed.TruePositiveRate)"
+                OrderByDescending="ed=>ed.X"/>
+        </ApexChart>
     </MudStack>
 }
 
@@ -112,6 +120,17 @@
     private PeriodicTimer? _timer;
 
     private CancellationTokenSource? _cts;
+
+    private ApexChartOptions<LCRocDto> options = new()
+    {
+        Xaxis = new XAxis
+        {
+            Type = XAxisType.Numeric,
+            Min = 0,
+            Max = 1
+        },
+        Yaxis = [new YAxis { Min = 0, Max = 1 }]
+    };
 
     public async Task ShowModelDetails(int id)
     {
