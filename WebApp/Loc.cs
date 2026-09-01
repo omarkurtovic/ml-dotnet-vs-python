@@ -76,6 +76,9 @@ public static class Loc
             ["LCInfo_TrainingFailed"] = "Training failed. Please try again.",
             ["LCInfo_TrainingComplete"] = "Training completed successfully!",
             ["LCInfo_RocGraph"] = "ROC Graph",
+            ["LCInfo_TPR"] = "True Positive Rate",
+            ["LCInfo_FPR"] = "False Positive Rate",
+            ["LCInfo_Threshold"] = "Threshold",
 
             ["LCInference_PageTitle"] = "Image Analysis",
             ["LCInference_Title"] = "Image Analysis",
@@ -229,6 +232,9 @@ public static class Loc
             ["LCInfo_TrainingFailed"] = "Treniranje nije uspjelo. Molimo pokušajte ponovo.",
             ["LCInfo_TrainingComplete"] = "Treniranje uspješno završeno!",
             ["LCInfo_RocGraph"] = "ROC Graf",
+            ["LCInfo_TPR"] = "Stopa Stvarnih Pozitivnih",
+            ["LCInfo_FPR"] = "Stopa Lažnih Pozitivnih",
+            ["LCInfo_Threshold"] = "Prag",
 
             ["LCInference_PageTitle"] = "Analiza Slike",
             ["LCInference_Title"] = "Analiza Slike",

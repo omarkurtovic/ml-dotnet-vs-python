@@ -1,4 +1,5 @@
-﻿@using ApexCharts
+﻿@using System.Globalization
+@using ApexCharts
 @using MudBlazor
 @using OmarDesignSystem
 @using SharedCL
@@ -97,15 +98,17 @@
             </tbody>
         </MudSimpleTable>
 
-        <ApexChart TItem="LCRocDto" Title="@Loc.T("LCInfo_RocGraph")" Height="400" Options="options">
-            <ApexPointSeries TItem="LCRocDto"
-                Items="Model.RocData"
-                Name="@Loc.T("LCInfo_RocGraph")"
-                SeriesType="SeriesType.Scatter" 
-                XValue="@(ed => ed.FalsePositiveRate)"
-                YValue="@(ed => (decimal)ed.TruePositiveRate)"
-                OrderByDescending="ed=>ed.X"/>
-        </ApexChart>
+        @if(Model.ModelStatusDto == ModelStatusDto.Trained)
+        {
+            <ApexChart @ref="Chart" TItem="LCRocDto" Title="@Loc.T("LCInfo_RocGraph")" Height="400" Options="options">
+                <ApexPointSeries TItem="LCRocDto"
+                                 Items="Model.RocData"
+                                 Name="@Loc.T("LCInfo_RocGraph")"
+                                 SeriesType="SeriesType.Scatter"
+                                 XValue="@(ed => ed.FalsePositiveRate)"
+                                 YValue="@(ed => (decimal)ed.TruePositiveRate)" />
+            </ApexChart>
+        }
     </MudStack>
 }
 
@@ -121,16 +124,42 @@
 
     private CancellationTokenSource? _cts;
 
-    private ApexChartOptions<LCRocDto> options = new()
+    private ApexChartOptions<LCRocDto> options = new();
+
+    private ApexChart<LCRocDto> Chart;
+
+    private void SetOptions()
     {
-        Xaxis = new XAxis
+        options = new ApexChartOptions<LCRocDto>
         {
-            Type = XAxisType.Numeric,
-            Min = 0,
-            Max = 1
-        },
-        Yaxis = [new YAxis { Min = 0, Max = 1 }]
-    };
+            Tooltip = new Tooltip
+            {
+                Enabled = true,
+                Shared = false,
+                Intersect = true,
+                Custom = new CustomFunction(GenerateJavascriptFunctionForTooltip(Model))
+            },
+            Xaxis = new XAxis { Type = XAxisType.Numeric, Min = 0, Max = 1 },
+            Yaxis = [new YAxis { Min = 0, Max = 1 }]
+        };
+    }
+
+    public static string GenerateJavascriptFunctionForTooltip(LCInfoDto Model)
+    {
+        if(Model == null || Model.RocData == null || Model.RocData.Count == 0)
+        {
+            return "function({series, seriesIndex, dataPointIndex, w}) { return '<div>Hello</div>'; }";
+        }
+        var result = "";
+        result += @"function({series, seriesIndex, dataPointIndex, w}) {";
+        result += $"const thresholds = [{string.Join(',', Model!.RocData.Select(r => r.Threshold.ToString(CultureInfo.InvariantCulture)).ToList())}]; ";
+        result += $"const tprLabel = '{Loc.T("LCInfo_TPR")}'; ";
+        result += $"const fprLabel = '{Loc.T("LCInfo_FPR")}'; ";
+        result += $"const thresholdLabel = '{Loc.T("LCInfo_Threshold")}'; ";
+        result += "return `<div>${fprLabel}: ${w.config.series[seriesIndex].data[dataPointIndex].x} </div> <div>${tprLabel}: ${w.config.series[seriesIndex].data[dataPointIndex].y}</div> <div>${thresholdLabel}: ${thresholds[dataPointIndex]}</div>`;";
+        result += "}";
+        return result;
+    }
 
     public async Task ShowModelDetails(int id)
     {
@@ -149,7 +178,12 @@
         }
 
         Model = result.Data;
+        SetOptions();
         StateHasChanged();
+        if(Chart != null)
+        {
+            await Chart.UpdateSeriesAsync();
+        }
 
         if (Model!.ModelStatusDto == ModelStatusDto.Training)
         {
