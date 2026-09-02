@@ -42,7 +42,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
             var dataDirectory = pathResolver.GetLungCancerDataPath();
 
-            var trainingData = new LungCancerTrainDataset(dataDirectory, withTransforms: trainInfo.WithTrasforms);
+            var trainingData = new LungCancerTrainDataset(dataDirectory, withAugmentation: trainInfo.WithAugmentation);
             var classWeights = torch.tensor(trainingData.GetClassWeights()).to(defaultDevice);
             var testData = new LungCancerTestDataset(dataDirectory);
             var trainLoader = torch.utils.data.DataLoader(trainingData, batchSize: 8, shuffle: true, device: defaultDevice);

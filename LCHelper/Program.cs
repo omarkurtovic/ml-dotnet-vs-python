@@ -23,7 +23,7 @@ foreach (DirectoryInfo dir in di.GetDirectories())
     dir.Delete(true);
 }
 
-var trainingData = new LungCancerTrainDataset(dataDirectory, withTransforms: true);
+var trainingData = new LungCancerTrainDataset(dataDirectory, withAugmentation: true);
 
 for(int i = 0; i < 10; ++i)
 {

@@ -10,7 +10,7 @@ from pathlib import Path
 import psutil
 from cpuinfo import get_cpu_info
 
-from .models import ModelLanguageDto, LCDto, LCPredictionDto, LCTrainingParamsDto
+from .models import LCEpochPredictionDto, LCRocDto, ModelLanguageDto, LCDto, LCPredictionDto, LCTrainingParamsDto
 from .neural_networks import LungCancerNN
 
 class ImageLoader:
@@ -133,3 +133,49 @@ class PredictionService:
                 normalScore = prediction[0][2].item(),
                 predictionTimeInSeconds = inference_end - inference_start
             )
+
+
+# class RocService:
+#     @staticmethod
+#     def calculate_roc_curve(predictions: list[LCEpochPredictionDto]) -> list[LCRocDto]:
+#         thresholds = sorted({ p.malignantProbability for p in predictions }, reverse=True)
+#         result = []
+#         result.append(LCRocDto(truePositiveRate=0.0, falsePositiveRate=0.0, threshold=1.0))
+        
+#         for threshold in thresholds:
+#             confusion_matrix = RocService.calculate_confusion_matrix(predictions, threshold)
+#             tpr = 0
+#             fpr = 0
+#             if confusion_matrix[0][0] + confusion_matrix[1][0] != 0:
+#                 tpr = confusion_matrix[0][0] / (confusion_matrix[0][0] + confusion_matrix[1][0])
+
+#             if confusion_matrix[0][1] + confusion_matrix[1][1] != 0:
+#                 fpr = confusion_matrix[0][1] / (confusion_matrix[0][1] + confusion_matrix[1][1])
+
+#             result.append(LCRocDto(truePositiveRate=tpr, falsePositiveRate=fpr, threshold=threshold))
+
+#         result.append(LCRocDto(truePositiveRate=1.0, falsePositiveRate=1.0, threshold=0.0))
+
+#         return result
+
+#     @staticmethod
+#     def calculate_confusion_matrix(predictions: list[LCEpochPredictionDto], threshold: float) -> list[list[int]]:
+#         result = [[0, 0], [0, 0]]
+#         for prediction in predictions:
+#             true_label = prediction.trueLabel
+#             predicted_label = 1 if prediction.malignantProbability >= threshold else 0
+
+#             # True Positive
+#             if predicted_label == 1 and true_label == 1:
+#                 result[0][0] += 1
+#             # False Positive
+#             elif predicted_label == 1 and true_label != 1:
+#                 result[0][1] += 1
+#             # False Negative
+#             elif predicted_label != 1 and true_label == 1:
+#                 result[1][0] += 1
+#             # True Negative
+#             else:
+#                 result[1][1] += 1
+
+#         return result

@@ -12,9 +12,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Datasets
         private readonly torchvision.ITransform? transformPipeline = null;
         private readonly string[] Categories = ["Bengin cases", "Malignant cases", "Normal cases"];
 
-        public LungCancerTrainDataset(string dataDirectory, int? maxImagesPerCategory = null, bool withTransforms = false)
+        public LungCancerTrainDataset(string dataDirectory, int? maxImagesPerCategory = null, bool withAugmentation = false)
         {
-            this.transformPipeline = withTransforms ? torchvision.transforms.Compose(
+            this.transformPipeline = withAugmentation ? torchvision.transforms.Compose(
             [
                 new Transforms.AffineTransform(),
                 torchvision.transforms.ColorJitter(brightness: 0.2f, contrast: 0.2f, saturation: 0, hue: 0),

@@ -158,7 +158,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                                 MacroF1Score = pythonInfo.MacroF1Score,
                                 WeightedPrecision = pythonInfo.WeightedPrecision,
                                 WeightedRecall = pythonInfo.WeightedRecall,
-                                WeightedF1Score = pythonInfo.WeightedF1Score
+                                WeightedF1Score = pythonInfo.WeightedF1Score,
+                                LCPredictions = pythonInfo.LCPredictions
                             });
                         }
 

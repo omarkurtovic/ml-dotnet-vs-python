@@ -9,7 +9,7 @@ import threading
 import torch
 from torch.utils.data import DataLoader
 
-from .models import ModelLanguageDto, LCDto, LCEpochDataDto, LCTrainingParamsDto, EpochData, LCPredictionDto
+from .models import LCEpochPredictionDto, ModelLanguageDto, LCDto, LCEpochDataDto, LCTrainingParamsDto, SegmentEpochData, LCPredictionDto
 from .neural_networks import LungCancerNN
 from .datasets import LungCancerTrainDataset, LungCancerTestDataset
 from .services import HardwareUntils, TrainingHelper, PathResolver, PredictionService
@@ -83,7 +83,7 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
     data_directory = PathResolver.get_lung_cancer_data_path()
     
     device_generator = torch.Generator(device=default_device)
-    training_data = LungCancerTrainDataset(with_flips=train_data.withFlips, data_directory=data_directory)
+    training_data = LungCancerTrainDataset(with_augmentation=train_data.withAugmentation, data_directory=data_directory)
     class_weights = torch.tensor(training_data.get_class_weights(), dtype=torch.float32).to(default_device)
     test_data = LungCancerTestDataset(data_directory=data_directory)
     train_loader = DataLoader(training_data, batch_size=8, shuffle=True, generator=device_generator)
@@ -98,10 +98,9 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
 
     for epoch in range(epochs):
         training_start = time.perf_counter()
-        train_epoch_data = train(train_loader, model, loss, optimizer)
+        train_epoch_data : SegmentEpochData = train(train_loader, model, loss, optimizer)
         training_end = time.perf_counter()
-
-        validation_epoch_data = validate(test_loader, model, loss)
+        validation_epoch_data : SegmentEpochData = validate(test_loader, model, loss)
 
         total_training_time += (training_end - training_start)
 
@@ -126,6 +125,7 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
         epoch_data.weightedPrecision = validation_epoch_data.weightedPrecision
         epoch_data.weightedRecall = validation_epoch_data.weightedRecall
         epoch_data.weightedF1Score = validation_epoch_data.weightedF1Score
+        epoch_data.LCPredictions = validation_epoch_data.predictions
 
         model_db.epochData.append(epoch_data)
         with _state_lock:
@@ -151,6 +151,7 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
                 "weightedPrecision": epoch_data.weightedPrecision,
                 "weightedRecall": epoch_data.weightedRecall,
                 "weightedF1Score": epoch_data.weightedF1Score,
+                "LCPredictions": epoch_data.LCPredictions
             })
 
     model_db.trainingTimeInSeconds = total_training_time
@@ -171,7 +172,8 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
 
 
 
-def train(dataloader, model, loss_fn, optimizer):
+def train(dataloader, model, loss_fn, optimizer) -> SegmentEpochData:
+    epoch_data = SegmentEpochData()
     size = len(dataloader.dataset)
     model.train()
 
@@ -207,10 +209,11 @@ def train(dataloader, model, loss_fn, optimizer):
             print(f"loss: {loss.item():>7.5f}  [{current:>5d}/{size:>5d}]")
 
     average_train_loss = total_loss / batch_count
-    return classification_report(confusion_matrix, 3, size, average_train_loss)
+    return classification_report(epoch_data, confusion_matrix, 3, size, average_train_loss)
 
 
-def validate(dataloader, model, loss_fn):
+def validate(dataloader, model, loss_fn, last_epoch=False) -> SegmentEpochData:
+    epoch_data = SegmentEpochData()
     model.eval()
 
     total_loss = 0.0
@@ -232,19 +235,32 @@ def validate(dataloader, model, loss_fn):
             total_loss += loss.item()
             batch_count += 1
 
+            if last_epoch:
+                probs = torch.nn.functional.softmax(predictions, dim=1)
+                for i in range(predictions.shape[0]):
+                    benign_prob = probs[i][0].item()
+                    malignant_prob = probs[i][1].item()
+                    normal_prob = probs[i][2].item()
+                    true_label = correct_indices[i].item()
+                    epoch_data.predictions.append(LCEpochPredictionDto(
+                        benignProbability=benign_prob,
+                        malignantProbability=malignant_prob,
+                        normalProbability=normal_prob,
+                        trueLabel=true_label
+                    ))
+
             winning_indices = predictions.argmax(dim=1)
 
             for true_label, pred_label in zip(correct_indices, winning_indices):
                 confusion_matrix[true_label.item(), pred_label.item()] += 1
 
     average_validation_loss = total_loss / batch_count
-    return classification_report(confusion_matrix, 3, total, average_validation_loss)
+    return classification_report(epoch_data, confusion_matrix, 3, total, average_validation_loss)
 
 
-def classification_report(confusion_matrix, num_classes, total, average_loss):
+def classification_report(epoch_data, confusion_matrix, num_classes, total, average_loss):
 
-    result = EpochData();
-    result.loss = average_loss
+    epoch_data.loss = average_loss
 
     macro_precision, macro_recall, macro_f1 = 0.0, 0.0, 0.0
     weighted_precision, weighted_recall, weighted_f1 = 0.0, 0.0, 0.0
@@ -282,25 +298,25 @@ def classification_report(confusion_matrix, num_classes, total, average_loss):
         total_support += class_support
 
         if i == 0:
-            result.benignPrecision = precision
-            result.benignRecall = recall
-            result.benignF1Score = f1
+            epoch_data.benignPrecision = precision
+            epoch_data.benignRecall = recall
+            epoch_data.benignF1Score = f1
         elif i == 1:
-            result.malignantPrecision = precision
-            result.malignantRecall = recall
-            result.malignantF1Score = f1
+            epoch_data.malignantPrecision = precision
+            epoch_data.malignantRecall = recall
+            epoch_data.malignantF1Score = f1
         elif i == 2:
-            result.normalPrecision = precision
-            result.normalRecall = recall
-            result.normalF1Score = f1
+            epoch_data.normalPrecision = precision
+            epoch_data.normalRecall = recall
+            epoch_data.normalF1Score = f1
     
-    result.accuracy = correct / total if total > 0 else 0.0
-    result.macroPrecision = macro_precision / num_classes
-    result.macroRecall = macro_recall / num_classes
-    result.macroF1Score = macro_f1 / num_classes
-    result.weightedPrecision = weighted_precision / total_support if total_support > 0 else 0.0
-    result.weightedRecall = weighted_recall / total_support if total_support > 0 else 0.0
-    result.weightedF1Score = weighted_f1 / total_support if total_support > 0 else 0.0
+    epoch_data.accuracy = correct / total if total > 0 else 0.0
+    epoch_data.macroPrecision = macro_precision / num_classes
+    epoch_data.macroRecall = macro_recall / num_classes
+    epoch_data.macroF1Score = macro_f1 / num_classes
+    epoch_data.weightedPrecision = weighted_precision / total_support if total_support > 0 else 0.0
+    epoch_data.weightedRecall = weighted_recall / total_support if total_support > 0 else 0.0
+    epoch_data.weightedF1Score = weighted_f1 / total_support if total_support > 0 else 0.0
 
-    return result
+    return epoch_data
 

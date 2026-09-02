@@ -1,5 +1,6 @@
 ﻿using CSharpModelTrainerApi.LungCancerPrediction.Models;
 using SharedCL;
+using System.Runtime.CompilerServices;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
@@ -8,8 +9,10 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         public  List<LCRocDto> CalculateROC(List<LCPredictions> predictions)
         {
             var thresholds = predictions.Select(p => p.MalignantProbability).Distinct().OrderByDescending(x => x).ToList();
-            var rocDtos = new List<LCRocDto>();
-            rocDtos.Add(new LCRocDto() { FalsePositiveRate = 0, TruePositiveRate = 0 });
+            var rocDtos = new List<LCRocDto>
+            {
+                new LCRocDto() { FalsePositiveRate = 0, TruePositiveRate = 0 }
+            };
             foreach (var threshold in thresholds)
             {
                 int[,] confusionMatrix = CalculateConfusionMatrix(predictions, threshold);
@@ -26,7 +29,24 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 rocDtos.Add(new LCRocDto { TruePositiveRate = tpr, FalsePositiveRate = fpr, Threshold = threshold });
             }
             rocDtos.Add(new LCRocDto() { FalsePositiveRate = 1, TruePositiveRate = 1 });
+
             return rocDtos;
+        }
+
+        public double CalculateAUC(List<LCRocDto> rocData)
+        {
+            double auc = 0.0;
+            for (int i = 1; i < rocData.Count; i++)
+            {
+                double x1 = rocData[i - 1].FalsePositiveRate;
+                double y1 = rocData[i - 1].TruePositiveRate;
+
+                double x2 = rocData[i].FalsePositiveRate;
+                double y2 = rocData[i].TruePositiveRate;
+
+                auc += (x2 - x1) * (y1 + y2) / 2.0;
+            }
+            return auc;
         }
 
         private int[,] CalculateConfusionMatrix(List<LCPredictions> predictions, double threshold)

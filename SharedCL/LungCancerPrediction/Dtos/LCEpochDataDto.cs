@@ -26,6 +26,6 @@ namespace SharedCL
         public double WeightedPrecision { get; set; }
         public double WeightedRecall { get; set; }
         public double WeightedF1Score { get; set; }
-        public List<LCPredictionDto> LCPredictions { get; set; } = new List<LCPredictionDto>();
+        public List<LCEpochPredictionDto> LCPredictions { get; set; } = [];
     }
 }

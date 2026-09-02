@@ -48,11 +48,11 @@ class LungCancerTestDataset(Dataset):
 
 
 class LungCancerTrainDataset(Dataset):
-    def __init__(self, with_transforms, data_directory, max_images_per_category=None):
+    def __init__(self, with_augmentation, data_directory, max_images_per_category=None):
         self.images = []
         self.labels = []
         self.categories = ["Bengin cases", "Malignant cases", "Normal cases"]
-        if with_transforms:
+        if with_augmentation:
             self.transform_pipeline = torchvision.transforms.Compose([
                 AffineTransform(),
                 torchvision.transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0, hue=0)
@@ -80,7 +80,7 @@ class LungCancerTrainDataset(Dataset):
 
     @staticmethod
     def from_params(images, labels, categories):
-        dataset = LungCancerTrainDataset(with_transforms=False, data_directory="")
+        dataset = LungCancerTrainDataset(with_augmentation=False, data_directory="")
         dataset.images = images
         dataset.labels = labels
         dataset.categories = categories

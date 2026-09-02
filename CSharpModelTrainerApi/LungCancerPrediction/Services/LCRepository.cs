@@ -190,6 +190,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 currentEpoch = model.EpochData.Count;
             }
 
+            var rocData = _rocService.CalculateROC(ed.LCPredictions);
             return Result<LCInfoDto>.Success(new LCInfoDto
             {
                 TotalEpochs = model.TotalEpochs,
@@ -218,7 +219,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 WeightedPrecision = ed.WeightedPrecision,
                 WeightedRecall = ed.WeightedRecall,
                 WeightedF1Score = ed.WeightedF1Score,
-                RocData = _rocService.CalculateROC(ed.LCPredictions)
+                RocData = rocData,
+                AUC = _rocService.CalculateAUC(rocData)
             });
         }
 

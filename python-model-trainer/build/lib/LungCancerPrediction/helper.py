@@ -18,7 +18,7 @@ for filename in os.listdir(data_directory):
         os.remove(file_path)
 
 
-train_dataset = LungCancerTrainDataset(data_directory=data_directory, with_transforms=True)
+train_dataset = LungCancerTrainDataset(data_directory=data_directory, with_augmentation=True)
 
 
 for i in range(10):

@@ -31,7 +31,7 @@ public static class Loc
             ["LCTrainer_Epochs"] = "Number of Epochs",
             ["LCTrainer_ModelLanguageRequired"] = "Model language is required.",
             ["LCTrainer_ModelLanguage"] = "Model Language",
-            ["LCTrainer_WithFlips"] = "Rotate images (Augmentation)",
+            ["LCTrainer_WithAugmentation"] = "Augment images",
             ["LCTrainer_ShowResults"] = "Show Results",
             ["LCTrainer_LoadingText"] = "Training...",
             ["LCTrainer_Train"] = "Train",
@@ -79,6 +79,7 @@ public static class Loc
             ["LCInfo_TPR"] = "True Positive Rate",
             ["LCInfo_FPR"] = "False Positive Rate",
             ["LCInfo_Threshold"] = "Threshold",
+            ["LCInfo_AUC"] = "AUC (Area under the ROC curve)",
 
             ["LCInference_PageTitle"] = "Image Analysis",
             ["LCInference_Title"] = "Image Analysis",
@@ -187,7 +188,7 @@ public static class Loc
             ["LCTrainer_Epochs"] = "Broj Epoha",
             ["LCTrainer_ModelLanguageRequired"] = "Jezik modela je obavezan.",
             ["LCTrainer_ModelLanguage"] = "Jezik Modela",
-            ["LCTrainer_WithFlips"] = "Rotiraj slike (Augmentacija)",
+            ["LCTrainer_WithAugmentation"] = "Augmentiraj slike",
             ["LCTrainer_ShowResults"] = "Prikaži Rezultate",
             ["LCTrainer_LoadingText"] = "Treniranje...",
             ["LCTrainer_Train"] = "Treniraj",
@@ -235,6 +236,7 @@ public static class Loc
             ["LCInfo_TPR"] = "Stopa Stvarnih Pozitivnih",
             ["LCInfo_FPR"] = "Stopa Lažnih Pozitivnih",
             ["LCInfo_Threshold"] = "Prag",
+            ["LCInfo_AUC"] = "AUC (površina ispod ROC krive)",
 
             ["LCInference_PageTitle"] = "Analiza Slike",
             ["LCInference_Title"] = "Analiza Slike",

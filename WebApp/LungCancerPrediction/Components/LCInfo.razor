@@ -54,7 +54,9 @@
         <SectionHeading>@FormatTrainingTime(Model.TrainingTimeInSeconds)</SectionHeading>
         <SectionHeading>@Loc.T("LCInfo_Accuracy"): @(FormatPercent(Model.ValidationAccuracy))</SectionHeading>
 
-        <SectionHeading Class="mt-4">@Loc.T("LCInfo_PerformanceByClass")</SectionHeading>
+        <MudDivider Class="my-2" />
+
+        <SectionHeading>@Loc.T("LCInfo_PerformanceByClass")</SectionHeading>
         <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
             <thead>
                 <tr>
@@ -98,9 +100,14 @@
             </tbody>
         </MudSimpleTable>
 
+
         @if(Model.ModelStatusDto == ModelStatusDto.Trained)
         {
-            <ApexChart @ref="Chart" TItem="LCRocDto" Title="@Loc.T("LCInfo_RocGraph")" Height="400" Options="options">
+            <MudDivider Class="my-2" />
+            <SectionHeading>@Loc.T("LCInfo_AUC"): @(FormatPercent(Model.AUC))</SectionHeading>
+
+            <SectionHeading>@Loc.T("LCInfo_RocGraph")</SectionHeading>
+            <ApexChart @ref="Chart" TItem="LCRocDto" Height="400" Options="options">
                 <ApexPointSeries TItem="LCRocDto"
                                  Items="Model.RocData"
                                  Name="@Loc.T("LCInfo_RocGraph")"
