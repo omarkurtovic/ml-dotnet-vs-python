@@ -21,7 +21,7 @@ namespace CSharpModelTrainerApi.Database
                 .HasForeignKey(e => e.LCModelId);
 
             modelBuilder.Entity<LCEpochData>()
-                .HasMany(l => l.LCPredictions)
+                .HasMany(l => l.ValidationScores)
                 .WithOne(p => p.LCEpochData)
                 .HasForeignKey(p => p.LCEpochDataId);
         }

@@ -6,7 +6,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class ROCService
     {
-        public  List<LCRocDto> CalculateROC(List<LCPredictions> predictions)
+        public  List<LCRocDto> CalculateROC(List<LCValidationScore> predictions)
         {
             var thresholds = predictions.Select(p => p.MalignantProbability).Distinct().OrderByDescending(x => x).ToList();
             var rocDtos = new List<LCRocDto>
@@ -49,7 +49,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return auc;
         }
 
-        private int[,] CalculateConfusionMatrix(List<LCPredictions> predictions, double threshold)
+        private int[,] CalculateConfusionMatrix(List<LCValidationScore> predictions, double threshold)
         {
             int[,] result = new int[2, 2];
             for(int i = 0; i < predictions.Count; i++)

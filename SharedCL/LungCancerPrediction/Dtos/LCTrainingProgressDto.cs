@@ -1,10 +1,15 @@
-﻿namespace CSharpModelTrainerApi.LungCancerPrediction.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace SharedCL
 {
-    public class LCEpochData
+    // used for communication between c# and python during python training of the model
+    public class LCTrainingProgressDto
     {
-        public int Id { get; set; }
-        public int LCModelId { get; set; }
-        public LCModel? LCModel { get; set; } = null!;
+        public TrainingStatusDto TrainingStatus { get; set; }
+        public float TrainingTimeInSeconds { get; set; }
+        public int ModelId { get; set; }
         public int Epoch { get; set; }
         public double TrainingLoss { get; set; }
         public double TrainingAccuracy { get; set; }
@@ -25,6 +30,6 @@
         public double WeightedPrecision { get; set; }
         public double WeightedRecall { get; set; }
         public double WeightedF1Score { get; set; }
-        public List<LCValidationScore> ValidationScores { get; set; } = [];
+        public List<LCValidationScoreDto> ValidationScores { get; set; } = [];
     }
 }

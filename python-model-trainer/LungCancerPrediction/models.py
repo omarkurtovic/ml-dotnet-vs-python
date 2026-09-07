@@ -2,7 +2,7 @@
 from pydantic import BaseModel
 from enum import IntEnum
 
-class LCEpochPredictionDto(BaseModel):
+class LCValidationScoreDto(BaseModel):
     benignProbability: float = 0.0
     malignantProbability: float = 0.0
     normalProbability: float = 0.0
@@ -12,7 +12,15 @@ class ModelLanguageDto(IntEnum):
     CSharp = 0
     Python = 1
 
-class LCEpochDataDto(BaseModel):
+class LCTrainingStatusDto(IntEnum):
+    Training = 0
+    Trained = 1
+    Failed = 2
+
+class LCTrainingProgressDto(BaseModel):
+    trainingStatus: LCTrainingStatusDto = LCTrainingStatusDto.Training
+    trainingTimeInSeconds: float = 0.0
+    modelId: int = 0
     epoch: int = 0
     trainingLoss: float = 0.0
     trainingAccuracy: float = 0.0
@@ -33,17 +41,7 @@ class LCEpochDataDto(BaseModel):
     weightedPrecision: float = 0.0
     weightedRecall: float = 0.0
     weightedF1Score: float = 0.0
-    LCPredictions: list[LCEpochPredictionDto] = []
-
-class LCDto(BaseModel):
-    name: str = ""
-    language: ModelLanguageDto = ModelLanguageDto.Python
-    epochData: list[LCEpochDataDto] = []
-    trainingTimeInSeconds: float = 0.0
-    validationTimeInSeconds: float = 0.0
-    dataLoadingTimeInSeconds: float = 0.0
-    hardwareInfo: str = ""
-
+    validationScores: list[LCValidationScoreDto] = []
 
 class LCTrainingParamsDto(BaseModel):
     name: str = ""
@@ -70,16 +68,10 @@ class SegmentEpochData(BaseModel):
     weightedPrecision: float = 0.0
     weightedRecall: float = 0.0
     weightedF1Score: float = 0.0
-    predictions: list[LCEpochPredictionDto] = []
+    validationScores: list[LCValidationScoreDto] = []
 
-class LCPredictionDto(BaseModel):
+class LCInferenceResultDto(BaseModel):
     benignScore: float = 0.0
     malignantScore: float = 0.0
     normalScore: float = 0.0
     predictionTimeInSeconds: float = 0.0
-
-
-class LCRocDto(BaseModel):
-    truePositiveRate: float = 0.0
-    falsePositiveRate: float = 0.0
-    threshold: float = 0.0

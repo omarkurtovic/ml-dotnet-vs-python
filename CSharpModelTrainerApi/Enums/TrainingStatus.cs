@@ -1,6 +1,6 @@
 ﻿namespace CSharpModelTrainerApi.Enums
 {
-    public enum ModelStatus
+    public enum TrainingStatus
     {
         Training,
         Trained,

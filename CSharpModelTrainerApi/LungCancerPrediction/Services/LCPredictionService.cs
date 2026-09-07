@@ -15,7 +15,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class LCPredictionService(PathResolver pathResolver)
     {
-        public async Task<LCPredictionDto> Predict(LCDto dto, IFormFile file)
+        public async Task<LCInferenceResultDto> Predict(LCDto dto, IFormFile file)
         {
             if (dto.Language != ModelLanguageDto.CSharp)
                 throw new ArgumentException("Invalid model language");
@@ -43,7 +43,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
                 stopWatch.Stop();
 
-                return new LCPredictionDto
+                return new LCInferenceResultDto
                 {
                     BenignScore = prediction[0, 0].item<float>(),
                     MalignantScore = prediction[0, 1].item<float>(),

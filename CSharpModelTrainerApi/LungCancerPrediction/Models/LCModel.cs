@@ -14,6 +14,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Models
         public double ValidationTimeInSeconds { get; set; }
         public double DataLoadingTimeInSeconds { get; set; }
         public string HardwareInfo { get; set; } = null!;
-        public ModelStatus ModelStatus { get; set; } = ModelStatus.Training;
+        public TrainingStatus TrainingStatus { get; set; } = TrainingStatus.Training;
     }
 }

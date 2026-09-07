@@ -176,7 +176,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         public async Task<Result<LCInfoDto>> GetModelInfo(int id)
         {
             var model = await _context.LCModels.Where(m => m.Id == id).Include(m => m.EpochData)
-                .ThenInclude(m => m.LCPredictions).FirstOrDefaultAsync();
+                .ThenInclude(m => m.ValidationScores).FirstOrDefaultAsync();
             if (model == null)
             {
                 return Result<LCInfoDto>.Failure("Model not found");
@@ -190,11 +190,11 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 currentEpoch = model.EpochData.Count;
             }
 
-            var rocData = _rocService.CalculateROC(ed.LCPredictions);
+            var rocData = _rocService.CalculateROC(ed.ValidationScores);
             return Result<LCInfoDto>.Success(new LCInfoDto
             {
                 TotalEpochs = model.TotalEpochs,
-                ModelStatusDto = (ModelStatusDto)model.ModelStatus,
+                ModelStatusDto = (TrainingStatusDto)model.TrainingStatus,
                 Name = model.Name,
                 TrainingTimeInSeconds = model.TrainingTimeInSeconds,
                 HardwareInfo = model.HardwareInfo,
@@ -235,7 +235,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 TrainingTimeInSeconds = model.TrainingTimeInSeconds,
                 HardwareInfo = model.HardwareInfo,
                 TotalEpochs = model.TotalEpochs,
-                ModelStatus = (ModelStatus)model.ModelStatusDto,
+                TrainingStatus = (TrainingStatus)model.ModelStatusDto,
                 EpochData = [.. model.EpochData.Select(epoch => new LCEpochData
                 {
                     Epoch = epoch.Epoch,
@@ -304,14 +304,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return Result.Success();
         }
 
-        public async Task<Result> UpdateStatusAsync(int id, ModelStatus newStatus)
+        public async Task<Result> UpdateStatusAsync(int id, TrainingStatus newStatus)
         {
             var model = await _context.LCModels.FindAsync(id);
             if (model == null)
             {
                 return Result.Failure("Model not found");
             }
-            model.ModelStatus = newStatus;
+            model.TrainingStatus = newStatus;
             await _context.SaveChangesAsync();
             return Result.Success();
         }

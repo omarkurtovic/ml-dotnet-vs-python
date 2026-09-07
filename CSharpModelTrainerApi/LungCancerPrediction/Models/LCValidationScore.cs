@@ -1,6 +1,6 @@
 ﻿namespace CSharpModelTrainerApi.LungCancerPrediction.Models
 {
-    public class LCPredictions
+    public class LCValidationScore
     {
         public int Id { get; set; }
         public int LCEpochDataId { get; set; }

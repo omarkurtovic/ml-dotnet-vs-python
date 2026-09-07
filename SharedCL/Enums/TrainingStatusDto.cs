@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SharedCL
 {
-    public enum ModelStatusDto
+    public enum TrainingStatusDto
     {
         Training,
         Trained,

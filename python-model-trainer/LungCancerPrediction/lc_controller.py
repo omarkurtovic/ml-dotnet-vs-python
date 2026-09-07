@@ -9,19 +9,19 @@ import threading
 import torch
 from torch.utils.data import DataLoader
 
-from .models import LCEpochPredictionDto, ModelLanguageDto, LCDto, LCEpochDataDto, LCTrainingParamsDto, SegmentEpochData, LCPredictionDto
+from .models import LCTrainingProgressDto, LCTrainingStatusDto, ModelLanguageDto, LCTrainingParamsDto, SegmentEpochData, LCInferenceResultDto
 from .neural_networks import LungCancerNN
 from .datasets import LungCancerTrainDataset, LungCancerTestDataset
-from .services import HardwareUntils, TrainingHelper, PathResolver, PredictionService
+from .services import TrainingHelper, PathResolver, PredictionService
 
 
 router = APIRouter()
 
-_training_state: dict[int, dict] = {}
+_training_state: dict[int, list[LCTrainingProgressDto]] = {}
 _state_lock = threading.Lock()
 
 @router.post("/Python/LungCancer/Predict")
-async def predict(model_name: str, file: UploadFile = File(...)) -> LCPredictionDto:
+async def predict(model_name: str, file: UploadFile = File(...)) -> LCInferenceResultDto:
     if model_name == "":
         raise HTTPException(status_code=400, detail="Naziv modela ne smije biti prazan")
 
@@ -30,25 +30,9 @@ async def predict(model_name: str, file: UploadFile = File(...)) -> LCPrediction
 
 @router.post("/Python/LungCancer/Train")
 async def start_training(model_id: int, train_data: LCTrainingParamsDto):
-    if train_data.name == "" :
-        raise HTTPException(status_code=400, detail="Naziv modela ne smije biti prazan")
-    
-    if train_data.language != ModelLanguageDto.Python:
-        raise HTTPException(status_code=400, detail="Jezik modela mora biti Python")
-
-    if train_data.epochs < 1 or train_data.epochs > 100:
-        raise HTTPException(status_code=400, detail="Broj epoha mora biti između 1 i 100")
 
     with _state_lock:
-        _training_state[model_id] = {
-            "totalEpochs": train_data.epochs,
-            "modelStatusDto": 0,
-            "name": train_data.name,
-            "language": ModelLanguageDto.Python,
-            "trainingTimeInSeconds": 0.0,
-            "hardwareInfo": HardwareUntils.get_optimal_hardware_info(),
-            "currentEpoch": 0,
-        }
+        _training_state[model_id] = []
 
     asyncio.create_task(asyncio.to_thread(_run_training, model_id, train_data))
     return {"modelId": model_id}
@@ -58,18 +42,11 @@ async def start_training(model_id: int, train_data: LCTrainingParamsDto):
 def get_training_info(model_id: int):
     with _state_lock:
         state = _training_state.get(model_id)
-        return dict(state) if state is not None else None
+        return state if state is not None else None
 
 
 def _run_training(model_id: int, train_data: LCTrainingParamsDto):
   try:
-    model_db = LCDto(
-        name=train_data.name,
-        language=ModelLanguageDto.Python,
-        hardwareInfo=HardwareUntils.get_optimal_hardware_info(),
-        trainingTimeInSeconds=0,
-        epochData=[])
-
     default_device = TrainingHelper.get_optimal_device()
     torch.set_default_device(default_device)
 
@@ -78,7 +55,6 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
-
 
     data_directory = PathResolver.get_lung_cancer_data_path()
     
@@ -104,7 +80,8 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
 
         total_training_time += (training_end - training_start)
 
-        epoch_data = LCEpochDataDto()
+        epoch_data = LCTrainingProgressDto()
+        epoch_data.modelId = model_id
         epoch_data.epoch = epoch
         epoch_data.trainingLoss = train_epoch_data.loss
         epoch_data.trainingAccuracy = train_epoch_data.accuracy
@@ -125,49 +102,30 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
         epoch_data.weightedPrecision = validation_epoch_data.weightedPrecision
         epoch_data.weightedRecall = validation_epoch_data.weightedRecall
         epoch_data.weightedF1Score = validation_epoch_data.weightedF1Score
-        epoch_data.LCPredictions = validation_epoch_data.predictions
-
-        model_db.epochData.append(epoch_data)
+        epoch_data.validationScores = validation_epoch_data.validationScores
+        epoch_data.trainingTimeInSeconds = total_training_time
+        epoch_data.trainingStatus = LCTrainingStatusDto.Training
+        
         with _state_lock:
-            _training_state[model_id].update({
-                "currentEpoch": epoch + 1,
-                "trainingTimeInSeconds": total_training_time,
-                "trainingAccuracy": epoch_data.trainingAccuracy,
-                "trainingLoss": epoch_data.trainingLoss,
-                "validationAccuracy": epoch_data.validationAccuracy,
-                "validationLoss": epoch_data.validationLoss,
-                "benignPrecision": epoch_data.benignPrecision,
-                "benignRecall": epoch_data.benignRecall,
-                "benignF1Score": epoch_data.benignF1Score,
-                "malignantPrecision": epoch_data.malignantPrecision,
-                "malignantRecall": epoch_data.malignantRecall,
-                "malignantF1Score": epoch_data.malignantF1Score,
-                "normalPrecision": epoch_data.normalPrecision,
-                "normalRecall": epoch_data.normalRecall,
-                "normalF1Score": epoch_data.normalF1Score,
-                "macroPrecision": epoch_data.macroPrecision,
-                "macroRecall": epoch_data.macroRecall,
-                "macroF1Score": epoch_data.macroF1Score,
-                "weightedPrecision": epoch_data.weightedPrecision,
-                "weightedRecall": epoch_data.weightedRecall,
-                "weightedF1Score": epoch_data.weightedF1Score,
-                "LCPredictions": epoch_data.LCPredictions
-            })
+            _training_state[model_id].append(epoch_data)
 
-    model_db.trainingTimeInSeconds = total_training_time
 
     model_path = PathResolver.get_model_path(train_data)
     torch.save(model.state_dict(), model_path)
-
+    
     with _state_lock:
-        _training_state[model_id].update({
-            "modelStatusDto": 1,
-            "trainingTimeInSeconds": total_training_time,
-        })
+        _training_state[model_id][-1].trainingStatus = LCTrainingStatusDto.Trained
+
   except Exception:
     with _state_lock:
         if model_id in _training_state:
-            _training_state[model_id]["modelStatusDto"] = 2
+            if len(_training_state[model_id]) > 0:
+                _training_state[model_id][-1].trainingStatus = LCTrainingStatusDto.Failed
+            else:
+                epoch_data = LCTrainingProgressDto()
+                epoch_data.modelId = model_id
+                epoch_data.trainingStatus = LCTrainingStatusDto.Failed
+                _training_state[model_id].append(epoch_data) 
     raise
 
 

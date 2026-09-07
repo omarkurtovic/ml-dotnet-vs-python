@@ -1,6 +1,6 @@
 ﻿namespace SharedCL
 {
-    public class LCPredictionDto
+    public class LCInferenceResultDto
     {
         public float BenignScore { get; set; }
         public float MalignantScore { get; set; }

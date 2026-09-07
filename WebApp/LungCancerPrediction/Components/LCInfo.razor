@@ -35,7 +35,7 @@
         <MudDivider Class="my-2" />
 
         
-        @if (Model.ModelStatusDto == ModelStatusDto.Training)
+        @if (Model.ModelStatusDto == TrainingStatusDto.Training)
         {
             <SectionHeading>@Loc.T("LCInfo_TrainingProgress")</SectionHeading>
             <SectionHeading>@Loc.T("LCInfo_CurrentEpoch"): @Model.CurrentEpoch / @Model.TotalEpochs</SectionHeading>
@@ -44,7 +44,7 @@
                                Color="MudBlazor.Color.Primary" />
         }
 
-        @if (Model.ModelStatusDto == ModelStatusDto.Failed)
+        @if (Model.ModelStatusDto == TrainingStatusDto.Failed)
         {
             <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="my-2">
                 @Loc.T("LCInfo_TrainingFailed")
@@ -101,7 +101,7 @@
         </MudSimpleTable>
 
 
-        @if(Model.ModelStatusDto == ModelStatusDto.Trained)
+        @if(Model.ModelStatusDto == TrainingStatusDto.Trained)
         {
             <MudDivider Class="my-2" />
             <SectionHeading>@Loc.T("LCInfo_AUC"): @(FormatPercent(Model.AUC))</SectionHeading>
@@ -192,7 +192,7 @@
             await Chart.UpdateSeriesAsync();
         }
 
-        if (Model!.ModelStatusDto == ModelStatusDto.Training)
+        if (Model!.ModelStatusDto == TrainingStatusDto.Training)
         {
             StartPolling(id);
         }
@@ -219,15 +219,15 @@
 
                 await InvokeAsync(StateHasChanged);
 
-                if (Model!.ModelStatusDto != ModelStatusDto.Training)
+                if (Model!.ModelStatusDto != TrainingStatusDto.Training)
                 {
                     _timer.Dispose();
 
-                    if (Model.ModelStatusDto == ModelStatusDto.Trained)
+                    if (Model.ModelStatusDto == TrainingStatusDto.Trained)
                     {
                         Snackbar.Add(Loc.T("LCInfo_TrainingComplete"), Severity.Success);
                     }
-                    else if (Model.ModelStatusDto == ModelStatusDto.Failed)
+                    else if (Model.ModelStatusDto == TrainingStatusDto.Failed)
                     {
                         Snackbar.Add(Loc.T("LCInfo_TrainingFailed"), Severity.Error);
                     }

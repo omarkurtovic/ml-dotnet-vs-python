@@ -155,7 +155,7 @@ namespace WebApp.LungCancerPrediction.ApiClients
             }
         }
 
-        public async Task<Result<LCPredictionDto>> PredictAsync(int id, IBrowserFile file)
+        public async Task<Result<LCInferenceResultDto>> PredictAsync(int id, IBrowserFile file)
         {
             try
             {
@@ -168,20 +168,20 @@ namespace WebApp.LungCancerPrediction.ApiClients
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    var prediction = await response.Content.ReadFromJsonAsync<LCPredictionDto>();
-                    return Result<LCPredictionDto>.Success(prediction!);
+                    var prediction = await response.Content.ReadFromJsonAsync<LCInferenceResultDto>();
+                    return Result<LCInferenceResultDto>.Success(prediction!);
                 }
                 else
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API FAILURE: {errorDetails}");
-                    return Result<LCPredictionDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
+                    return Result<LCInferenceResultDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API FAILURE: {ex.Message}");
-                return Result<LCPredictionDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
+                return Result<LCInferenceResultDto>.Failure(Loc.T("LCErrors_ErrorGeneric"));
             }
         }
 

@@ -101,7 +101,7 @@
     private List<LCBasicDto> Models { get; set; } = new List<LCBasicDto>();
     private LCBasicDto SelectedModel = null!;
 
-    private LCPredictionDto? Prediction = null;
+    private LCInferenceResultDto? Prediction = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,7 +126,7 @@
             return;
         }
 
-        Result<LCPredictionDto> predResult;
+        Result<LCInferenceResultDto> predResult;
         if(SelectedModel.Language == ModelLanguageDto.CSharp)
         {
             predResult = await CSharpApi.PredictAsync(SelectedModel.Id, _file);

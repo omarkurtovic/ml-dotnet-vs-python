@@ -7,7 +7,7 @@ namespace SharedCL
     public class LCInfoDto
     {
         public int TotalEpochs { get; set; }
-        public ModelStatusDto ModelStatusDto { get; set; }
+        public TrainingStatusDto ModelStatusDto { get; set; }
         public string Name { get; set; } = null!;
         public ModelLanguageDto Language { get; set; }
         public double TrainingTimeInSeconds { get; set; }
@@ -36,7 +36,7 @@ namespace SharedCL
         public double WeightedF1Score { get; set; }
         public List<LCRocDto> RocData { get; set; } = new List<LCRocDto>();
         public double AUC { get; set; }
-        public List<LCEpochPredictionDto> LCPredictions { get; set; } = new List<LCEpochPredictionDto>();
+        public List<LCValidationScoreDto> LCPredictions { get; set; } = [];
 
     }
 }

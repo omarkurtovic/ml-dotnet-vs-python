@@ -151,7 +151,7 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
                 "weightedPrecision": epoch_data.weightedPrecision,
                 "weightedRecall": epoch_data.weightedRecall,
                 "weightedF1Score": epoch_data.weightedF1Score,
-                "LCPredictions": epoch_data.LCPredictions
+                "lCPredictions": epoch_data.LCPredictions
             })
 
     model_db.trainingTimeInSeconds = total_training_time

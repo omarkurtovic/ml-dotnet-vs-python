@@ -87,7 +87,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     WeightedPrecision = validationEpochData.WeightedPrecision,
                     WeightedRecall = validationEpochData.WeightedRecall,
                     WeightedF1Score = validationEpochData.WeightedF1Score,
-                    LCPredictions = [.. validationEpochData.Predictions.Select(p => new LCPredictions
+                    ValidationScores = [.. validationEpochData.Predictions.Select(p => new LCValidationScore
                     {
                         BenignProbability = p.BenignProbability,
                         MalignantProbability = p.MalignantProbability,
@@ -99,7 +99,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 var addEpochResult = await LungCancerModelRepository.AddEpochData(modelDB.Id, epochData);
                 if (!addEpochResult.IsSuccess)
                 {
-                    await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.ModelStatus.Failed);
+                    await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.TrainingStatus.Failed);
                     return Result<LCDto>.Failure("Greška prilikom spremanja podataka epohe");
                 }
 
@@ -111,7 +111,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 
-            await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.ModelStatus.Trained);
+            await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.TrainingStatus.Trained);
 
             return Result<LCDto>.Success(modelDB);
         }
@@ -199,7 +199,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                             var benign = probs[i][0].item<float>();
                             var malignant = probs[i][1].item<float>();
                             var normal = probs[i][2].item<float>();
-                            epochData.Predictions.Add(new LCEpochPredictionDto
+                            epochData.Predictions.Add(new LCValidationScoreDto
                             {
                                 BenignProbability = benign,
                                 MalignantProbability = malignant,
@@ -327,7 +327,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             public float WeightedPrecision { get; set; }
             public float WeightedRecall { get; set; }
             public float WeightedF1Score { get; set; }
-            public List<LCEpochPredictionDto> Predictions { get; set; } = [];
+            public List<LCValidationScoreDto> Predictions { get; set; } = [];
         }
     }
 }

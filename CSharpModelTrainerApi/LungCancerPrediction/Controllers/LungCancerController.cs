@@ -124,51 +124,51 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return NotFound();
             }
 
-            if (model.Language == ModelLanguageDto.Python && model.ModelStatusDto == ModelStatusDto.Training)
+            if (model.Language == ModelLanguageDto.Python && model.ModelStatusDto == TrainingStatusDto.Training)
             {
                 try
                 {
-                    var pythonInfo = await PythonLCApi.GetTrainingInfoAsync(id);
-                    if (pythonInfo != null)
+                    var trainingProgress = await PythonLCApi.GetTrainingInfoAsync(id);
+                    if (trainingProgress != null && trainingProgress.Count > 0)
                     {
-                        await LungCancerModelRepository.UpdateTrainingTimeAsync(id, pythonInfo.TrainingTimeInSeconds);
+                        await LungCancerModelRepository.UpdateTrainingTimeAsync(id, trainingProgress.Last);
 
                         var persistedModelResult = await LungCancerModelRepository.GetModel(id);
                         var persistedEpochs = persistedModelResult.Data?.EpochData?.Count ?? 0;
-                        if (pythonInfo.CurrentEpoch > persistedEpochs)
+                        if (trainingProgress.CurrentEpoch > persistedEpochs)
                         {
                             await LungCancerModelRepository.AddEpochData(id, new LCEpochDataDto
                             {
-                                Epoch = pythonInfo.CurrentEpoch - 1,
-                                TrainingLoss = pythonInfo.TrainingLoss,
-                                TrainingAccuracy = pythonInfo.TrainingAccuracy,
-                                ValidationLoss = pythonInfo.ValidationLoss,
-                                ValidationAccuracy = pythonInfo.ValidationAccuracy,
-                                BenignPrecision = pythonInfo.BenignPrecision,
-                                BenignRecall = pythonInfo.BenignRecall,
-                                BenignF1Score = pythonInfo.BenignF1Score,
-                                MalignantPrecision = pythonInfo.MalignantPrecision,
-                                MalignantRecall = pythonInfo.MalignantRecall,
-                                MalignantF1Score = pythonInfo.MalignantF1Score,
-                                NormalPrecision = pythonInfo.NormalPrecision,
-                                NormalRecall = pythonInfo.NormalRecall,
-                                NormalF1Score = pythonInfo.NormalF1Score,
-                                MacroPrecision = pythonInfo.MacroPrecision,
-                                MacroRecall = pythonInfo.MacroRecall,
-                                MacroF1Score = pythonInfo.MacroF1Score,
-                                WeightedPrecision = pythonInfo.WeightedPrecision,
-                                WeightedRecall = pythonInfo.WeightedRecall,
-                                WeightedF1Score = pythonInfo.WeightedF1Score,
-                                LCPredictions = pythonInfo.LCPredictions
+                                Epoch = trainingProgress.CurrentEpoch - 1,
+                                TrainingLoss = trainingProgress.TrainingLoss,
+                                TrainingAccuracy = trainingProgress.TrainingAccuracy,
+                                ValidationLoss = trainingProgress.ValidationLoss,
+                                ValidationAccuracy = trainingProgress.ValidationAccuracy,
+                                BenignPrecision = trainingProgress.BenignPrecision,
+                                BenignRecall = trainingProgress.BenignRecall,
+                                BenignF1Score = trainingProgress.BenignF1Score,
+                                MalignantPrecision = trainingProgress.MalignantPrecision,
+                                MalignantRecall = trainingProgress.MalignantRecall,
+                                MalignantF1Score = trainingProgress.MalignantF1Score,
+                                NormalPrecision = trainingProgress.NormalPrecision,
+                                NormalRecall = trainingProgress.NormalRecall,
+                                NormalF1Score = trainingProgress.NormalF1Score,
+                                MacroPrecision = trainingProgress.MacroPrecision,
+                                MacroRecall = trainingProgress.MacroRecall,
+                                MacroF1Score = trainingProgress.MacroF1Score,
+                                WeightedPrecision = trainingProgress.WeightedPrecision,
+                                WeightedRecall = trainingProgress.WeightedRecall,
+                                WeightedF1Score = trainingProgress.WeightedF1Score,
+                                LCPredictions = trainingProgress.LCPredictions
                             });
                         }
 
-                        if (pythonInfo.ModelStatusDto != ModelStatusDto.Training)
+                        if (trainingProgress.ModelStatusDto != TrainingStatusDto.Training)
                         {
                             await LungCancerModelRepository.UpdateStatusAsync(
-                                id, (ModelStatus)pythonInfo.ModelStatusDto);
+                                id, (TrainingStatus)trainingProgress.ModelStatusDto);
                         }
-                        return Ok(pythonInfo);
+                        return Ok(trainingProgress);
                     }
                 }
                 catch (HttpRequestException)
@@ -219,7 +219,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 EpochData = [],
                 HardwareInfo = hardwareInfoService.GetHardwareInfo(),
                 TotalEpochs = trainParams.Epochs,
-                ModelStatusDto = ModelStatusDto.Training
+                ModelStatusDto = TrainingStatusDto.Training
             };
 
             var saveResult = await LungCancerModelRepository.Save(modelDB);
@@ -240,7 +240,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 }
                 catch
                 {
-                    await LungCancerModelRepository.UpdateStatusAsync(saveResult.Data, ModelStatus.Failed);
+                    await LungCancerModelRepository.UpdateStatusAsync(saveResult.Data, TrainingStatus.Failed);
                     return BadRequest("Greška prilikom pokretanja Python treniranja");
                 }
             }
