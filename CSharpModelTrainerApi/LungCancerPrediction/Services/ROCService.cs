@@ -4,18 +4,29 @@ using System.Runtime.CompilerServices;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
+    public class LCRocResult
+    {
+        public List<LCRocDto> Points { get; set; } = [];
+        public double Auc { get; set; }
+    }
     public class ROCService
     {
-        public  List<LCRocDto> CalculateROC(List<LCValidationScore> predictions)
+        public static LCRocResult Calculate(List<LCValidationScore> scores)
         {
-            var thresholds = predictions.Select(p => p.MalignantProbability).Distinct().OrderByDescending(x => x).ToList();
+            var points = CalculateROC(scores);
+            return new LCRocResult { Points = points, Auc = CalculateAUC(points) };
+        }
+
+        private static List<LCRocDto> CalculateROC(List<LCValidationScore> validationScores)
+        {
+            var thresholds = validationScores.Select(p => p.MalignantProbability).Distinct().OrderByDescending(x => x).ToList();
             var rocDtos = new List<LCRocDto>
             {
-                new LCRocDto() { FalsePositiveRate = 0, TruePositiveRate = 0 }
+                new() { FalsePositiveRate = 0, TruePositiveRate = 0 }
             };
             foreach (var threshold in thresholds)
             {
-                int[,] confusionMatrix = CalculateConfusionMatrix(predictions, threshold);
+                int[,] confusionMatrix = CalculateConfusionMatrix(validationScores, threshold);
 
                 double tpr = 0, fpr = 0;
                 if ((confusionMatrix[0, 0] + confusionMatrix[1, 0]) != 0)
@@ -33,7 +44,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return rocDtos;
         }
 
-        public double CalculateAUC(List<LCRocDto> rocData)
+        private static double CalculateAUC(List<LCRocDto> rocData)
         {
             double auc = 0.0;
             for (int i = 1; i < rocData.Count; i++)
@@ -49,7 +60,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             return auc;
         }
 
-        private int[,] CalculateConfusionMatrix(List<LCValidationScore> predictions, double threshold)
+        private static int[,] CalculateConfusionMatrix(List<LCValidationScore> predictions, double threshold)
         {
             int[,] result = new int[2, 2];
             for(int i = 0; i < predictions.Count; i++)

@@ -14,7 +14,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<List<LCTrainingProgressDto>?> GetTrainingInfoAsync(int modelId)
+        public async Task<List<LCTrainingProgressDto>?> GetTrainingProgressAsync(int modelId)
         {
             return await _httpClient.GetFromJsonAsync<List<LCTrainingProgressDto>>(
                 $"Python/LungCancer/Train/{modelId}");

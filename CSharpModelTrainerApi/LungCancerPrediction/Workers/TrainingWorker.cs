@@ -25,7 +25,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Workers
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Training failed for model {modelId}: {ex.Message}");
-                    await lcRepository.UpdateStatusAsync(modelId, TrainingStatus.Failed);
+                    await lcRepository.UpdateStatusAsync(modelId, LCTrainingStatus.Failed);
                 }
             }
         }

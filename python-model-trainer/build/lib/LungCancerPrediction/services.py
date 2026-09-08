@@ -10,7 +10,7 @@ from pathlib import Path
 import psutil
 from cpuinfo import get_cpu_info
 
-from .models import LCEpochPredictionDto, LCRocDto, ModelLanguageDto, LCDto, LCPredictionDto, LCTrainingParamsDto
+from .models import LCEpochPredictionDto, LCRocDto, ModelLanguageDto, LCDto, LCInferenceResultDto, LCTrainingParamsDto
 from .neural_networks import LungCancerNN
 
 class ImageLoader:
@@ -106,7 +106,7 @@ class HardwareUntils:
 
 class PredictionService:
     @staticmethod
-    async def predict(model_name: str, file: UploadFile) -> LCPredictionDto:
+    async def predict(model_name: str, file: UploadFile) -> LCInferenceResultDto:
 
         default_device = TrainingHelper.get_optimal_device()
         torch.set_default_device(default_device)
@@ -127,7 +127,7 @@ class PredictionService:
             prediction = output.softmax(dim=1)
             inference_end = time.perf_counter()
 
-            return LCPredictionDto(
+            return LCInferenceResultDto(
                 benignScore = prediction[0][0].item(),
                 malignantScore = prediction[0][1].item(),
                 normalScore = prediction[0][2].item(),

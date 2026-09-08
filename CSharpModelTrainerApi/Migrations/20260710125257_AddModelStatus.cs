@@ -26,7 +26,7 @@ namespace CSharpModelTrainerApi.Migrations
                 defaultValue: 0);
 
             migrationBuilder.Sql(
-                $"UPDATE LCModels SET ModelStatus = {(int)TrainingStatus.Trained}");
+                $"UPDATE LCModels SET ModelStatus = {(int)LCTrainingStatus.Trained}");
         }
 
         /// <inheritdoc />

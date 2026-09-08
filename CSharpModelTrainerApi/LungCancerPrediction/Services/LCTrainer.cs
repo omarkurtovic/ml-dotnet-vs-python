@@ -21,7 +21,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
         private LCRepository LungCancerModelRepository { get; set; } = lungCancerModelRepository;
         public async Task<Result<LCDto>> TrainModelAsync(int modelId, LCTrainingParamsDto trainInfo)
         {
-            var modelResult = await LungCancerModelRepository.GetModel(modelId);
+            var modelResult = await LungCancerModelRepository.GetModelDto(modelId);
             if (!modelResult.IsSuccess)
             {
                 return Result<LCDto>.Failure("Failed to retrieve model.");
@@ -99,7 +99,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 var addEpochResult = await LungCancerModelRepository.AddEpochData(modelDB.Id, epochData);
                 if (!addEpochResult.IsSuccess)
                 {
-                    await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.TrainingStatus.Failed);
+                    await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.LCTrainingStatus.Failed);
                     return Result<LCDto>.Failure("Greška prilikom spremanja podataka epohe");
                 }
 
@@ -111,7 +111,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
 
-            await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.TrainingStatus.Trained);
+            await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.LCTrainingStatus.Trained);
 
             return Result<LCDto>.Success(modelDB);
         }

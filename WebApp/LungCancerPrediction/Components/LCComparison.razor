@@ -33,7 +33,7 @@
                     <MudCardContent>
                         <MudGrid Spacing="4">
                             <MudItem xs="12" md="6">
-                                <MudSelect T="LCDto" Label="@Loc.T("LCComparison_ModelSelect")"
+                                <MudSelect T="LCModelComparisonDto" Label="@Loc.T("LCComparison_ModelSelect")"
                                            MultiSelection="true"
                                            @bind-SelectedValues="SelectedModels"
                                            @bind-SelectedValues:after="RefreshGrid"
@@ -41,7 +41,7 @@
                                            Clearable="true">
                                     @foreach (var model in _models)
                                     {
-                                        <MudSelectItem T="LCDto" Value="@model">@model.Name</MudSelectItem>
+                                        <MudSelectItem T="LCModelComparisonDto" Value="@model">@model.Name</MudSelectItem>
                                     }
                                 </MudSelect>
                             </MudItem>
@@ -116,10 +116,10 @@
         }
     }
 
-    private List<LCDto> _models = [];
+    private List<LCModelComparisonDto> _models = [];
     private Dictionary<string, string> Metrics = [];
 
-    private IReadOnlyCollection<LCDto> SelectedModels = [];
+    private IReadOnlyCollection<LCModelComparisonDto> SelectedModels = [];
     private IReadOnlyCollection<string> SelectedMetrics = [];
 
     private async Task RefreshGrid()
@@ -140,7 +140,7 @@
 
     private async Task LoadModels()
     {
-        var result = await CSharpLCApi.GetModelsAsync();
+        var result = await CSharpLCApi.GetModelsForComparisonAsync();
         if (!result.IsSuccess)
         {
             Snackbar.Add(Loc.T("LCComparison_LoadModelsError"), Severity.Error);

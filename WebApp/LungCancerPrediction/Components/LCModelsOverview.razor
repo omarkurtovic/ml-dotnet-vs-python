@@ -26,7 +26,7 @@
                           Immediate="true" />
         </MudItem>
         <MudItem xs="12">
-            <MudDataGrid @ref="@DataGrid" T="LCBasicDto" Hover Filterable="false" Striped ServerData="ServerReload" FixedHeader FixedFooter>
+            <MudDataGrid @ref="@DataGrid" T="LCModelOverviewDto" Hover Filterable="false" Striped ServerData="ServerReload" FixedHeader FixedFooter>
                 <NoRecordsContent>
                     @if (!string.IsNullOrWhiteSpace(SearchString))
                     {
@@ -93,7 +93,7 @@
 </MudDrawer>
 
 @code {
-    private MudDataGrid<LCBasicDto> DataGrid = null!;
+    private MudDataGrid<LCModelOverviewDto> DataGrid = null!;
 
     private string search = string.Empty;
 
@@ -207,7 +207,7 @@
     {
         _drawerShown = DrawerShown.Edit;
         StateHasChanged();
-        await LCEdit.EditModelAsync(model.Id);
+        await LCEdit.EditModelAsync(model);
         IsSideDrawerOpen = true;
     }
 }

@@ -31,7 +31,6 @@ builder.Services.AddHttpClient<PythonLCApiClient>(client =>
 
 builder.Services.AddSingleton<PathResolver>();
 builder.Services.AddSingleton<HardwareInfoService>();
-builder.Services.AddSingleton<ROCService>();
 
 builder.Services.AddSingleton<TrainingQueue>();
 builder.Services.AddHostedService<TrainingWorker>();

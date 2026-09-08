@@ -48,27 +48,11 @@
 
     private MudForm Form = null!;
 
-    public LCDto? Model { get; set; }
+    public LCBasicDto? Model { get; set; }
 
-    public async Task EditModelAsync(int id)
+    public async Task EditModelAsync(LCBasicDto model)
     {
-        if (id == 0)
-        {
-            await Close.InvokeAsync();
-            return;
-        }
-
-        var result = await CSharpLCApi.GetModelAsync(id);
-        if (result.IsSuccess)
-        {
-            Model = result.Data;
-        }
-        else
-        {
-            Snackbar.Add(Loc.T("LCEdit_GetError"), Severity.Error);
-            await Close.InvokeAsync();
-        }
-
+        Model = model;
         StateHasChanged();
     }
 
