@@ -9,7 +9,7 @@ import threading
 import torch
 from torch.utils.data import DataLoader
 
-from .models import LCTrainingProgressDto, LCTrainingStatusDto, ModelLanguageDto, LCTrainingParamsDto, SegmentEpochData, LCInferenceResultDto
+from .models import LCTrainingProgressDto, LCTrainingStatusDto, LCValidationScoreDto, ModelLanguageDto, LCTrainingParamsDto, SegmentEpochData, LCInferenceResultDto
 from .neural_networks import LungCancerNN
 from .datasets import LungCancerTrainDataset, LungCancerTestDataset
 from .services import TrainingHelper, PathResolver, PredictionService
@@ -76,11 +76,13 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
         training_start = time.perf_counter()
         train_epoch_data : SegmentEpochData = train(train_loader, model, loss, optimizer)
         training_end = time.perf_counter()
-        validation_epoch_data : SegmentEpochData = validate(test_loader, model, loss)
+        validation_epoch_data : SegmentEpochData = validate(test_loader, model, loss, last_epoch=(epoch == epochs - 1))
 
         total_training_time += (training_end - training_start)
 
         epoch_data = LCTrainingProgressDto()
+        epoch_data.trainingStatus = LCTrainingStatusDto.Training
+        epoch_data.trainingTimeInSeconds = total_training_time
         epoch_data.modelId = model_id
         epoch_data.epoch = epoch
         epoch_data.trainingLoss = train_epoch_data.loss
@@ -103,12 +105,9 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
         epoch_data.weightedRecall = validation_epoch_data.weightedRecall
         epoch_data.weightedF1Score = validation_epoch_data.weightedF1Score
         epoch_data.validationScores = validation_epoch_data.validationScores
-        epoch_data.trainingTimeInSeconds = total_training_time
-        epoch_data.trainingStatus = LCTrainingStatusDto.Training
-        
+        print(f"Validation Scores for epoch {epoch}: {validation_epoch_data.validationScores}")
         with _state_lock:
             _training_state[model_id].append(epoch_data)
-
 
     model_path = PathResolver.get_model_path(train_data)
     torch.save(model.state_dict(), model_path)
@@ -200,7 +199,7 @@ def validate(dataloader, model, loss_fn, last_epoch=False) -> SegmentEpochData:
                     malignant_prob = probs[i][1].item()
                     normal_prob = probs[i][2].item()
                     true_label = correct_indices[i].item()
-                    epoch_data.predictions.append(LCEpochPredictionDto(
+                    epoch_data.validationScores.append(LCValidationScoreDto(
                         benignProbability=benign_prob,
                         malignantProbability=malignant_prob,
                         normalProbability=normal_prob,

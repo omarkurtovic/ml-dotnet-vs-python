@@ -87,20 +87,36 @@ namespace CSharpModelTrainerApi.Mappers
             })];
         }
 
-        public static List<LCModelOverviewDto> ToOverviewDto(this IEnumerable<LCModel> models)
+        public static LCGridPageDataDto ToOverviewDto(this IEnumerable<LCModel> models)
         {
-            return [..models.Select(model => new LCModelOverviewDto()
+            var modelDtos = models.Select(model => new LCModelOverviewDto()
             {
                 Id = model.Id,
                 Name = model.Name,
                 Language = (ModelLanguageDto)model.Language,
-                TrainingTimeInSeconds = model.TrainingTimeInSeconds,
-                HardwareInfo = model.HardwareInfo,
-                MacroPrecision = model.EpochData.LastOrDefault()?.MacroPrecision ?? 0,
-                MacroRecall = model.EpochData.LastOrDefault()?.MacroRecall ?? 0,
-                MacroF1Score = model.EpochData.LastOrDefault()?.MacroF1Score ?? 0,
-                Accuracy = model.EpochData.LastOrDefault()?.ValidationAccuracy ?? 0
+                MacroPrecision = model.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroPrecision ?? 0,
+                MacroRecall = model.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroRecall ?? 0,
+                MacroF1Score = model.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.MacroF1Score ?? 0,
+                Accuracy = model.EpochData.OrderBy(ed => ed.Epoch).LastOrDefault()?.ValidationAccuracy ?? 0,
+            }).ToList();
+
+            return new LCGridPageDataDto()
+            {
+                Models = modelDtos,
+                TotalItems = models.Count()
+            };
+        }
+
+        public static List<LCModelInferenceDto> ToInferenceDto(this IEnumerable<LCModel> models)
+        {
+            return [..models.Select(model => new LCModelInferenceDto()
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Language = (ModelLanguageDto)model.Language
             })];
         }
+
+        
     }
 }

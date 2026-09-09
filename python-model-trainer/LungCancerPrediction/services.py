@@ -10,7 +10,7 @@ from pathlib import Path
 import psutil
 from cpuinfo import get_cpu_info
 
-from .models import LCEpochPredictionDto, LCRocDto, ModelLanguageDto, LCDto, LCInferenceResultDto, LCTrainingParamsDto
+from .models import ModelLanguageDto, LCInferenceResultDto, LCTrainingParamsDto
 from .neural_networks import LungCancerNN
 
 class ImageLoader:

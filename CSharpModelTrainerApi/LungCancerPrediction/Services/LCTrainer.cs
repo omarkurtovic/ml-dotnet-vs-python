@@ -19,12 +19,12 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
     public class LCTrainer(PathResolver pathResolver, LCRepository lungCancerModelRepository)
     {
         private LCRepository LungCancerModelRepository { get; set; } = lungCancerModelRepository;
-        public async Task<Result<LCDto>> TrainModelAsync(int modelId, LCTrainingParamsDto trainInfo)
+        public async Task<Result<LCModel>> TrainModelAsync(int modelId, LCTrainingParamsDto trainInfo)
         {
-            var modelResult = await LungCancerModelRepository.GetModelDto(modelId);
+            var modelResult = await LungCancerModelRepository.GetModel(modelId, withEpoch: true, withValidationScores: true);
             if (!modelResult.IsSuccess)
             {
-                return Result<LCDto>.Failure("Failed to retrieve model.");
+                return Result<LCModel>.Failure("Failed to retrieve model.");
             }
             var modelDB = modelResult.Data!;
 
@@ -96,24 +96,22 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                     })]
                 };
 
-                var addEpochResult = await LungCancerModelRepository.AddEpochData(modelDB.Id, epochData);
-                if (!addEpochResult.IsSuccess)
+                modelDB.EpochData.Add(epochData);
+                modelDB.TrainingTimeInSeconds = trainingTime;
+                var saveResult = await LungCancerModelRepository.SaveChangesAsync();
+                if (!saveResult.IsSuccess)
                 {
                     await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.LCTrainingStatus.Failed);
-                    return Result<LCDto>.Failure("Greška prilikom spremanja podataka epohe");
+                    return Result<LCModel>.Failure("Greška prilikom spremanja podataka epohe");
                 }
-
-                await LungCancerModelRepository.UpdateTrainingTimeAsync(modelId, trainingTime);
-
             }
 
             modelDB.TrainingTimeInSeconds = trainingTime;
+            modelDB.TrainingStatus = Enums.LCTrainingStatus.Trained;
+            await LungCancerModelRepository.SaveChangesAsync();
             var modelPath = pathResolver.GetModelPath(trainInfo);
             model.save(modelPath);
-
-            await LungCancerModelRepository.UpdateStatusAsync(modelId, Enums.LCTrainingStatus.Trained);
-
-            return Result<LCDto>.Success(modelDB);
+            return Result<LCModel>.Success(modelDB);
         }
 
 

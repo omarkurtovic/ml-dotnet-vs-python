@@ -67,7 +67,7 @@
                     </TemplateColumn>
                 </Columns>
                 <PagerContent>
-                    <MudDataGridPager T="LCBasicDto" />
+                    <MudDataGridPager T="LCModelOverviewDto" />
                 </PagerContent>
             </MudDataGrid>
         </MudItem>
@@ -126,7 +126,7 @@
         Edit
     }
 
-    private async Task<GridData<LCBasicDto>> ServerReload(GridState<LCBasicDto> state, CancellationToken token)
+    private async Task<GridData<LCModelOverviewDto>> ServerReload(GridState<LCModelOverviewDto> state, CancellationToken token)
     {
         var options = new LCGridOptionsDto();
         options.Search = SearchString;
@@ -138,11 +138,11 @@
         }
         options.PageSize = state.PageSize;
         options.CurrentPage = state.Page;
-        var result = await CSharpLCApi.GetModelsSearchAsync(options);
+        var result = await CSharpLCApi.GetModelsForOverview(options);
 
         if (result.IsSuccess && result.Data is not null)
         {
-            return new GridData<LCBasicDto>()
+            return new GridData<LCModelOverviewDto>()
             {
                 Items = result.Data.Models,
                 TotalItems = result.Data.TotalItems
@@ -153,14 +153,14 @@
             Snackbar.Add(Loc.T("LCModels_Error"), Severity.Error);
         }
 
-        return new GridData<LCBasicDto>()
+        return new GridData<LCModelOverviewDto>()
         {
-            Items = new List<LCBasicDto>(),
+            Items = new List<LCModelOverviewDto>(),
             TotalItems = 0
         };
     }
 
-    private async Task ShowModelDetails(LCBasicDto model)
+    private async Task ShowModelDetails(LCModelOverviewDto model)
     {
         _drawerShown = DrawerShown.Info;
         StateHasChanged();
@@ -169,7 +169,7 @@
 
     }
 
-    private async Task ConfirmDelete(LCBasicDto model)
+    private async Task ConfirmDelete(LCModelOverviewDto model)
     {
         var parameters = new DialogParameters<ConfirmDeleteDialog>
         {
@@ -203,7 +203,7 @@
     }
 
 
-    private async Task ShowModelEdit(LCBasicDto model)
+    private async Task ShowModelEdit(LCModelOverviewDto model)
     {
         _drawerShown = DrawerShown.Edit;
         StateHasChanged();

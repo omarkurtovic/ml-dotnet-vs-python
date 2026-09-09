@@ -6,7 +6,7 @@ namespace SharedCL
 {
     public class LCGridPageDataDto
     {
-        public List<LCBasicDto> Models { get; set; } = [];
+        public List<LCModelOverviewDto> Models { get; set; } = [];
         public int TotalItems { get; set; }
     }
 }

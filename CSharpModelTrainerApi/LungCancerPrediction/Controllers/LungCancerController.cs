@@ -5,9 +5,7 @@ using CSharpModelTrainerApi.LungCancerPrediction.Workers;
 using CSharpModelTrainerApi.Mappers;
 using CSharpModelTrainerApi.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.ML;
 using SharedCL;
-using System.IO;
 
 namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 {
@@ -18,24 +16,22 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         LCRepository lungCancerModelRepository,
         LCPredictionService lungCancerPredictionService,
         PathResolver pathResolver,
-        HardwareInfoService hardwareInfoService,
         TrainingQueue trainingQueue,
-        PythonLCApiClient pythonLCApiClient,
-        ROCService rocService) : ControllerBase
-    {
+        HardwareInfoService hardwareInfoService,
+        PythonLCApiClient pythonLCApiClient) : ControllerBase
+        {
         private LCPredictionService LungCancerPredictionService { get; set; } = lungCancerPredictionService;
         private LCRepository LungCancerModelRepository { get; set; } = lungCancerModelRepository;
         private PathResolver PathResolver { get; set; } = pathResolver;
-        private HardwareInfoService HardwareInfoService { get; set; } = hardwareInfoService;
-        private TrainingQueue _trainingQueue { get; set; } = trainingQueue;
+        private TrainingQueue TrainingQueue { get; set; } = trainingQueue;
         private PythonLCApiClient PythonLCApi { get; set; } = pythonLCApiClient;
-
+        private HardwareInfoService HardwareInfoService { get; set; } = hardwareInfoService;
 
         [HttpGet]
         [Route("Models/Comparison")]
-        public async Task<IActionResult> GetModels()
+        public async Task<IActionResult> GetModelsComparison()
         {
-            var result = await LungCancerModelRepository.GetModelsForComparison();
+            var result = await LungCancerModelRepository.GetModels(withEpoch: true, withValidationScores: false);
             if (!result.IsSuccess)
             {
                 return BadRequest();
@@ -47,10 +43,25 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         }
 
         [HttpGet]
-        [Route("Models/Overview")]
-        public async Task<IActionResult> GetModelsBasic()
+        [Route("Models/Inference")]
+        public async Task<IActionResult> GetModelsInference()
         {
-            var result = await LungCancerModelRepository.GetModelsForOverview();
+            var result = await LungCancerModelRepository.GetModels(withEpoch: false, withValidationScores: false);
+            if (!result.IsSuccess)
+            {
+                return BadRequest();
+            }
+            else
+            {
+                return Ok(result.Data!.ToInferenceDto());
+            }
+        }
+
+        [HttpPost]
+        [Route("Models/Overview")]
+        public async Task<IActionResult> GetModels([FromBody] LCGridOptionsDto options)
+        {
+            var result = await LungCancerModelRepository.GetModelsForOverview(options);
             if (!result.IsSuccess)
             {
                 return BadRequest();
@@ -62,42 +73,10 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         }
 
         [HttpGet]
-        [Route("Models/Basic/{id}")]
-        public async Task<IActionResult> GetModelBasic([FromRoute] int id)
-        {
-            var modelResult = await LungCancerModelRepository.GetModelBasic(id);
-            if (!modelResult.IsSuccess)
-            {
-                return BadRequest();
-            }
-            var model = modelResult.Data;
-            if (model == null)
-            {
-                return NotFound();
-            }
-            return Ok(model);
-        }
-
-        [HttpPost]
-        [Route("Models/Search")]
-        public async Task<IActionResult> GetModels([FromBody] LCGridOptionsDto options)
-        {
-            var result = await LungCancerModelRepository.GetModelsSearch(options);
-            if (!result.IsSuccess)
-            {
-                return BadRequest();
-            }
-            else
-            {
-                return Ok(result.Data);
-            }
-        }
-
-        [HttpGet]
         [Route("Models/Info/{id}")]
         public async Task<IActionResult> GetModelInfo([FromRoute] int id)
         {
-            var modelResult = await LungCancerModelRepository.GetModel(id);
+            var modelResult = await LungCancerModelRepository.GetModel(id, withEpoch: true, withValidationScores: true);
             if (!modelResult.IsSuccess)
             {
                 return BadRequest();
@@ -183,7 +162,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         [Route("Predict")]
         public async Task<IActionResult> Predict([FromQuery] int id, [FromForm] IFormFile file)
         {
-            var modelResult = await LungCancerModelRepository.GetModelDto(id);
+            var modelResult = await LungCancerModelRepository.GetModel(id, withEpoch: false, withValidationScores: false);
             if (!modelResult.IsSuccess)
             {
                 return BadRequest();
@@ -213,14 +192,14 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return BadRequest("Broj epoha mora biti između 1 i 100");
             }
 
-            var modelDB = new LCDto
+            var modelDB = new LCModel
             {
                 Name = trainParams.Name,
-                Language = (ModelLanguageDto)trainParams.Language,
+                Language = (ModelLanguage)trainParams.Language,
                 EpochData = [],
                 HardwareInfo = hardwareInfoService.GetHardwareInfo(),
                 TotalEpochs = trainParams.Epochs,
-                ModelStatusDto = TrainingStatusDto.Training
+                TrainingStatus = LCTrainingStatus.Training
             };
 
             var saveResult = await LungCancerModelRepository.Save(modelDB);
@@ -231,7 +210,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
 
             if (trainParams.Language == ModelLanguageDto.CSharp)
             {
-                await _trainingQueue.EnqueueAsync(saveResult.Data, trainParams);
+                await TrainingQueue.EnqueueAsync(saveResult.Data, trainParams);
             }
             else
             {
@@ -241,28 +220,20 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 }
                 catch
                 {
-                    await LungCancerModelRepository.UpdateStatusAsync(saveResult.Data, LCTrainingStatus.Failed);
+                    modelDB.TrainingStatus = LCTrainingStatus.Failed;
+                    await LungCancerModelRepository.SaveChangesAsync();
                     return BadRequest("Greška prilikom pokretanja Python treniranja");
                 }
             }
             return Ok(saveResult.Data);
         }
 
-        [HttpPost]
-        [Route("Save")]
-        public async Task<IActionResult> Save([FromBody] LCDto model)
-        {
-            var saveResult = await LungCancerModelRepository.Save(model);
-            if (!saveResult.IsSuccess)
-                return BadRequest(saveResult.Message);
-            return Ok(saveResult.Data);
-        }
 
         [HttpDelete]
         [Route("Delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
         {
-            var modelResult = await LungCancerModelRepository.GetModelBasic(id);
+            var modelResult = await LungCancerModelRepository.GetModel(id, withEpoch: false, withValidationScores: false);
             if (!modelResult.IsSuccess)
             {
                 return BadRequest();
@@ -274,7 +245,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return NotFound();
             }
 
-            var modelPath = PathResolver.GetModelPath(model);
+            var modelPath = PathResolver.GetLCModelPath(model.Name, model.Language);
 
             var deleteResult = await LungCancerModelRepository.Delete(model.Id, () =>
             {
@@ -301,7 +272,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return BadRequest("New name cannot be empty.");
             }
 
-            var modelResult = await LungCancerModelRepository.GetModelBasic(id);
+            var modelResult = await LungCancerModelRepository.GetModel(id, withEpoch: false, withValidationScores: false);
             if (!modelResult.IsSuccess)
             {
                 return NotFound();
@@ -314,22 +285,21 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                 return BadRequest("New name is the same as the current name.");
             }
 
-            var modelPath = PathResolver.GetModelPath(model);
-
+            var modelPath = PathResolver.GetLCModelPath(model.Name, model.Language);
             if (!System.IO.File.Exists(modelPath))
             {
                 return NotFound();
             }
 
             var originalName = model.Name;
-            var updateResult = await LungCancerModelRepository.UpdateNameAsync(id, newName);
+            model.Name = newName;
+            var updateResult = await LungCancerModelRepository.SaveChangesAsync();
             if (!updateResult.IsSuccess)
             {
                 return BadRequest(updateResult.Message);
             }
 
-            model.Name = newName;
-            var newPath = PathResolver.GetModelPath(model);
+            var newPath = PathResolver.GetLCModelPath(model.Name, model.Language);
 
             try
             {
@@ -337,7 +307,8 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
             }
             catch (IOException)
             {
-                await LungCancerModelRepository.UpdateNameAsync(id, originalName);
+                model.Name = originalName;
+                await LungCancerModelRepository.SaveChangesAsync();
                 return StatusCode(500, "Greška prilikom premještanja fajla modela; naziv je vraćen na prethodni.");
             }
 

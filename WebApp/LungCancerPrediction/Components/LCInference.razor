@@ -53,7 +53,7 @@
                                 </MudStack>
                             </MudPaper>
 
-                            <MudSelect T="LCBasicDto" Label="@Loc.T("LCInference_ModelSelect")" @bind-Value="SelectedModel"
+                            <MudSelect T="LCModelInferenceDto" Label="@Loc.T("LCInference_ModelSelect")" @bind-Value="SelectedModel"
                                        Required="true" RequiredError="@Loc.T("LCInference_ModelRequired")" Clearable="true" Variant="Variant.Outlined">
                                 @foreach (var item in Models)
                                 {
@@ -98,14 +98,14 @@
     private IBrowserFile? _file = null;
     private string _base64 = string.Empty;
 
-    private List<LCBasicDto> Models { get; set; } = new List<LCBasicDto>();
-    private LCBasicDto SelectedModel = null!;
+    private List<LCModelInferenceDto> Models { get; set; } = new List<LCModelInferenceDto>();
+    private LCModelInferenceDto SelectedModel = null!;
 
     private LCInferenceResultDto? Prediction = null;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await CSharpApi.GetModelsBasicAsync();
+        var result = await CSharpApi.GetModelsForInference();
         if (result.IsSuccess)
         {
             Models = result.Data!;

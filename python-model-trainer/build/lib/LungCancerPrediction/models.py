@@ -6,7 +6,7 @@ class LCValidationScoreDto(BaseModel):
     benignProbability: float = 0.0
     malignantProbability: float = 0.0
     normalProbability: float = 0.0
-    trueLabel: float = 0.0
+    trueLabel: int = 0
     
 class ModelLanguageDto(IntEnum):
     CSharp = 0

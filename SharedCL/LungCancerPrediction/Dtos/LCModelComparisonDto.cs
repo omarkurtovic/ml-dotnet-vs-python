@@ -17,13 +17,13 @@ namespace SharedCL
         public double DataLoadingTimeInSeconds { get; set; }
         public string HardwareInfo { get; set; } = null!;
 
-        public bool Equals(LCDto? other)
+        public bool Equals(LCModelComparisonDto? other)
         {
-            if (ReferenceEquals(null, other)) return false;
+            if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
             return Id == other.Id;
         }
-        public override bool Equals(object? obj) => obj is LCDto model && Equals(model);
+        public override bool Equals(object? obj) => obj is LCModelComparisonDto model && Equals(model);
 
         public override int GetHashCode() => Name.GetHashCode();
         public override string ToString() => Name;

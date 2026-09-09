@@ -1,4 +1,6 @@
-﻿using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
+﻿using CSharpModelTrainerApi.Enums;
+using CSharpModelTrainerApi.LungCancerPrediction.Models;
+using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
 using CSharpModelTrainerApi.Services;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -15,9 +17,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 {
     public class LCPredictionService(PathResolver pathResolver)
     {
-        public async Task<LCInferenceResultDto> Predict(LCDto dto, IFormFile file)
+        public async Task<LCInferenceResultDto> Predict(LCModel dto, IFormFile file)
         {
-            if (dto.Language != ModelLanguageDto.CSharp)
+            if (dto.Language != ModelLanguage.CSharp)
                 throw new ArgumentException("Invalid model language");
 
             if (file == null) return null!;
@@ -26,7 +28,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             torch.set_default_device(defaultDevice);
 
             var model = new LungCancerNN().to(defaultDevice);
-            var modelPath = pathResolver.GetModelPath(dto);
+            var modelPath = pathResolver.GetLCModelPath(dto.Name, dto.Language);
 
             model.load(modelPath);
             model.eval();
