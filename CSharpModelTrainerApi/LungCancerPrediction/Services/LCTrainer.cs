@@ -93,7 +93,17 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                         MalignantProbability = p.MalignantProbability,
                         NormalProbability = p.NormalProbability,
                         TrueLabel = p.TrueLabel
-                    })]
+                    })],
+                    TrueBenignPredBenign = validationEpochData.ConfusionMatrix?[0, 0],
+                    TrueBenignPredMalignant = validationEpochData.ConfusionMatrix?[0, 1],
+                    TrueBenignPredNormal = validationEpochData.ConfusionMatrix?[0, 2],
+                    TrueMalignantPredBenign = validationEpochData.ConfusionMatrix?[1, 0],
+                    TrueMalignantPredMalignant = validationEpochData.ConfusionMatrix?[1, 1],
+                    TrueMalignantPredNormal = validationEpochData.ConfusionMatrix?[1, 2],
+                    TrueNormalPredBenign = validationEpochData.ConfusionMatrix?[2, 0],
+                    TrueNormalPredMalignant = validationEpochData.ConfusionMatrix?[2, 1],
+                    TrueNormalPredNormal = validationEpochData.ConfusionMatrix?[2, 2]
+
                 };
 
                 modelDB.EpochData.Add(epochData);
@@ -160,8 +170,9 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 }
             }
 
-            float averageTrainLoss = totalLoss / batchCount;
-            ClassificationReport(ref epochData, confusionMatrix, 3, size, averageTrainLoss);
+            epochData.ConfusionMatrix = confusionMatrix;
+            epochData.Loss = totalLoss / batchCount;
+            ClassificationReport(ref epochData, confusionMatrix, 3, size);
             return epochData;
         }
 
@@ -217,15 +228,18 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
                 }
             }
 
-            float averageValidationLoss = totalLoss / batchCount;
-            ClassificationReport(ref epochData, confusionMatrix, 3, total, averageValidationLoss);
+            if(isLastEpoch)
+            {
+                epochData.ConfusionMatrix = confusionMatrix;
+            }
+            epochData.Loss = totalLoss / batchCount;
+            ClassificationReport(ref epochData, confusionMatrix, 3, total);
             return epochData;
         }
 
 
-        private static void ClassificationReport(ref SegmentEpochData epochData, int[,] confusionMatrix, int numClasses, long total, float averageLoss)
+        private static void ClassificationReport(ref SegmentEpochData epochData, int[,] confusionMatrix, int numClasses, long total)
         {
-            epochData.Loss = averageLoss;
 
             float macroPrecision = 0f, macroRecall = 0f, macroF1 = 0f;
             float weightedPrecision = 0f, weightedRecall = 0f, weightedF1 = 0f;
@@ -326,6 +340,7 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
             public float WeightedRecall { get; set; }
             public float WeightedF1Score { get; set; }
             public List<LCValidationScoreDto> Predictions { get; set; } = [];
+            public int[,]? ConfusionMatrix { get; set; } = null;
         }
     }
 }

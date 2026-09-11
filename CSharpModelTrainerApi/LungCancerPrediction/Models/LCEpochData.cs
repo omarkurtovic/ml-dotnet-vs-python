@@ -25,6 +25,16 @@
         public double WeightedPrecision { get; set; }
         public double WeightedRecall { get; set; }
         public double WeightedF1Score { get; set; }
+        public int? TrueBenignPredBenign { get; set; } = null;
+        public int? TrueBenignPredMalignant { get; set; } = null;
+        public int? TrueBenignPredNormal { get; set; } = null;
+        public int? TrueMalignantPredBenign { get; set; } = null;
+        public int? TrueMalignantPredMalignant { get; set; } = null;
+        public int? TrueMalignantPredNormal { get; set; } = null;
+        public int? TrueNormalPredBenign { get; set; } = null;
+        public int? TrueNormalPredMalignant { get; set; } = null;
+        public int? TrueNormalPredNormal { get; set; } = null;
+
         public List<LCValidationScore> ValidationScores { get; set; } = [];
     }
 }

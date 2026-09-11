@@ -80,6 +80,9 @@ public static class Loc
             ["LCInfo_FPR"] = "False Positive Rate",
             ["LCInfo_Threshold"] = "Threshold",
             ["LCInfo_AUC"] = "AUC (Area under the ROC curve)",
+            ["LCInfo_ConfusionMatrix"] = "Confusion Matrix",
+            ["LCInfo_PredictedClass"] = "Predicted Class",
+            ["LCInfo_ActualClass"] = "Actual Class",
 
             ["LCInference_PageTitle"] = "Image Analysis",
             ["LCInference_Title"] = "Image Analysis",
@@ -237,6 +240,9 @@ public static class Loc
             ["LCInfo_FPR"] = "Stopa Lažnih Pozitivnih",
             ["LCInfo_Threshold"] = "Prag",
             ["LCInfo_AUC"] = "AUC (površina ispod ROC krive)",
+            ["LCInfo_ConfusionMatrix"] = "Matrica konfuzije",
+            ["LCInfo_PredictedClass"] = "Predviđena klasa",
+            ["LCInfo_ActualClass"] = "Stvarna klasa",
 
             ["LCInference_PageTitle"] = "Analiza Slike",
             ["LCInference_Title"] = "Analiza Slike",

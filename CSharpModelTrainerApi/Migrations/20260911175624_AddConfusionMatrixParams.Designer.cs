@@ -2,6 +2,7 @@
 using CSharpModelTrainerApi.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CSharpModelTrainerApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260911175624_AddConfusionMatrixParams")]
+    partial class AddConfusionMatrixParams
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.8");
@@ -70,31 +73,31 @@ namespace CSharpModelTrainerApi.Migrations
                     b.Property<double>("TrainingLoss")
                         .HasColumnType("REAL");
 
-                    b.Property<int?>("TrueBenignPredBenign")
+                    b.Property<int?>("TrueBenignPredBenig")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TrueBenignPredMalignant")
+                    b.Property<int?>("TrueBenignPredMalig")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TrueBenignPredNormal")
+                    b.Property<int?>("TrueBenignPredNorm")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TrueMalignantPredBenign")
+                    b.Property<int?>("TrueMaligPredBenig")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TrueMalignantPredMalignant")
+                    b.Property<int?>("TrueMaligPredMalig")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TrueMalignantPredNormal")
+                    b.Property<int?>("TrueMaligPredNorm")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TrueNormalPredBenign")
+                    b.Property<int?>("TrueNormPredBenig")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TrueNormalPredMalignant")
+                    b.Property<int?>("TrueNormPredMalig")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TrueNormalPredNormal")
+                    b.Property<int?>("TrueNormPredNorm")
                         .HasColumnType("INTEGER");
 
                     b.Property<double>("ValidationAccuracy")

@@ -100,9 +100,45 @@
             </tbody>
         </MudSimpleTable>
 
-
-        @if(Model.ModelStatusDto == TrainingStatusDto.Trained)
+        @if (Model.ModelStatusDto == TrainingStatusDto.Trained)
         {
+            <MudDivider Class="my-2" />
+            <SectionHeading>@Loc.T("LCInfo_ConfusionMatrix")</SectionHeading>
+            <MudSimpleTable Hover="true" Dense="true" Elevation="0" Style="background: transparent;">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th colspan="3" style="text-align:center">@Loc.T("LCInfo_PredictedClass")</th>
+                    </tr>
+                    <tr>
+                        <th>@Loc.T("LCInfo_ActualClass")</th>
+                        <th>@Loc.T("LCInfo_BenignClass")</th>
+                        <th>@Loc.T("LCInfo_MalignantClass")</th>
+                        <th>@Loc.T("LCInfo_NormalClass")</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@Loc.T("LCInfo_BenignClass")</td>
+                        <td>@Model.TrueBenignPredBenign</td>
+                        <td>@Model.TrueBenignPredMalignant</td>
+                        <td>@Model.TrueBenignPredNormal</td>
+                    </tr>
+                    <tr>
+                        <td>@Loc.T("LCInfo_MalignantClass")</td>
+                        <td>@Model.TrueMalignantPredBenign</td>
+                        <td>@Model.TrueMalignantPredMalignant</td>
+                        <td>@Model.TrueMalignantPredNormal</td>
+                    </tr>
+                    <tr>
+                        <td>@Loc.T("LCInfo_NormalClass")</td>
+                        <td>@Model.TrueNormalPredBenign</td>
+                        <td>@Model.TrueNormalPredMalignant</td>
+                        <td>@Model.TrueNormalPredNormal</td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+
             <MudDivider Class="my-2" />
             <SectionHeading>@Loc.T("LCInfo_AUC"): @(FormatPercent(Model.AUC))</SectionHeading>
 

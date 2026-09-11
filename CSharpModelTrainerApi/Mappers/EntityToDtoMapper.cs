@@ -46,7 +46,18 @@ namespace CSharpModelTrainerApi.Mappers
                 WeightedRecall = ed.WeightedRecall,
                 WeightedF1Score = ed.WeightedF1Score,
                 RocData = rocResult.Points,
-                AUC = rocResult.Auc
+                AUC = rocResult.Auc,
+                TrueBenignPredBenign = ed.TrueBenignPredBenign,
+                TrueBenignPredMalignant = ed.TrueBenignPredMalignant,
+                TrueBenignPredNormal = ed.TrueBenignPredNormal,
+                TrueNormalPredBenign = ed.TrueNormalPredBenign,
+                TrueNormalPredMalignant = ed.TrueNormalPredMalignant,
+                TrueNormalPredNormal = ed.TrueNormalPredNormal,
+                TrueMalignantPredBenign = ed.TrueMalignantPredBenign,
+                TrueMalignantPredMalignant = ed.TrueMalignantPredMalignant,
+                TrueMalignantPredNormal = ed.TrueMalignantPredNormal,
+
+
             };
         }
 
