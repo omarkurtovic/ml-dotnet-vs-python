@@ -138,7 +138,16 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
                         MalignantProbability = p.MalignantProbability,
                         NormalProbability = p.NormalProbability,
                         TrueLabel = p.TrueLabel
-                    }) ?? []]
+                    }) ?? []],
+                    TrueBenignPredBenign = progress.TrueBenignPredBenign,
+                    TrueBenignPredMalignant = progress.TrueBenignPredMalignant,
+                    TrueBenignPredNormal = progress.TrueBenignPredNormal,
+                    TrueMalignantPredBenign = progress.TrueMalignantPredBenign,
+                    TrueMalignantPredMalignant = progress.TrueMalignantPredMalignant,
+                    TrueMalignantPredNormal = progress.TrueMalignantPredNormal,
+                    TrueNormalPredBenign = progress.TrueNormalPredBenign,
+                    TrueNormalPredMalignant = progress.TrueNormalPredMalignant,
+                    TrueNormalPredNormal = progress.TrueNormalPredNormal
                 });
             }
 

@@ -105,6 +105,15 @@ def _run_training(model_id: int, train_data: LCTrainingParamsDto):
         epoch_data.weightedRecall = validation_epoch_data.weightedRecall
         epoch_data.weightedF1Score = validation_epoch_data.weightedF1Score
         epoch_data.validationScores = validation_epoch_data.validationScores
+        epoch_data.TrueBenignPredBenign = validation_epoch_data.confusionMatrix[0][0] if validation_epoch_data.confusionMatrix else None
+        epoch_data.TrueBenignPredMalignant = validation_epoch_data.confusionMatrix[0][1] if validation_epoch_data.confusionMatrix else None
+        epoch_data.TrueBenignPredNormal = validation_epoch_data.confusionMatrix[0][2] if validation_epoch_data.confusionMatrix else None
+        epoch_data.TrueMalignantPredBenign = validation_epoch_data.confusionMatrix[1][0] if validation_epoch_data.confusionMatrix else None
+        epoch_data.TrueMalignantPredMalignant = validation_epoch_data.confusionMatrix[1][1] if validation_epoch_data.confusionMatrix else None
+        epoch_data.TrueMalignantPredNormal = validation_epoch_data.confusionMatrix[1][2] if validation_epoch_data.confusionMatrix else None
+        epoch_data.TrueNormalPredBenign = validation_epoch_data.confusionMatrix[2][0] if validation_epoch_data.confusionMatrix else None
+        epoch_data.TrueNormalPredMalignant = validation_epoch_data.confusionMatrix[2][1] if validation_epoch_data.confusionMatrix else None
+        epoch_data.TrueNormalPredNormal = validation_epoch_data.confusionMatrix[2][2] if validation_epoch_data.confusionMatrix else None
         print(f"Validation Scores for epoch {epoch}: {validation_epoch_data.validationScores}")
         with _state_lock:
             _training_state[model_id].append(epoch_data)
@@ -166,7 +175,8 @@ def train(dataloader, model, loss_fn, optimizer) -> SegmentEpochData:
             print(f"loss: {loss.item():>7.5f}  [{current:>5d}/{size:>5d}]")
 
     average_train_loss = total_loss / batch_count
-    return classification_report(epoch_data, confusion_matrix, 3, size, average_train_loss)
+    epoch_data.loss = average_train_loss
+    return classification_report(epoch_data, confusion_matrix, 3, size)
 
 
 def validate(dataloader, model, loss_fn, last_epoch=False) -> SegmentEpochData:
@@ -212,12 +222,13 @@ def validate(dataloader, model, loss_fn, last_epoch=False) -> SegmentEpochData:
                 confusion_matrix[true_label.item(), pred_label.item()] += 1
 
     average_validation_loss = total_loss / batch_count
-    return classification_report(epoch_data, confusion_matrix, 3, total, average_validation_loss)
+    if last_epoch:
+        epoch_data.confusionMatrix = confusion_matrix.tolist()
+    epoch_data.loss = average_validation_loss
+    return classification_report(epoch_data, confusion_matrix, 3, total)
 
 
-def classification_report(epoch_data, confusion_matrix, num_classes, total, average_loss):
-
-    epoch_data.loss = average_loss
+def classification_report(epoch_data, confusion_matrix, num_classes, total):
 
     macro_precision, macro_recall, macro_f1 = 0.0, 0.0, 0.0
     weighted_precision, weighted_recall, weighted_f1 = 0.0, 0.0, 0.0

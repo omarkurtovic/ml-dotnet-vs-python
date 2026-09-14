@@ -240,7 +240,6 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Services
 
         private static void ClassificationReport(ref SegmentEpochData epochData, int[,] confusionMatrix, int numClasses, long total)
         {
-
             float macroPrecision = 0f, macroRecall = 0f, macroF1 = 0f;
             float weightedPrecision = 0f, weightedRecall = 0f, weightedF1 = 0f;
             int totalSupport = 0;

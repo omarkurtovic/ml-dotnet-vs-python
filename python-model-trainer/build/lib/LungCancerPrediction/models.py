@@ -42,6 +42,15 @@ class LCTrainingProgressDto(BaseModel):
     weightedRecall: float = 0.0
     weightedF1Score: float = 0.0
     validationScores: list[LCValidationScoreDto] = []
+    TrueBenignPredBenign: int | None = None
+    TrueBenignPredMalignant: int | None = None
+    TrueBenignPredNormal: int | None = None
+    TrueMalignantPredBenign: int | None = None
+    TrueMalignantPredMalignant: int | None = None
+    TrueMalignantPredNormal: int | None = None
+    TrueNormalPredBenign: int | None = None
+    TrueNormalPredMalignant: int | None = None
+    TrueNormalPredNormal: int | None = None
 
 class LCTrainingParamsDto(BaseModel):
     name: str = ""
@@ -69,6 +78,7 @@ class SegmentEpochData(BaseModel):
     weightedRecall: float = 0.0
     weightedF1Score: float = 0.0
     validationScores: list[LCValidationScoreDto] = []
+    confusionMatrix: list[list[int]] = []
 
 class LCInferenceResultDto(BaseModel):
     benignScore: float = 0.0
