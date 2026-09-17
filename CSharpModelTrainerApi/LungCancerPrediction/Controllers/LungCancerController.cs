@@ -163,8 +163,10 @@ namespace CSharpModelTrainerApi.LungCancerPrediction.Controllers
         private static LCInfoDto MapToDto(LCModel model)
         {
             var lastEpoch = model.EpochData?.LastOrDefault();
-            var roc = ROCService.Calculate(lastEpoch?.ValidationScores ?? []);
-            return model.ToInfoDto(roc);
+            var beningRoc = ROCService.Calculate(lastEpoch?.ValidationScores ?? [], 0);
+            var malignantRoc = ROCService.Calculate(lastEpoch?.ValidationScores ?? [], 1);
+            var normalRoc = ROCService.Calculate(lastEpoch?.ValidationScores ?? [], 2);
+            return model.ToInfoDto(beningRoc, malignantRoc, normalRoc);
         }
 
         [HttpPost]

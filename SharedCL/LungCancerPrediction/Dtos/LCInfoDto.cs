@@ -43,8 +43,12 @@ namespace SharedCL
         public int? TrueNormalPredBenign { get; set; } = null;
         public int? TrueNormalPredMalignant { get; set; } = null;
         public int? TrueNormalPredNormal { get; set; } = null;
-        public List<LCRocDto> RocData { get; set; } = [];
-        public double AUC { get; set; }
+        public List<LCRocDto> BenignRocData { get; set; } = [];
+        public double BenignAUC { get; set; }
+        public List<LCRocDto> MalignantRocData { get; set; } = [];
+        public double MalignantAUC { get; set; }
+        public List<LCRocDto> NormalRocData { get; set; } = [];
+        public double NormalAUC { get; set; }
 
     }
 }

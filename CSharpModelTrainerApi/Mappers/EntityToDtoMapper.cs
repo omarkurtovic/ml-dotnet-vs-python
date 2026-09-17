@@ -6,7 +6,7 @@ namespace CSharpModelTrainerApi.Mappers
 {
     public static class EntityToDtoMapper
     {
-        public static LCInfoDto ToInfoDto(this LCModel model, LCRocResult rocResult)
+        public static LCInfoDto ToInfoDto(this LCModel model, LCRocResult beningRoc, LCRocResult malignantRoc, LCRocResult normalRoc)
         {
             LCEpochData ed = new();
             int currentEpoch = 0;
@@ -45,8 +45,12 @@ namespace CSharpModelTrainerApi.Mappers
                 WeightedPrecision = ed.WeightedPrecision,
                 WeightedRecall = ed.WeightedRecall,
                 WeightedF1Score = ed.WeightedF1Score,
-                RocData = rocResult.Points,
-                AUC = rocResult.Auc,
+                BenignRocData = beningRoc.Points,
+                BenignAUC = beningRoc.Auc,
+                MalignantRocData = malignantRoc.Points,
+                MalignantAUC = malignantRoc.Auc,
+                NormalRocData = normalRoc.Points,
+                NormalAUC = normalRoc.Auc,
                 TrueBenignPredBenign = ed.TrueBenignPredBenign,
                 TrueBenignPredMalignant = ed.TrueBenignPredMalignant,
                 TrueBenignPredNormal = ed.TrueBenignPredNormal,
