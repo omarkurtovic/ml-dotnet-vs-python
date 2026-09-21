@@ -140,10 +140,12 @@
             </MudSimpleTable>
 
             <MudDivider Class="my-2" />
-            <SectionHeading>@Loc.T("LCInfo_RocGraph")</SectionHeading>
+            <SectionHeading>@Loc.T("LCInfo_RocAUC")</SectionHeading>
+            <SectionHeading>@Loc.T("LCInfo_MacroAUC"): @(FormatPercent(Model.MacroAUC))</SectionHeading>
+
             <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="MudBlazor.Color.Default">
                 <MudTabPanel Text="Bening ROC AUC">
-                    <SectionHeading>@Loc.T("LCInfo_AUC"): @(FormatPercent(Model.BenignAUC))</SectionHeading>
+                    <SectionHeading class="pt-5">@Loc.T("LCInfo_AUC"): @(FormatPercent(Model.BenignAUC))</SectionHeading>
                     <ApexChart @ref="BenignRocChart" TItem="LCRocDto" Height="400" Options="BeningChartOptions">
                         <ApexPointSeries TItem="LCRocDto"
                                          Items="Model.BenignRocData"
@@ -155,7 +157,7 @@
                 </MudTabPanel>
 
                 <MudTabPanel Text="Malignant ROC AUC">
-                    <SectionHeading>@Loc.T("LCInfo_AUC"): @(FormatPercent(Model.MalignantAUC))</SectionHeading>
+                    <SectionHeading class="pt-5">@Loc.T("LCInfo_AUC"): @(FormatPercent(Model.MalignantAUC))</SectionHeading>
                     <ApexChart @ref="MalignantRocChart" TItem="LCRocDto" Height="400" Options="MalignantChartOptions">
                         <ApexPointSeries TItem="LCRocDto"
                                          Items="Model.MalignantRocData"
@@ -167,7 +169,7 @@
                 </MudTabPanel>
 
                 <MudTabPanel Text="Normal ROC AUC">
-                    <SectionHeading>@Loc.T("LCInfo_AUC"): @(FormatPercent(Model.NormalAUC))</SectionHeading>
+                    <SectionHeading class="pt-5">@Loc.T("LCInfo_AUC"): @(FormatPercent(Model.NormalAUC))</SectionHeading>
                     <ApexChart @ref="NormalRocChart" TItem="LCRocDto" Height="400" Options="NormalChartOptions">
                         <ApexPointSeries TItem="LCRocDto"
                                          Items="Model.NormalRocData"
@@ -328,14 +330,7 @@
 
     private string FormatTrainingTime(double trainingTimeInSeconds)
     {
-        if (trainingTimeInSeconds < 60)
-        {
-            return $"{Loc.T("LCInfo_TrainingTime")}: {Math.Round(trainingTimeInSeconds, 2)} {Loc.T("LCInfo_Seconds")}";
-        }
-        else
-        {
-            return $"{Loc.T("LCInfo_TrainingTime")}: {Math.Round(trainingTimeInSeconds / 60, 2)} {Loc.T("LCInfo_Minutes")}";
-        }
+        return $"{Loc.T("LCInfo_TrainingTime")}: {Math.Round(trainingTimeInSeconds, 2)} {Loc.T("LCInfo_Seconds")}";
     }
 
     public void Dispose()

@@ -50,5 +50,14 @@ namespace SharedCL
         public List<LCRocDto> NormalRocData { get; set; } = [];
         public double NormalAUC { get; set; }
 
+
+        public double MacroAUC
+        {
+            get
+            {
+                return (BenignAUC + MalignantAUC + NormalAUC) / 3;
+            }
+        }
+
     }
 }

@@ -75,7 +75,7 @@ public static class Loc
             ["LCInfo_Error"] = "Error occurred while loading model details. Please try again.",
             ["LCInfo_TrainingFailed"] = "Training failed. Please try again.",
             ["LCInfo_TrainingComplete"] = "Training completed successfully!",
-            ["LCInfo_RocGraph"] = "ROC Graph",
+            ["LCInfo_RocAUC"] = "ROC and AUC",
             ["LCInfo_TPR"] = "True Positive Rate",
             ["LCInfo_FPR"] = "False Positive Rate",
             ["LCInfo_Threshold"] = "Threshold",
@@ -83,6 +83,7 @@ public static class Loc
             ["LCInfo_ConfusionMatrix"] = "Confusion Matrix",
             ["LCInfo_PredictedClass"] = "Predicted Class",
             ["LCInfo_ActualClass"] = "Actual Class",
+            ["LCInfo_MacroAUC"] = "Macro AUC",
 
             ["LCInference_PageTitle"] = "Image Analysis",
             ["LCInference_Title"] = "Image Analysis",
@@ -235,7 +236,7 @@ public static class Loc
             ["LCInfo_Error"] = "Greška prlikom učitavanja detalja modela. Molimo pokušajte ponovo.",
             ["LCInfo_TrainingFailed"] = "Treniranje nije uspjelo. Molimo pokušajte ponovo.",
             ["LCInfo_TrainingComplete"] = "Treniranje uspješno završeno!",
-            ["LCInfo_RocGraph"] = "ROC Graf",
+            ["LCInfo_RocAUC"] = "ROC i AUC",
             ["LCInfo_TPR"] = "Stopa Stvarnih Pozitivnih",
             ["LCInfo_FPR"] = "Stopa Lažnih Pozitivnih",
             ["LCInfo_Threshold"] = "Prag",
@@ -243,6 +244,7 @@ public static class Loc
             ["LCInfo_ConfusionMatrix"] = "Matrica konfuzije",
             ["LCInfo_PredictedClass"] = "Predviđena klasa",
             ["LCInfo_ActualClass"] = "Stvarna klasa",
+            ["LCInfo_MacroAUC"] = "Makro AUC",
 
             ["LCInference_PageTitle"] = "Analiza Slike",
             ["LCInference_Title"] = "Analiza Slike",
