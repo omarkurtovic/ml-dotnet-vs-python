@@ -80,12 +80,6 @@
                     <td>@(FormatPercent(Model.WeightedF1Score))</td>
                 </tr>
                 <tr>
-                    <td>@Loc.T("LCInfo_NormalClass")</td>
-                    <td>@(FormatPercent(Model.NormalRecall))</td>
-                    <td>@(FormatPercent(Model.NormalPrecision))</td>
-                    <td>@(FormatPercent(Model.NormalF1Score))</td>
-                </tr>
-                <tr>
                     <td>@Loc.T("LCInfo_BenignClass")</td>
                     <td>@(FormatPercent(Model.BenignRecall))</td>
                     <td>@(FormatPercent(Model.BenignPrecision))</td>
@@ -96,6 +90,12 @@
                     <td>@(FormatPercent(Model.MalignantRecall))</td>
                     <td>@(FormatPercent(Model.MalignantPrecision))</td>
                     <td>@(FormatPercent(Model.MalignantF1Score))</td>
+                </tr>
+                <tr>
+                    <td>@Loc.T("LCInfo_NormalClass")</td>
+                    <td>@(FormatPercent(Model.NormalRecall))</td>
+                    <td>@(FormatPercent(Model.NormalPrecision))</td>
+                    <td>@(FormatPercent(Model.NormalF1Score))</td>
                 </tr>
             </tbody>
         </MudSimpleTable>
