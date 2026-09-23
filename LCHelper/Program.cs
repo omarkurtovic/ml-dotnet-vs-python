@@ -1,6 +1,7 @@
 ﻿
 using CSharpModelTrainerApi.LungCancerPrediction.Datasets;
 using CSharpModelTrainerApi.LungCancerPrediction.NeuralNetworks;
+using Hardware.Info;
 using SkiaSharp;
 using System.Runtime.InteropServices;
 using TorchSharp;
@@ -68,19 +69,9 @@ void TransformImages()
     for (int i = 0; i < 10; ++i)
     {
         var sample = trainingData.GetTensor(0)["image"];
-        var tensorNonNormalized = sample.clamp(0, 1).mul(255F).to(torch.ScalarType.Byte);
-        var bytes = tensorNonNormalized.data<byte>().ToArray();
 
-        using SKBitmap bitmap = new(256, 256, SKColorType.Gray8, SKAlphaType.Opaque);
-
-        IntPtr pixelBuffer = Marshal.AllocHGlobal(bytes.Length);
-        Marshal.Copy(bytes, 0, pixelBuffer, bytes.Length);
-
-        bitmap.InstallPixels(new SKImageInfo(256, 256, SKColorType.Gray8, SKAlphaType.Opaque), pixelBuffer);
-        var data = SKImage.FromBitmap(bitmap).Encode(SKEncodedImageFormat.Png, 100);
+        torchvision.io.DefaultImager = new TorchSharp.torchvision.io.SkiaImager();
         using var stream = File.OpenWrite(Path.Combine(transformationDirectory, $"transformed_image_{i}.png"));
-        data.SaveTo(stream);
-
-        Marshal.FreeHGlobal(pixelBuffer);
+        torchvision.utils.save_image(sample, stream, torchvision.ImageFormat.Png);
     }
 }
