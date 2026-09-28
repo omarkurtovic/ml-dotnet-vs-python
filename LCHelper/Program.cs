@@ -70,7 +70,7 @@ void TransformImages()
     {
         var sample = trainingData.GetTensor(0)["image"];
 
-        torchvision.io.DefaultImager = new TorchSharp.torchvision.io.SkiaImager();
+        torchvision.io.DefaultImager = new torchvision.io.SkiaImager();
         using var stream = File.OpenWrite(Path.Combine(transformationDirectory, $"transformed_image_{i}.png"));
         torchvision.utils.save_image(sample, stream, torchvision.ImageFormat.Png);
     }
