@@ -7,6 +7,13 @@ namespace SharedCL
     public class LCEpochDataDto
     {
         public int Epoch { get; set; }
+        public int EpochForComparison
+        {
+            get
+            {
+                return Epoch + 1;
+            }
+        }
         public double TrainingLoss { get; set; }
         public double TrainingAccuracy { get; set; }
         public double ValidationAccuracy { get; set; }

@@ -71,15 +71,16 @@
                             @foreach (var metric in SelectedMetrics)
                             {
                                 <MudTabPanel Text="@(GetMetricTranslations()[metric])">
-                                    <ApexChart @ref="Chart" TItem="LCEpochDataDto" Title="@((GetMetricTranslations())[metric])" Height="400">
+                                    <ApexChart Options="options" @ref="Chart" TItem="LCEpochDataDto" Title="@((GetMetricTranslations())[metric])" Height="400">
                                         @foreach (var model in SelectedModels)
                                         {
                                             <ApexPointSeries TItem="LCEpochDataDto"
                                                              Items="model.EpochData"
                                                              Name="@model.Name"
                                                              SeriesType="SeriesType.Line"
-                                                             XValue="@(ed => ed.Epoch)"
-                                                             YValue="@(ed => GetValue(metric, ed))" />
+                                                             XValue="@(ed => ed.EpochForComparison)"
+                                                             YValue="@(ed => GetValue(metric, ed))"
+                                                             Color="@GetSeriesColor(model.Name)" />
                                         }
                                     </ApexChart>
                                 </MudTabPanel>
@@ -108,7 +109,7 @@
         var value = epochData.GetType().GetProperty(metric)!.GetValue(epochData); 
         if (value is double doubleValue)
         {
-            return (decimal)doubleValue;
+            return Math.Round((decimal)doubleValue, 2);
         }
         else
         {
@@ -198,7 +199,7 @@
         }
         return string.Join(", ", values);
     }
-    
+
     private string GetMultiSelectionMetricText(IReadOnlyList<string> selectedValues)
     {
         var values = new List<string>();
@@ -215,9 +216,37 @@
     {
         Xaxis = new XAxis
         {
-            Type = XAxisType.Numeric,
-            TickAmount = 5
-        }
+            TickAmount = 10
+        },
+        Stroke = new Stroke { Width = 1.5 }
     };
+
+    private static readonly string[] CSharpColors =
+    { "#512BD4", "#7B5CE0", "#9C82E8", "#3D1F9E", "#B9A6F0" };
+
+    private static readonly string[] PythonColors =
+        { "#E67E00", "#F5A623", "#C25E00", "#F7C04A", "#A34A00" };
+
+    private static readonly string[] OtherColors =
+        { "#6B7280", "#9CA3AF", "#4B5563", "#D1D5DB", "#374151" };
+
+    private string GetSeriesColor(string seriesName)
+    {
+        if (!seriesName.StartsWith("CSharp") && !seriesName.StartsWith("Python"))
+        {
+            return OtherColors[(new Random()).Next(OtherColors.Length)];
+        }
+
+        var palette = seriesName.StartsWith("CSharp", StringComparison.OrdinalIgnoreCase)
+            ? CSharpColors
+            : PythonColors;
+
+        if(!int.TryParse(seriesName.Split('_').Last(), out var n) || n < 1 || n > 5)
+        {
+            return OtherColors[(new Random()).Next(OtherColors.Length)];
+        }
+
+        return palette[n-1];
+    }
 }
 
